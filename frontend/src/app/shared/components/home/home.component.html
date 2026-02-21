@@ -1,0 +1,393 @@
+<!-- home.component.html -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  
+  <!-- Hero Section con Logo y llamada a la acción -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-12 md:py-20">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
+        
+        <!-- Columna izquierda: Texto y CTA -->
+        <div class="flex-1 text-center lg:text-left">
+          <!-- Badge "Nuevo" con IA -->
+          <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 mb-6">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+            🤖 Generación de tests con IA
+          </span>
+          
+            <div class="mr-2">
+                <img src="assets/Logo-AngoTest_home.png" alt="Logo AnGoTest" class="h-20 w-auto">
+            </div>
+
+          <p class="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-4">
+            La plataforma definitiva para crear, gestionar y realizar tests online.
+          </p>
+          
+          <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto lg:mx-0">
+            <span class="font-semibold text-blue-600 dark:text-blue-400">An</span>gular + 
+            <span class="font-semibold text-blue-600 dark:text-blue-400">Go</span> = 
+            <span class="font-semibold">AnGoTest</span>. 
+            Tecnología moderna al servicio de la educación y la evaluación.
+          </p>
+          
+          <!-- Botones CTA -->
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <a href="/register" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg hover:shadow-xl">
+              Comenzar gratis
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+            <a href="#" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-lg">
+              Ver demo
+            </a>
+          </div>
+          
+          <!-- Stats rápidas -->
+          <div class="grid grid-cols-3 gap-4 mt-12 max-w-md mx-auto lg:mx-0">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">10k+</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Tests realizados</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">500+</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Usuarios activos</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">50+</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Temas disponibles</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Columna derecha: Logo (1800x420) -->
+        <div class="flex-1 flex justify-center">
+          <div class="relative w-full max-w-2xl">
+            <!-- Contenedor del logo con proporción 1800x420 (aprox 4.29:1) -->
+            <div class="aspect-[4.29/1] w-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 rounded-2xl shadow-2xl flex items-center justify-center p-8">
+              <!-- Aquí iría tu logo real. Como ejemplo, pongo el nombre con estilos -->
+              <div class="text-white text-center">
+                <span class="text-4xl md:text-5xl font-black tracking-tight">AnGoTest</span>
+                <span class="block text-sm md:text-base opacity-80 mt-2">Angular · Go · Tests · IA</span>
+              </div>
+            </div>
+            
+            <!-- Decoración flotante (opcional) -->
+            <div class="absolute -bottom-4 -right-4 w-24 h-24 bg-purple-300 dark:bg-purple-800 rounded-full opacity-20 blur-2xl"></div>
+            <div class="absolute -top-4 -left-4 w-32 h-32 bg-blue-300 dark:bg-blue-800 rounded-full opacity-20 blur-2xl"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Wave separator (opcional) -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg class="fill-current text-gray-50 dark:text-gray-900" viewBox="0 0 1440 120">
+        <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Sección: ¿Qué es AnGoTest? (utilidad) -->
+  <section class="py-16 md:py-24 bg-white dark:bg-gray-800">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          ¿Qué es <span class="text-blue-600 dark:text-blue-400">AnGoTest</span>?
+        </h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          Una plataforma integral que conecta el conocimiento con su evaluación, 
+          potenciada por las mejores tecnologías web.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <!-- Texto explicativo -->
+        <div class="space-y-6">
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L6.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Para estudiantes y autodidactas</h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Ponte a prueba, sigue tu progreso y compite en rankings. Ideal para preparar exámenes, oposiciones o simplemente aprender algo nuevo cada día.
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Para educadores y formadores</h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Crea tests de forma rápida (¡incluso con IA!), organiza el conocimiento por temas y niveles, y obtén estadísticas detalladas del progreso de tus alumnos.
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4zm7 5a1 1 0 10-2 0v1.586l-.293-.293a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 10-1.414-1.414l-.293.293V9z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Para empresas y RRHH</h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Evalúa a candidatos en procesos de selección, forma a tus empleados y mide la efectividad de la formación con herramientas de análisis avanzadas.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Imagen ilustrativa (mockup) -->
+        <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl p-6 shadow-xl">
+          <div class="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white p-8">
+            <div class="text-center">
+              <svg class="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+              </svg>
+              <p class="text-xl font-semibold">Dashboard interactivo</p>
+              <p class="text-sm opacity-80">Visualiza tu progreso en tiempo real</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección: Características principales -->
+  <section class="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Todo lo que necesitas en un solo lugar
+        </h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          Diseñado para ofrecer una experiencia completa tanto a quienes crean tests como a quienes los realizan.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1: IA -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div class="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Generación con IA</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            Crea tests automáticamente a partir de un tema o prompt. La IA genera preguntas, respuestas y organiza la jerarquía de conocimiento.
+          </p>
+          <span class="text-sm font-medium text-purple-600 dark:text-purple-400">Nuevo</span>
+        </div>
+        
+        <!-- Feature 2: Rankings -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div class="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Ranking y gamificación</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Compite con otros usuarios, compara tu precisión, tiempo y progreso. Sube en el ranking y conviértete en el mejor.
+          </p>
+        </div>
+        
+        <!-- Feature 3: Dashboard Admin -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zM3 16a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Panel de administración</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Gestiona usuarios, tests, resultados y cuotas de IA. Visualiza estadísticas globales con un dashboard interactivo y detallado.
+          </p>
+        </div>
+        
+        <!-- Feature 4: Invitaciones -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div class="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Invitaciones a tests</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Invita a otros usuarios (o a guest) a realizar tests específicos. Ideal para exámenes, evaluaciones o retos entre amigos.
+          </p>
+        </div>
+        
+        <!-- Feature 5: Jerarquía de temas -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div class="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Organización por niveles</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Tema principal > Subtema > Tema específico. Navegación intuitiva y clasificación precisa del conocimiento.
+          </p>
+        </div>
+        
+        <!-- Feature 6: Progreso en tiempo real -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div class="w-12 h-12 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Progreso en vivo</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Guarda automáticamente el progreso, retoma tests donde lo dejaste y visualiza tu evolución en estadísticas detalladas.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección: Cómo funciona (3 pasos) -->
+  <section class="py-16 md:py-24 bg-white dark:bg-gray-800">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Comienza en 3 simples pasos
+        </h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          Tanto si quieres aprender como si quieres enseñar, AnGoTest te lo pone fácil.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Paso 1 -->
+        <div class="text-center">
+          <div class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-blue-600 dark:text-blue-400">
+            1
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Regístrate</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Crea tu cuenta en segundos. Puedes empezar como invitado si lo prefieres.
+          </p>
+        </div>
+        
+        <!-- Paso 2 -->
+        <div class="text-center">
+          <div class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-blue-600 dark:text-blue-400">
+            2
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Explora o crea</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Elige entre cientos de tests existentes o crea los tuyos propios, incluso con IA.
+          </p>
+        </div>
+        
+        <!-- Paso 3 -->
+        <div class="text-center">
+          <div class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-blue-600 dark:text-blue-400">
+            3
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Aprende y compite</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Realiza tests, sigue tu progreso y asciende en el ranking global.
+          </p>
+        </div>
+      </div>
+      
+      <div class="text-center mt-12">
+        <a href="/register" class="inline-flex items-center px-8 py-4 text-lg font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg">
+          ¡Empieza ahora!
+          <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección: Testimonios / Casos de uso (opcional) -->
+  <section class="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Lo que puedes lograr con AnGoTest
+        </h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          Casos reales donde nuestra plataforma marca la diferencia.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+          <div class="text-3xl mb-4">🎓</div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Formación académica</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            "Uso AnGoTest para los exámenes semanales de mis alumnos. La generación con IA me ahorra horas de trabajo y los rankings motivan a los estudiantes."
+          </p>
+          <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            — María G., Profesora de Historia
+          </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+          <div class="text-3xl mb-4">💼</div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Selección de personal</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            "Evaluamos a los candidatos técnicos con tests personalizados. El sistema de invitaciones es perfecto para pruebas puntuales sin necesidad de registro masivo."
+          </p>
+          <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            — Carlos R., Tech Recruiter
+          </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+          <div class="text-3xl mb-4">🏆</div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Comunidad de aprendizaje</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            "Creamos tests colaborativos entre los miembros. Competir en el ranking nos ayuda a mantenernos motivados y medir nuestro progreso."
+          </p>
+          <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            — Laura S., Community Manager
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección: Call to Action final -->
+  <section class="py-16 md:py-24 bg-gradient-to-br from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700">
+    <div class="container mx-auto px-4 md:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        ¿Listo para transformar tu forma de evaluar?
+      </h2>
+      <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+        Únete a cientos de usuarios que ya están aprendiendo y enseñando con AnGoTest.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/register" class="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-100 transition-colors shadow-xl">
+          Crear cuenta gratis
+        </a>
+        <a href="#" class="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg text-white bg-blue-500/30 hover:bg-blue-500/40 backdrop-blur-sm border border-white/30 transition-colors">
+          Saber más
+        </a>
+      </div>
+      <p class="text-sm text-white/70 mt-6">
+        Sin compromiso. Cancela cuando quieras.
+      </p>
+    </div>
+  </section>
+</div>

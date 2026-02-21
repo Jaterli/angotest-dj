@@ -1,0 +1,679 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-4xl pb-20 md:pb-24">
+  <!-- Título de la página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Crear Nuevo Test</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">Completa el formulario para crear un nuevo test</p>
+    </div>
+    
+    <!-- Botón para cancelar -->
+    <div>
+      <button (click)="cancel()"
+              class="inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all">
+        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+        </svg>
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <form [formGroup]="testForm" (ngSubmit)="submit()" class="space-y-8">
+    <!-- Información básica del test -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Información General</h2>
+    
+      <!-- Título -->
+      <div class="space-y-2 mb-6">
+        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Título *
+        </label>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="Ej: JavaScript Básico - Funciones y Variables"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+          [class.border-red-500]="testForm.get('title')?.invalid && testForm.get('title')?.touched"
+        >
+        @if (testForm.get('title')?.invalid && testForm.get('title')?.touched) {
+          <p class="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            El título es requerido
+          </p>
+        }
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Nivel -->
+        <div class="space-y-2">
+          <label for="level" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Nivel *
+          </label>
+          <select
+            id="level"
+            formControlName="level"
+            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+            [class.border-red-500]="testForm.get('level')?.invalid && testForm.get('level')?.touched"
+          >
+            <option value="" disabled selected>Selecciona un nivel</option>
+            @for (level of levels(); track level) {
+              <option [value]="level">{{ level }}</option>
+            }
+          </select>
+          @if (testForm.get('level')?.invalid && testForm.get('level')?.touched) {
+            <p class="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              El nivel es requerido
+            </p>
+          }
+        </div>
+
+        <!-- Tema Principal -->
+        <div class="space-y-2">
+          <label for="main_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Tema Principal *
+            @if (validationState().main.message) {
+              <span class="ml-2 text-xs font-normal" 
+                    [class.text-green-600]="validationState().main.isValid"
+                    [class.text-red-600]="!validationState().main.isValid">
+                {{ validationState().main.message }}
+              </span>
+            }
+          </label>
+          
+          <div class="relative">
+            <input
+              id="main_topic"
+              formControlName="main_topic"
+              placeholder="Ej: Ciencias de la Computación"
+              [class.border-red-500]="!validationState().main.isValid && testForm.get('main_topic')?.value"
+              [class.border-green-500]="validationState().main.isValid && testForm.get('main_topic')?.value"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+            >
+            
+            <!-- Botón para ver temas principales -->
+            <button
+              type="button"
+              (click)="showLists.main = !showLists.main"
+              class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+              title="Ver temas principales disponibles"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Estado de carga -->
+          @if (isLoading().main) {
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Cargando temas...
+            </p>
+          }
+          
+          <!-- Lista de temas principales -->
+          @if (showLists.main && mainTopics().length > 0) {
+            <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+              <div class="p-3 border-b border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                  <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Temas disponibles:</p>
+                  <button
+                    type="button"
+                    (click)="showLists.main = false"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="max-h-48 overflow-y-auto p-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  @for (topic of mainTopics(); track topic) {
+                    <button
+                      type="button"
+                      (click)="onMainTopicSelect(topic)"
+                      class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
+                    >
+                      {{ topic }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Subtema -->
+        <div class="space-y-2">
+          <label for="sub_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Subtema *
+            @if (validationState().sub.message) {
+              <span class="ml-2 text-xs font-normal" 
+                    [class.text-green-600]="validationState().sub.isValid"
+                    [class.text-red-600]="!validationState().sub.isValid">
+                {{ validationState().sub.message }}
+              </span>
+            }
+          </label>
+          
+          <div class="relative">
+            <input
+              id="sub_topic"
+              formControlName="sub_topic"
+              placeholder="Ej: Fundamentos de Programación"
+              [disabled]="!testForm.get('main_topic')?.value"
+              [class.border-red-500]="!validationState().sub.isValid && testForm.get('sub_topic')?.value"
+              [class.border-green-500]="validationState().sub.isValid && testForm.get('sub_topic')?.value"
+              [class.opacity-50]="!testForm.get('main_topic')?.value"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+            >
+            
+            <!-- Botón para ver subtemas -->
+            @if (testForm.get('main_topic')?.value) {
+              <button
+                type="button"
+                (click)="showLists.sub = !showLists.sub"
+                class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                title="Ver subtemas disponibles"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            }
+          </div>
+          
+          <!-- Estado de carga -->
+          @if (isLoading().sub) {
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Cargando subtemas...
+            </p>
+          }
+          
+          <!-- Mensaje si no hay tema principal -->
+          @if (!testForm.get('main_topic')?.value) {
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Introduce un tema principal primero
+            </p>
+          }
+          
+          <!-- Lista de subtemas -->
+          @if (showLists.sub && subTopics().length > 0) {
+            <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+              <div class="p-3 border-b border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                  <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Subtemas disponibles para "{{ testForm.get('main_topic')?.value }}":
+                  </p>
+                  <button
+                    type="button"
+                    (click)="showLists.sub = false"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="max-h-48 overflow-y-auto p-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  @for (sub_topic of subTopics(); track sub_topic) {
+                    <button
+                      type="button"
+                      (click)="onSubTopicSelect(sub_topic)"
+                      class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
+                    >
+                      {{ sub_topic }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Tema Específico -->
+        <div class="space-y-2">
+          <label for="specific_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Tema Específico *
+            @if (validationState().specific.message) {
+              <span class="ml-2 text-xs font-normal" 
+                    [class.text-green-600]="validationState().specific.isValid"
+                    [class.text-red-600]="!validationState().specific.isValid">
+                {{ validationState().specific.message }}
+              </span>
+            }
+          </label>
+          
+          <div class="relative">
+            <input
+              id="specific_topic"
+              formControlName="specific_topic"
+              placeholder="Ej: Funciones y Procedimientos"
+              [class.border-red-500]="!validationState().specific.isValid && testForm.get('specific_topic')?.value"
+              [class.border-green-500]="validationState().specific.isValid && testForm.get('specific_topic')?.value"
+              [class.opacity-50]="!testForm.get('sub_topic')?.value"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+            >
+            
+            <!-- Botón para ver temas específicos -->
+            @if (testForm.get('sub_topic')?.value) {
+              <button
+                type="button"
+                (click)="showLists.specific = !showLists.specific"
+                class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                title="Ver temas específicos disponibles"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            }
+          </div>
+          
+          <!-- Estado de carga -->
+          @if (isLoading().specific) {
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Cargando temas específicos...
+            </p>
+          }
+          
+          <!-- Mensaje si no hay subtema -->
+          @if (!testForm.get('sub_topic')?.value) {
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Introduce un subtema primero
+            </p>
+          }
+          
+          <!-- Lista de temas específicos -->
+          @if (showLists.specific && specificTopics().length > 0) {
+            <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+              <div class="p-3 border-b border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                  <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Temas específicos para "{{ testForm.get('sub_topic')?.value }}":
+                  </p>
+                  <button
+                    type="button"
+                    (click)="showLists.specific = false"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="max-h-48 overflow-y-auto p-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  @for (specific_topic of specificTopics(); track specific_topic) {
+                    <button
+                      type="button"
+                      (click)="onSpecificTopicSelect(specific_topic)"
+                      class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
+                    >
+                      {{ specific_topic }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Estado Activo -->
+        <div class="space-y-2">
+          <label for="is_active" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Estado del Test
+          </label>
+          <div class="flex items-center">
+            <div class="mr-4">
+              <!-- Toggle Switch -->
+              <label class="relative cursor-pointer">
+                <input
+                  id="is_active"
+                  type="checkbox"
+                  formControlName="is_active"
+                  [checked]="true"
+                  class="sr-only peer"
+                >
+                <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-hidden peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Activo - Disponible para los usuarios
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="mt-6 space-y-2">
+        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Descripción
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Descripción detallada del test, objetivos de aprendizaje, etc..."
+          rows="3"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Resumen de la jerarquía de temas -->
+      @if (testForm.get('specific_topic')?.value) {
+        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div class="text-sm text-blue-800 dark:text-blue-300">
+            <span class="font-semibold">Jerarquía de temas:</span>
+            <span class="ml-2">{{ testForm.get('main_topic')?.value }}</span>
+            <svg class="inline-block w-4 h-4 mx-2 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span>{{ testForm.get('sub_topic')?.value }}</span>
+            <svg class="inline-block w-4 h-4 mx-2 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="font-medium">{{ testForm.get('specific_topic')?.value }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Preguntas -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Preguntas</h2>
+        <button
+          type="button"
+          (click)="addQuestion()"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+        >
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+          </svg>
+          Agregar Pregunta
+        </button>
+      </div>
+
+      <div formArrayName="questions" id="cuestions" class="space-y-6">
+        @for (q of questions.controls; let i = $index; track i) {
+          <div [formGroupName]="i" class="bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <!-- Encabezado de pregunta -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <span class="text-sm font-semibold text-blue-700 dark:text-blue-300">{{ i + 1 }}</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Pregunta {{ i + 1 }}</h3>
+              </div>
+              <button
+                type="button"
+                (click)="removeQuestion(i)"
+                class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                title="Eliminar pregunta"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Texto de la pregunta -->
+            <div class="space-y-2 mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Pregunta *
+              </label>
+              <textarea
+                formControlName="question_text"
+                placeholder="Texto de la pregunta..."
+                rows="2"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all resize-none"
+                [class.border-red-500]="q.get('question_text')?.invalid && q.get('question_text')?.touched"
+              ></textarea>
+              @if (q.get('question_text')?.invalid && q.get('question_text')?.touched) {
+                <p class="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                  La pregunta es requerida
+                </p>
+              }
+            </div>
+
+            <!-- Respuestas -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Respuestas (mínimo 2, selecciona una correcta)
+                </h4>
+                <button
+                  type="button"
+                  (click)="addAnswer(i)"
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/50 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                  </svg>
+                  Agregar Respuesta
+                </button>
+              </div>
+
+              <div formArrayName="answers" class="space-y-3">
+                @for (a of getAnswers(i).controls; let j = $index; track j) {
+                  <div [formGroupName]="j" class="flex items-start space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <!-- Radio button para respuesta correcta (selección única) -->
+                    <div class="flex-shrink-0 mt-2">
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          [name]="'correct_answer_' + i"
+                          [value]="j"
+                          (change)="onCorrectAnswerChange(i, j)"
+                          [checked]="a.get('is_correct')?.value"
+                          class="w-4 h-4 text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        >
+                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Correcta</span>
+                      </label>
+                    </div>
+
+                    <!-- Texto de la respuesta -->
+                    <div class="flex-1">
+                      <input
+                        type="text"
+                        formControlName="answer_text"
+                        placeholder="Texto de la respuesta..."
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+                        [class.border-red-500]="a.get('answer_text')?.invalid && a.get('answer_text')?.touched"
+                      >
+                      @if (a.get('answer_text')?.invalid && a.get('answer_text')?.touched) {
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
+                          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                          </svg>
+                          La respuesta es requerida
+                        </p>
+                      }
+                    </div>
+
+                    <!-- Botón para eliminar respuesta -->
+                    @if (getAnswers(i).length > 2) {
+                      <button
+                        type="button"
+                        (click)="removeAnswer(i, j)"
+                        class="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors mt-2"
+                        title="Eliminar respuesta"
+                      >
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+              
+              <!-- Indicador de respuesta correcta seleccionada -->
+              @if (hasCorrectAnswer(i)) {
+                <div class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Respuesta correcta seleccionada
+                </div>
+              } @else {
+                <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                  Selecciona una respuesta correcta
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Mensaje si no hay preguntas -->
+      @if (questions.length === 0) {
+        <div class="text-center py-8 px-4">
+          <div class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No hay preguntas</h3>
+          <p class="text-gray-500 dark:text-gray-400">Agrega al menos una pregunta para el test.</p>
+        </div>
+      }
+    </div>
+  </form>
+</div>
+
+<!-- Botón fijo de guardar cambios -->
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg py-3 px-4 md:px-6 z-50">
+  <div class="container mx-auto max-w-4xl">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center">
+        <div class="hidden sm:block">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            @if (testForm.invalid) {
+              <span class="text-red-500 dark:text-red-400">✗ Formulario incompleto</span>
+            } @else if (questions.length === 0) {
+              <span class="text-red-500 dark:text-red-400">✗ Agrega al menos una pregunta</span>
+            } @else if (!allQuestionsHaveCorrectAnswer()) {
+              <span class="text-red-500 dark:text-red-400">✗ Todas las preguntas deben tener una respuesta correcta</span>
+            } @else if (loading()) {
+              <span class="text-blue-500 dark:text-blue-400">Creando test...</span>
+            } @else {
+              <span class="text-green-500 dark:text-green-400">✓ Listo para crear</span>
+            }
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 justify-end">
+        <button
+          type="button"
+          (click)="cancel()"
+          class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+        >
+          Cancelar
+        </button>
+        
+        <button
+          type="button"
+          (click)="addQuestion()"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+        >
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+          </svg>
+          Agregar Pregunta
+        </button>
+
+        <button
+          type="button"
+          (click)="submit()"
+          [disabled]="testForm.invalid || questions.length === 0 || !allQuestionsHaveCorrectAnswer() || loading()"
+          [ngClass]="{
+            'bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600': testForm.valid && questions.length > 0 && allQuestionsHaveCorrectAnswer() && !loading(),
+            'bg-gray-400 dark:bg-gray-600 cursor-not-allowed': testForm.invalid || questions.length === 0 || !allQuestionsHaveCorrectAnswer() || loading()
+          }"
+          class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors min-w-[160px] justify-center"
+        >
+          @if (loading()) {
+            <svg class="w-4 h-4 mr-2 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+            </svg>
+            Creando...
+          } @else {
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            Crear Test
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de éxito -->
+<app-modal 
+  [isOpen]="showSuccessModal()"
+  title="¡Test Creado!"
+  message="El test se ha creado correctamente. Serás redirigido a la lista de tests."
+  icon="success"
+  (confirm)="onSuccessModalConfirm()"
+  [showCancelButton]="false">
+</app-modal>
+
+<!-- Modal de error -->
+<app-modal 
+  [isOpen]="showErrorModal()"
+  title="Error al Crear"
+  [message]="errorMessage()"
+  icon="error"
+  confirmText="Entendido"
+  (confirm)="onErrorModalConfirm()"
+  [showCancelButton]="false">
+</app-modal>
+
+<!-- Modal de validación -->
+<app-modal 
+  [isOpen]="showValidationModal()"
+  title="Validación Requerida"
+  [message]="validationMessage()"
+  icon="warning"
+  confirmText="Entendido"
+  (confirm)="onValidationModalConfirm()"
+  [showCancelButton]="false">
+</app-modal>
+
+<!-- Modal sin preguntas -->
+<app-modal 
+  [isOpen]="showNoQuestionsModal()"
+  title="Test sin preguntas"
+  message="Debes agregar al menos una pregunta al test. ¿Deseas agregar una pregunta ahora?"
+  icon="info"
+  confirmText="Agregar pregunta"
+  cancelText="Cancelar"
+  (confirm)="onNoQuestionsModalConfirm()"
+  (cancel)="showNoQuestionsModal.set(false)">
+</app-modal>

@@ -1,0 +1,295 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-4xl">
+  <!-- Header con título -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Términos y Condiciones</h2>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">
+        Última actualización: {{ currentDate | date:'dd/MM/yyyy' }}
+      </p>
+    </div>
+    
+    <!-- Badge de versión -->
+    <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg px-4 py-2 border border-purple-200 dark:border-purple-800">
+      <div class="flex items-center space-x-2">
+        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          <path d="M3.066 10a6.97 6.97 0 01.944-3.39L5.268 7.88a1 1 0 001.414 0l1.414-1.414a1 1 0 000-1.414L6.89 3.39A6.97 6.97 0 0110 3.066a6.97 6.97 0 013.11.944l-1.293 1.293a1 1 0 000 1.414l1.414 1.414a1 1 0 001.414 0l1.293-1.293A6.97 6.97 0 0116.934 10a6.97 6.97 0 01-.944 3.11l-1.293-1.293a1 1 0 00-1.414 0l-1.414 1.414a1 1 0 000 1.414l1.293 1.293A6.97 6.97 0 0110 16.934a6.97 6.97 0 01-3.11-.944l1.293-1.293a1 1 0 000-1.414L6.77 11.87a1 1 0 00-1.414 0l-1.293 1.293A6.97 6.97 0 013.066 10z"/>
+        </svg>
+        <span class="text-sm font-medium text-purple-800 dark:text-purple-300">Versión 1.0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-600 dark:text-gray-400 text-lg">Cargando términos y condiciones...</p>
+    </div>
+  }
+
+  <!-- Contenido principal -->
+  @if (!isLoading()) {
+    <div class="space-y-6">
+      <!-- Aceptación de términos -->
+      <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 w-12 h-12 bg-purple-200 dark:bg-purple-900 rounded-xl flex items-center justify-center mr-4">
+            <svg class="w-6 h-6 text-purple-700 dark:text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Aceptación de los Términos</h3>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+              Al acceder y utilizar <span class="font-semibold">AnGoTest</span>, aceptas cumplir y estar sujeto a estos Términos y Condiciones. Si no estás de acuerdo con alguna parte de estos términos, no podrás acceder a la plataforma ni utilizar nuestros servicios.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Definiciones -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <svg class="w-6 h-6 mr-2 text-gray-700 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+          </svg>
+          Definiciones
+        </h3>
+        <dl class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <dt class="font-medium text-gray-900 dark:text-gray-100">Plataforma</dt>
+            <dd class="md:col-span-2 text-gray-700 dark:text-gray-300">El sitio web AnGoTest y todos sus servicios asociados.</dd>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <dt class="font-medium text-gray-900 dark:text-gray-100">Usuario</dt>
+            <dd class="md:col-span-2 text-gray-700 dark:text-gray-300">Cualquier persona que acceda a la plataforma, ya sea registrada (con rol user, admin o guest) o no.</dd>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <dt class="font-medium text-gray-900 dark:text-gray-100">Contenido</dt>
+            <dd class="md:col-span-2 text-gray-700 dark:text-gray-300">Todos los tests, preguntas, respuestas, resultados y cualquier otro material disponible en la plataforma.</dd>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <dt class="font-medium text-gray-900 dark:text-gray-100">Servicios de IA</dt>
+            <dd class="md:col-span-2 text-gray-700 dark:text-gray-300">La funcionalidad de generación automática de tests mediante inteligencia artificial.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Cuentas de usuario -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Cuentas de Usuario</h3>
+            
+            <div class="space-y-4">
+              <div class="border-l-4 border-blue-500 pl-4">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Registro y Responsabilidad</h4>
+                <p class="text-gray-700 dark:text-gray-300 text-sm">
+                  Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. Todas las actividades que ocurran bajo tu cuenta son tu responsabilidad. Debes notificarnos inmediatamente sobre cualquier uso no autorizado de tu cuenta.
+                </p>
+              </div>
+
+              <div class="border-l-4 border-amber-500 pl-4">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Tipos de Cuenta</h4>
+                <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300 space-y-1 text-sm">
+                  <li><span class="font-medium">Usuario estándar (user):</span> Acceso completo a tests, rankings y funcionalidades básicas.</li>
+                  <li><span class="font-medium">Usuario invitado (guest):</span> Acceso limitado mediante invitaciones, puede convertirse a usuario estándar.</li>
+                  <li><span class="font-medium">Administrador (admin):</span> Acceso al panel de control y gestión completa del sistema.</li>
+                </ul>
+              </div>
+
+              <div class="border-l-4 border-red-500 pl-4">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Terminación</h4>
+                <p class="text-gray-700 dark:text-gray-300 text-sm">
+                  Podemos suspender o terminar tu cuenta si violas estos términos. Tú también puedes eliminar tu cuenta en cualquier momento desde la configuración de perfil.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uso de la plataforma -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Uso de la Plataforma</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Conducta permitida -->
+          <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-5">
+            <h4 class="font-medium text-emerald-800 dark:text-emerald-300 mb-3 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Conducta permitida
+            </h4>
+            <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                Realizar tests de forma individual
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                Compartir invitaciones legítimamente
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                Usar la IA para generar contenido educativo
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                Participar en los rankings
+              </li>
+            </ul>
+          </div>
+
+          <!-- Conducta prohibida -->
+          <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-5">
+            <h4 class="font-medium text-red-800 dark:text-red-300 mb-3 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+              Conducta prohibida
+            </h4>
+            <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <li class="flex items-start">
+                <span class="text-red-500 mr-2">✗</span>
+                Compartir credenciales de acceso
+              </li>
+              <li class="flex items-start">
+                <span class="text-red-500 mr-2">✗</span>
+                Intentar vulnerar la seguridad
+              </li>
+              <li class="flex items-start">
+                <span class="text-red-500 mr-2">✗</span>
+                Hacer scraping de contenido
+              </li>
+              <li class="flex items-start">
+                <span class="text-red-500 mr-2">✗</span>
+                Usar la IA para contenido inapropiado
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Propiedad intelectual -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Propiedad Intelectual</h3>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              Todo el contenido de la plataforma, incluyendo tests, diseño, logotipos y código, es propiedad de AnGoTest o de sus licenciantes y está protegido por leyes de propiedad intelectual.
+            </p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                <span class="font-medium">Nota:</span> Los tests generados mediante IA son propiedad de la plataforma, pero puedes utilizarlos libremente para tu aprendizaje. No está permitida su redistribución comercial sin autorización.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Limitación de responsabilidad -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Limitación de Responsabilidad</h3>
+        <div class="prose prose-sm dark:prose-invert max-w-none">
+          <p class="text-gray-700 dark:text-gray-300">
+            AnGoTest no será responsable por:
+          </p>
+          <ul class="list-disc pl-6 text-gray-700 dark:text-gray-300 space-y-1 mt-2">
+            <li>Daños indirectos o consecuentes derivados del uso de la plataforma.</li>
+            <li>La precisión del contenido generado por IA (siempre recomendamos verificar la información).</li>
+            <li>Pérdida de datos por causas fuera de nuestro control.</li>
+            <li>Interrupciones del servicio por mantenimiento o causas técnicas.</li>
+          </ul>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mt-4">
+            La plataforma se proporciona "tal cual", sin garantías de ningún tipo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Cuotas de IA -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Servicios de Inteligencia Artificial</h3>
+            <div class="space-y-3">
+              <p class="text-gray-700 dark:text-gray-300">
+                La generación de tests mediante IA está sujeta a un sistema de cuotas mensuales para garantizar un uso justo del servicio.
+              </p>
+              <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
+                  <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">5</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">Tests/mes por defecto</div>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                  <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">Configurable</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">Por administrador</div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                Las cuotas se restablecen mensualmente. El uso de IA está sujeto a los términos del proveedor (Groq).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ley aplicable -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.616a1 1 0 01.894-1.79l1.599.8L9 4.323V3a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Ley Aplicable</h3>
+            <p class="text-gray-700 dark:text-gray-300">
+              Estos términos se rigen por las leyes de España. Cualquier disputa relacionada con estos términos será resuelta en los tribunales de Madrid.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aceptación y botones -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex flex-col items-center text-center">
+          <svg class="w-16 h-16 text-purple-500 dark:text-purple-400 mb-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812z" clip-rule="evenodd"/>
+          </svg>
+          <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Al usar AnGoTest, aceptas estos términos</h4>
+          <p class="text-gray-600 dark:text-gray-400 text-sm max-w-lg mb-6">
+            Si tienes preguntas sobre estos términos, por favor contáctanos antes de utilizar la plataforma.
+          </p>
+          <div class="flex gap-4">
+            <a routerLink="/register" 
+               class="inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg text-white bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors">
+              Crear cuenta
+            </a>
+            <a routerLink="/contact" 
+               class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+              Contactar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,427 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8">
+  
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Gestión de Usuarios</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">
+        Administra y visualiza estadísticas de todos los usuarios del sistema
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <!-- Botón para mostrar/ocultar filtros -->
+      <button (click)="showFilters.set(!showFilters())"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+        </svg>
+        {{ showFilters() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros (expandibles) -->
+  @if (showFilters()) {
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filtros y Ordenación</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">Personaliza la visualización de usuarios</p>
+        </div>
+        
+        <div class="flex gap-2">
+          <button (click)="onFilterChange()"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+            </svg>
+            Aplicar Filtros
+          </button>
+          
+          <button (click)="resetFilters()"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+            </svg>
+            Limpiar Todo
+          </button>
+        </div>
+      </div>
+      
+      <!-- Filtros básicos -->
+
+      <!-- Búsqueda -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Búsqueda General
+        </label>
+        <input 
+          type="text"
+          [(ngModel)]="selectedFilters().search"
+          (ngModelChange)="onFilterChange()"
+          placeholder="Buscar por nombre de usuario, email..."
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+        >
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <!-- Ordenar por -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Ordenar por
+          </label>
+          <select 
+            [(ngModel)]="selectedFilters().sort_by"
+            (ngModelChange)="setSortBy($event)"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+          >
+            @for (option of sortOptions(); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Orden ascendente/descendente -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Orden
+          </label>
+          <div class="flex">
+            <button 
+              (click)="toggleSortOrder()"
+              class="w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+              @if ((selectedFilters().sort_order || 'desc') === 'desc') {
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Descendente
+              } @else {
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Ascendente
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Resultados por página -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Usuarios por página
+          </label>
+          <div class="flex gap-2">
+            @for (size of [5, 10, 20, 50]; track size) {
+              <button 
+                (click)="setPageSize(size)"
+                [class]="selectedFilters().page_size === size 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
+                class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              >
+                {{ size }}
+              </button>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Filtros activos -->
+      @if (showFilterIndicators()) {
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Filtros aplicados:</h4>
+          <div class="flex flex-wrap gap-2">
+            @if (selectedFilters().search) {
+              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-300">
+                Búsqueda: {{ selectedFilters().search }}
+                <button 
+                  (click)="removeFilter('search')"
+                  class="ml-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200"
+                >
+                  ×
+                </button>
+              </span>
+            }
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-300">
+              Orden: {{ currentSortLabel() }} {{ getSortOrderIcon() }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Estado de carga -->
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-600 dark:text-gray-400 text-lg">Cargando usuarios...</p>
+    </div>
+  }
+
+  <!-- Sin resultados -->
+  @if (!loading() && totalFilteredUsers() === 0) {
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-8 text-center">
+      <div class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4">
+        <svg fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No hay usuarios</h3>
+      <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+        @if (selectedFilters().search) {
+          No se encontraron usuarios con los filtros seleccionados.
+        } @else {
+          No hay usuarios registrados en el sistema.
+        }
+      </p>
+      <button 
+        (click)="resetFilters()"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+      >
+        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        Restablecer filtros
+      </button>
+    </div>
+  }
+
+  <!-- Información de resultados -->
+  @if (!loading() && totalFilteredUsers() > 0) {
+    <div class="mb-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+      <div>
+        Mostrando 
+        <span class="font-medium">{{ getStartIndex() }}</span> a 
+        <span class="font-medium">{{ getEndIndex() }}</span> de 
+        <span class="font-medium">{{ totalFilteredUsers()}}</span> resultado(s) filtrados ({{ totalUsers() }} totales)
+      </div>
+      <div>
+        Orden: 
+        <span class="font-medium text-gray-800 dark:text-gray-200">
+          {{ currentSortLabel() }} {{ getSortOrderIcon() }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Tabla de usuarios -->
+  @if (!loading() && totalFilteredUsers() > 0) {
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Usuario
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Información
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Estadísticas
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Puntuación
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            @for (user of usersData(); track user.id) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                <!-- Columna Usuario -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">                  
+                    <div>
+                      <span class="w-8 h-8 rounded-full" 
+                        [class]="getRoleBadgeClass(user.role)">   
+                        {{ user.role[0].toUpperCase() }}                   
+                      </span>
+                    </div>
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {{ user.username }}
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        ID: {{ user.id }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                
+                <!-- Columna Información -->
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 dark:text-gray-100 mb-1">
+                    {{ user.email }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    @if (user.first_name && user.last_name) {
+                      {{ user.first_name }} {{ user.last_name }}
+                    } @else {
+                      Sin nombre completo
+                    }
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Registrado: {{ formatDateTime(user.registered_at) }}
+                  </div>
+                </td>
+                
+                <!-- Columna Estadísticas -->
+                <td class="px-6 py-4">
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="{{ getStatusBadgeClass('completed') }}">
+                        {{ user.tests_completed }} completados
+                      </span>
+                      <span class="{{ getStatusBadgeClass('in_progress') }}">
+                        {{ user.tests_in_progress }} en progreso
+                      </span>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      Total: {{ user.total_tests_taken }} tests
+                    </div>
+                  </div>
+                </td>
+                
+                <!-- Columna Puntuación -->
+                <td class="px-6 py-4">
+                  <div class="flex flex-col items-start">
+                    <span class="{{ getScoreBadgeClass(user.average_score) }}">
+                      {{ user.average_score | number:'1.0-1' }}%
+                    </span>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Puntuación media
+                    </div>
+                  </div>
+                </td>
+                
+                <!-- Columna Acciones -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <div class="flex gap-2">
+                    <button 
+                      (click)="openUserProfile(user.id)"
+                      class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-cyan-700 bg-cyan-100 hover:bg-cyan-200 dark:text-cyan-300 dark:bg-cyan-900 dark:hover:bg-cyan-800 transition-colors"
+                    >
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                      </svg>
+                      Perfil
+                    </button>
+                    <a [routerLink]="['/admin/users/results/', user.id]"
+                       class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-emerald-700 bg-emerald-100 hover:bg-emerald-200 dark:text-emerald-300 dark:bg-emerald-900 dark:hover:bg-emerald-800 transition-colors">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                      </svg>
+                      Resultados
+                    </a>
+                    <button 
+                      (click)="prepareDeleteUser(user)"
+                      class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-300 dark:bg-red-900 dark:hover:bg-red-800 transition-colors"
+                    >
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                      </svg>
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    @if (showPagination()) {
+      <div class="mt-8">
+        <nav class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            Página {{ currentPage() }} de {{ totalPages() }}
+          </div>
+          
+          <div class="flex items-center justify-center">
+            <div class="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+              <!-- Botón Anterior -->
+              <button (click)="previousPage()"
+                      [disabled]="currentPage() === 1"
+                      class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <span class="sr-only">Anterior</span>
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              
+              <!-- Números de página -->
+              @for (page of getPageNumbers(); track page) {
+                <button (click)="goToPage(page)"
+                        [class]="currentPage() === page 
+                          ? 'z-10 text-white bg-blue-600 dark:bg-blue-700 border border-blue-500 dark:border-blue-600 relative inline-flex items-center px-4 py-2 text-sm font-medium'
+                          : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 text-sm font-medium transition-colors'">
+                  {{ page }}
+                </button>
+              }
+              
+              <!-- Botón Siguiente -->
+              <button (click)="nextPage()"
+                      [disabled]="!hasMore()"
+                      class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-r-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <span class="sr-only">Siguiente</span>
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            {{ selectedFilters().page_size || 10 }} usuarios por página
+          </div>
+        </nav>
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<app-modal 
+  [isOpen]="showDeleteModal()"
+  title="¿Eliminar Usuario?"
+  [message]="`¿Estás seguro de que quieres eliminar al usuario '${userToDelete.username || ''}'? Esta acción eliminará permanentemente el usuario y todos sus datos asociados, incluyendo resultados de tests y estadísticas. Esta acción no se puede deshacer.`"
+  icon="warning"
+  [confirmText]="deleting() ? 'Eliminando...' : 'Eliminar'"
+  cancelText="Cancelar"
+  (confirm)="confirmDeleteUser()"
+  (cancel)="cancelDeleteUser()">
+</app-modal>
+
+<!-- Modal de éxito -->
+<app-modal 
+  [isOpen]="showSuccessModal()"
+  title="¡Usuario Eliminado!"
+  message="El usuario se ha eliminado correctamente."
+  icon="success"
+  confirmText="Continuar"
+  (confirm)="closeSuccessModal()"
+  [showCancelButton]="false">
+</app-modal>
+
+<!-- Modal de error -->
+<app-modal 
+  [isOpen]="showErrorModal()"
+  title="Error al Eliminar"
+  [message]="errorMessage()"
+  icon="error"
+  confirmText="Entendido"
+  (confirm)="closeErrorModal()"
+  [showCancelButton]="false">
+</app-modal>
+
+<!-- Modal de perfil de usuario -->
+<app-user-profile-modal></app-user-profile-modal>

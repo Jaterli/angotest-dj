@@ -1,0 +1,266 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-4xl">
+  <!-- Header con título -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Política de Privacidad</h2>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">
+        Última actualización: {{ currentDate | date:'dd/MM/yyyy' }}
+      </p>
+    </div>
+    
+    <!-- Badge de confianza -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg px-4 py-2 border border-blue-200 dark:border-blue-800">
+      <div class="flex items-center space-x-2">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="text-sm font-medium text-blue-800 dark:text-blue-300">Tus datos están seguros con nosotros</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de carga (si se carga desde API) -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-600 dark:text-gray-400 text-lg">Cargando política de privacidad...</p>
+    </div>
+  }
+
+  <!-- Contenido principal -->
+  @if (!isLoading()) {
+    <div class="space-y-6">
+      <!-- Introducción -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="prose prose-lg dark:prose-invert max-w-none">
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+            En <span class="font-semibold text-blue-600 dark:text-blue-400">AnGoTest</span>, accesible desde nuestra plataforma, una de nuestras principales prioridades es la privacidad de nuestros usuarios. Este documento de Política de Privacidad contiene tipos de información que es recogida y registrada por AnGoTest y cómo la usamos.
+          </p>
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
+            Si tienes preguntas adicionales o requieres más información sobre nuestra Política de Privacidad, no dudes en contactarnos a través de nuestro <a routerLink="/contacto" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">formulario de contacto</a>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Consentimiento -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Consentimiento</h3>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+              Al utilizar nuestra plataforma, aceptas nuestra Política de Privacidad y aceptas sus términos. Si no estás de acuerdo con esta política, por favor no utilices nuestros servicios.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información que recopilamos -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Información que recopilamos</h3>
+            
+            <div class="space-y-4">
+              <!-- Datos personales -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                  </svg>
+                  Datos personales
+                </h4>
+                <ul class="list-disc pl-10 text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>Nombre y apellidos</li>
+                  <li>Correo electrónico</li>
+                  <li>Nombre de usuario</li>
+                  <li>País de residencia</li>
+                  <li>Fecha de nacimiento</li>
+                </ul>
+              </div>
+
+              <!-- Datos de uso -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+                  </svg>
+                  Datos de actividad
+                </h4>
+                <ul class="list-disc pl-10 text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>Tests realizados y resultados obtenidos</li>
+                  <li>Tiempo dedicado a cada test</li>
+                  <li>Progreso en tests iniciados</li>
+                  <li>Historial de respuestas</li>
+                </ul>
+              </div>
+
+              <!-- Datos técnicos -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                  Datos técnicos
+                </h4>
+                <ul class="list-disc pl-10 text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>Dirección IP</li>
+                  <li>Tipo de navegador</li>
+                  <li>Cookies de autenticación</li>
+                  <li>Información del dispositivo</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uso de la información -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Cómo usamos tu información</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">✅ Funcionalidad principal</span>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Para crear y gestionar tu cuenta, permitirte realizar tests y mostrar tus resultados.</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">📊 Mejora del servicio</span>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Analizamos cómo usas la plataforma para mejorar la experiencia y desarrollar nuevas funcionalidades.</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">🔐 Seguridad</span>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Proteger tu cuenta y detectar actividades sospechosas o fraudulentas.</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">📧 Comunicación</span>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Enviarte notificaciones importantes, como recuperación de contraseña o cambios en la plataforma.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Protección de datos -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Protección de tus datos</h3>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              Implementamos medidas de seguridad técnicas y organizativas para proteger tu información personal:
+            </p>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <li class="flex items-center text-gray-700 dark:text-gray-300">
+                <svg class="w-5 h-5 text-emerald-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Encriptación de contraseñas (bcrypt)
+              </li>
+              <li class="flex items-center text-gray-700 dark:text-gray-300">
+                <svg class="w-5 h-5 text-emerald-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Cookies HttpOnly para JWT
+              </li>
+              <li class="flex items-center text-gray-700 dark:text-gray-300">
+                <svg class="w-5 h-5 text-emerald-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Protección contra XSS y CSRF
+              </li>
+              <li class="flex items-center text-gray-700 dark:text-gray-300">
+                <svg class="w-5 h-5 text-emerald-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Acceso restringido por roles
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Derechos del usuario -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Tus derechos</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">Acceso</span>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Puedes solicitar una copia de los datos personales que tenemos sobre ti.</p>
+          </div>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">Rectificación</span>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Puedes corregir tus datos personales desde tu perfil o contactándonos.</p>
+          </div>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">Eliminación</span>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Tienes derecho a solicitar la eliminación de tu cuenta y datos asociados.</p>
+          </div>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <span class="font-medium text-gray-900 dark:text-gray-100 block mb-2">Oposición</span>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Puedes oponerte al procesamiento de tus datos para fines específicos.</p>
+          </div>
+        </div>
+        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p class="text-blue-800 dark:text-blue-300 text-sm">
+            <span class="font-medium">📧 Para ejercer tus derechos:</span> Escríbenos a <a href="mailto:privacidad@angotest.com" class="underline font-medium">privacidad&#64;angotest.com</a> con el asunto "Datos Personales" y te responderemos en un plazo máximo de 30 días.
+          </p>
+        </div>
+      </div>
+
+      <!-- Cambios en la política -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Cambios en esta política</h3>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+              Podemos actualizar nuestra Política de Privacidad periódicamente. Te notificaremos cualquier cambio publicando la nueva política en esta página y, si los cambios son significativos, te lo comunicaremos a través del email asociado a tu cuenta o mediante un aviso destacado en nuestra plataforma.
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm mt-4">
+              Te recomendamos revisar esta página regularmente para estar informado de cualquier cambio. La fecha de la última actualización se indica al inicio de este documento.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-end pt-4">
+        <button (click)="downloadPolicy()" 
+                class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+          Descargar PDF
+        </button>
+        <a routerLink="/contact" 
+           class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+          Contactar con soporte
+        </a>
+      </div>
+    </div>
+  }
+</div>

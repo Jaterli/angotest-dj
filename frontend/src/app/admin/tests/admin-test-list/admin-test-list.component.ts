@@ -1,0 +1,285 @@
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TestAvailableFilters, TestFiltersApplied, TestWithCount } from '../../../shared/models/test.model';
+import { RouterModule } from '@angular/router';
+import { ModalComponent } from '../../../shared/components/modal.component';
+import { TestsManagementService } from '../../services/tests-management.service';
+import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
+import { InvitationCreateComponent } from '../../../shared/components/invitation/invitation-create.component';
+
+@Component({
+  selector: 'app-admin-tests-list',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule, ModalComponent, InvitationCreateComponent],
+  templateUrl: './admin-test-list.component.html',
+})
+export class AdminTestListComponent implements OnInit {
+  private testsManagementService = inject(TestsManagementService);
+  private sharedUtilsService = inject(SharedUtilsService);
+
+  // Datos
+  tests = signal<TestWithCount[]>([]);
+  totalTests = signal(0);
+  totalFilteredTests = signal(0);  
+  currentPage = signal(1);
+  totalPages = signal(0);
+  hasMore = signal(false);
+
+  // Estados
+  loading = signal(true);
+  loadingOptions = signal(false);
+  deleting = signal(false);
+  
+  // Modal para la invitación
+  showInviteModal = signal(false);
+  selectedTestForInvitation: any | null = null;
+
+
+  // Filtros y ordenación
+  selectedFilters = signal<TestFiltersApplied>({
+    page: 1,
+    page_size: 10,
+    sort_by: 'created_at',
+    sort_order: 'desc',
+    main_topic: '',
+    sub_topic: '',
+    level: '',
+    search: ''
+  });
+
+  // Opciones de filtrado
+  filterOptions = signal<TestAvailableFilters>({
+    main_topics: [],
+    sub_topics: [],
+    levels: [],
+  });
+
+  // Opciones de ordenación
+  sortOptions = [
+    { value: 'title', label: 'Título' },
+    { value: 'main_topic', label: 'Tema principal' },
+    { value: 'sub_topic', label: 'Subtema' },
+    { value: 'created_at', label: 'Fecha de creación' },
+    { value: 'updated_at', label: 'Fecha de actualización' },
+    { value: 'created_by', label: 'Creador' },    
+    { value: 'level', label: 'Nivel' },
+  ];
+
+  // Estado de la UI
+  showFilters = signal(true);
+
+  // Computed properties
+  currentSortLabel = computed(() => {
+    const sortBy = this.selectedFilters().sort_by;
+    const option = this.sortOptions.find(o => o.value === sortBy);
+    return option ? option.label : 'Fecha de creación';
+  });
+
+  getSortOrderIcon(): string {
+    const order = this.selectedFilters().sort_order || 'desc';
+    return order === 'asc' ? '↑' : '↓';
+  }
+
+  // Modal de confirmación
+  showDeleteModal = signal(false);
+  showSuccessModal = signal(false);
+  showErrorModal = signal(false);
+  
+  // Información del test a eliminar
+  testToDelete: { id: number | null, title: string | null } = { id: null, title: null };
+  errorMessage = signal('');
+
+  ngOnInit(): void {
+    //this.loadFilterOptions();
+    this.loadTests();
+  }
+
+  loadTests(): void {
+    this.loading.set(true);
+    this.testsManagementService.getAllTests(this.selectedFilters()).subscribe({
+      next: (res) => {
+        this.tests.set(res.tests);
+        this.totalFilteredTests.set(res.stats.total_filtered_tests);
+        this.filterOptions.set(res.available_filters)
+        this.totalTests.set(res.stats.total_tests);
+        this.totalPages.set(Math.ceil(res.stats.total_filtered_tests / (this.selectedFilters().page_size || 20)));
+        this.hasMore.set(this.currentPage() < this.totalPages());
+        this.loading.set(false);
+      },
+      error: err => {
+        console.error('Error al cargar tests:', err);
+        this.errorMessage.set('Error al cargar la lista de tests');
+        this.showErrorModal.set(true);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  // Métodos para filtros y ordenación
+  onFilterChange(): void {
+    this.selectedFilters.update(filters => ({ ...filters, page: 1 }));
+    this.loadTests();
+  }
+
+  resetFilters(): void {
+    this.selectedFilters.set({
+      page: 1,
+      page_size: 10,
+      sort_by: 'created_at',
+      sort_order: 'desc',
+      main_topic: '',
+      sub_topic: '',
+      level: '',
+      search: ''
+    });
+    this.loadTests();
+  }
+
+  updateFilter<T extends keyof TestFiltersApplied>(key: T, value: TestFiltersApplied[T]): void {
+    this.selectedFilters.update(filters => ({ ...filters, [key]: value }));
+    if (key !== 'page') {
+      this.onFilterChange();
+    }
+  }
+
+  removeFilter(key: keyof TestFiltersApplied): void {
+    const defaultValue = key === 'page_size' ? 10 : '';
+    this.updateFilter(key, defaultValue as any);
+  }
+
+  // Métodos para ordenamiento
+  toggleSortOrder(): void {
+    const currentOrder = this.selectedFilters().sort_order || 'desc';
+    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+    this.updateFilter('sort_order', newOrder);
+  }
+
+  setSortBy(sortBy: string): void {
+    this.updateFilter('sort_by', sortBy);
+  }
+
+  // Métodos para paginación
+  setPageSize(size: number): void {
+    this.updateFilter('page_size', size);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    
+    this.selectedFilters.update(filters => ({ ...filters, page }));
+    this.loadTests();
+  }
+
+  previousPage(): void {
+    if (this.selectedFilters().page > 1) {
+      const newPage = this.selectedFilters().page - 1;
+      this.goToPage(newPage);
+    }
+  }
+
+  nextPage(): void {
+    if (this.hasMore()) {
+      const newPage = this.selectedFilters().page + 1;
+      this.goToPage(newPage);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    return this.sharedUtilsService.getSharedPageNumbers(this.totalPages(), this.selectedFilters().page);
+  }
+
+  getStartIndex(): number {
+    return ((this.selectedFilters().page - 1) * (this.selectedFilters().page_size || 10)) + 1;
+  }
+
+  getEndIndex(): number {
+    return Math.min(this.selectedFilters().page * (this.selectedFilters().page_size || 10), this.totalFilteredTests());
+  }
+
+  // Métodos para mostrar filtros activos
+  showFilterIndicators(): boolean {
+    const filters = this.selectedFilters();
+    return !!(filters.search || filters.main_topic || filters.level || filters.sub_topic);
+  }
+
+  showPagination(): boolean {
+    return this.totalFilteredTests() > 0 && this.totalPages() > 1;
+  }
+
+  getLevelBadgeClass(level: string): string {
+    return this.sharedUtilsService.getSharedLevelBadgeClass(level);
+  }
+
+  formatDate(dateString: string): string {
+    return this.sharedUtilsService.sharedFormatDate(dateString);
+  }
+
+  // Método para abrir modal de invitación
+  openInviteModal(testData: any): void {
+    this.selectedTestForInvitation = testData;
+    this.showInviteModal.set(true);
+  }
+
+  // Método para cerrar modal de invitación
+  closeInviteModal(): void {
+    this.showInviteModal.set(false);
+    this.selectedTestForInvitation = null;
+  }
+
+  // Métodos para eliminar tests
+  prepareDeleteTest(test: TestWithCount): void {
+    this.testToDelete = { id: test.id || null, title: test.title };
+    this.showDeleteModal.set(true);
+  }
+
+  confirmDeleteTest(): void {
+    if (!this.testToDelete.id) return;
+    
+    this.deleting.set(true);
+    this.testsManagementService.deleteTest(this.testToDelete.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.showDeleteModal.set(false);
+        this.showSuccessModal.set(true);
+        this.loadTests();
+      },
+      error: (err) => {
+        console.error('Error al eliminar test:', err);
+        this.deleting.set(false);
+        this.showDeleteModal.set(false);
+        this.errorMessage.set(err.error?.message || 'Error al eliminar el test');
+        this.showErrorModal.set(true);
+      }
+    });
+  }
+
+  cancelDeleteTest(): void {
+    this.showDeleteModal.set(false);
+    this.testToDelete = { id: null, title: null };
+  }
+
+  closeSuccessModal(): void {
+    this.showSuccessModal.set(false);
+  }
+
+  closeErrorModal(): void {
+    this.showErrorModal.set(false);
+  }
+
+  // Método para obtener el texto de filtros activos
+  getActiveFilterLabel(key: keyof TestFiltersApplied): string {
+    switch (key) {
+      case 'search':
+        return 'Búsqueda';
+      case 'main_topic':
+        return 'Tema principal';
+      case 'sub_topic':
+        return 'Subtema';
+      case 'level':
+        return 'Nivel';
+      default:
+        return key;
+    }
+  }
+}
