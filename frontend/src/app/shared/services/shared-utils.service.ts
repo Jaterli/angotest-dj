@@ -125,13 +125,24 @@ export class SharedUtilsService {
     return 'text-red-600 dark:text-red-400';
   }
 
-  getSharedScoreMessage(score: number): string {
-    if (score >= 90) return '¡Excelente!';
-    if (score >= 80) return 'Muy bien';
-    if (score >= 70) return 'Buen trabajo';
-    if (score >= 60) return 'Aprobado';
-    if (score >= 50) return 'Necesitas mejorar';
-    return 'Requiere repaso';
+  getSharedScoreMessage(score: number): string {    
+    if (score >= 100) return '¡Perfecto! 🏆';
+    if (score >= 90) return '¡Excelente! ⭐';    
+    if (score >= 80) return '¡Muy bien! 👍';
+    if (score >= 70) return 'Buen trabajo 💪';
+    if (score >= 60) return 'Bien ✅';
+    if (score >= 50) return 'Aprobado 📚';
+    if (score >= 40) return 'A mejorar 🔄';
+    if (score >= 30) return 'Sigue practicando 📝';    
+    return 'Requiere repaso 📖';
+  }
+
+
+  getSharedMedalIcon(position: number): string {
+    if (position == 1) return '🥇';
+    if (position == 2) return '🥈';
+    if (position == 3) return '🥉';
+    return '';
   }
 
   getSharedRoleBadgeClass(role: string): string {
@@ -148,15 +159,15 @@ export class SharedUtilsService {
     switch(status) {
       case 'completed': 
         case 'used':
-          return commonClasses + 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300';
+          return commonClasses + 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
       case 'in_progress':
         case 'active':
-          return commonClasses + 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+          return commonClasses + 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
       case 'abandoned':
         case 'expired':
-          return commonClasses + 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+          return commonClasses + 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       default:
-        return commonClasses + 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return commonClasses + 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
     }
   }
 
@@ -172,7 +183,6 @@ export class SharedUtilsService {
     }
   }
 
-
   getSharedActivityStatusBgColor(status: string): string {
     switch (status) {
       case 'completed':
@@ -187,10 +197,10 @@ export class SharedUtilsService {
   }
 
   getSharedLevelBadgeClass(level: string): string {
-    var commonClasses = 'inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap';
+    var commonClasses = 'inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ';
     switch (level?.toLowerCase()) {
       case 'principiante': return commonClasses + 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300';
-      case 'intermedio': return commonClasses + 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
+      case 'intermedio': return commonClasses + 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
       case 'avanzado': return commonClasses + 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       default: return commonClasses + 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
     }
@@ -206,7 +216,7 @@ export class SharedUtilsService {
     return new Date(dateString).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'  
+      year: '2-digit', // 'numeric'  
     });
   }
 
@@ -215,7 +225,7 @@ export class SharedUtilsService {
     return date.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
+      year: '2-digit', // 'numeric'  
       hour: '2-digit',
       minute: '2-digit'
     });

@@ -2,7 +2,7 @@ import { Component, OnInit, signal, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TestService } from '../../../shared/services/test.service';
-import { Test, ResumeTestResponse, QuestionWithAnswers, NextQuestionResponse, SaveResultInput } from '../../../shared/models/test.model';
+import { Test, ResumeTestResponse, QuestionWithAnswers, NextQuestionResponse, SaveResultInput } from '../../../shared/models/test.models';
 import { ModalComponent } from '../../../shared/components/modal.component';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
 import { Observable, Subject, switchMap, takeUntil, tap, throwError } from 'rxjs';
@@ -358,6 +358,12 @@ export class TestSingleComponent implements OnInit, OnDestroy {
           this.isCompleted = response.is_completed;
           
           this.savingProgress.set(false);
+          // Desplazar suavemente al inicio de la página
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+
         },
         error: (err) => {
           console.error('Error al avanzar:', err);

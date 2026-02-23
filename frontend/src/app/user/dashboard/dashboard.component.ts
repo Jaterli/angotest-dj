@@ -4,9 +4,9 @@ import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../shared/services/auth.service';
 import { DashboardService } from '../../shared/services/user-dashboard.service';
-import { DashboardStats, RankingsResponse, LEVELS } from '../../shared/models/user-dashboard.model';
+import { DashboardStats, RankingsResponse, LEVELS } from '../../shared/models/user-dashboard.models';
 import { SharedUtilsService } from '../../shared/services/shared-utils.service';
-import { User } from '../../shared/models/user.model';
+import { User } from '../../shared/models/user.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -262,6 +262,10 @@ export class DashboardComponent implements OnInit {
   // Helper methods
   formatTime(seconds: number): string {
     return this.sharedUtilsService.sharedFormatTime(seconds);
+  }
+
+  getMedalIcon(position: number): string {
+    return this.sharedUtilsService.getSharedMedalIcon(position);
   }
 
   formatTimeShort(seconds: number): string {
@@ -541,18 +545,6 @@ getLevelAccuracy(level: string): string {
   return total > 0 ? (firstAttempt.total_correct / total * 100).toFixed(2) : '0';
 }
 
-// getLevelAverageTime(level: string): string {
-//   const levelData = this.levelData()?.[level];
-//   if (!levelData) return '0s';
-  
-//   const firstAttempt = levelData.first_attempt;
-//   const avgTime = firstAttempt.questions_count > 0 
-//     ? firstAttempt.total_time_taken / firstAttempt.questions_count 
-//     : 0;
-  
-//   return this.formatTimeShort(avgTime);
-// }
-
 getLevelQuestionsCount(level: string): number {
   return this.levelData()?.[level]?.first_attempt?.questions_count || 0;
 }
@@ -579,13 +571,5 @@ getLevelAccuracyValue(level: string): string {
       this.loadRankings();
     }
   }
-
-
-
-
-
-
-
-
-  
+ 
 }

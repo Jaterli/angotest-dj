@@ -39,41 +39,42 @@
 @if (stats() && !loading()) {
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <!-- Tests disponibles (columna 1) -->
-    <div class="md:col-span-1 bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="flex items-center">
-        <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-4">
-          <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-        <div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {{ totalTests() }}
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-200 dark:border-gray-700 mt-4 sm:mt-0">
+        <div class="flex flex-col sm:flex-row items-center sm:items-center">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg -mt-8 mb-2 sm:mt-0 sm:mb-0 sm:mr-4">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">Tests disponibles</div>
-        </div>
+          <div class="text-center sm:text-left">
+            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {{ totalTests() }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Tests disponibles</div>
+          </div>
       </div>
-    </div>
+      </div>
     
-    <!-- Total temas (columna 2) -->
-    <div class="md:col-span-1 bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="flex items-center">
-        <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg mr-4">
-          <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-        <div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {{ mainTopics().length }}
+      <!-- Total temas (columna 2) -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-200 dark:border-gray-700 mt-4 sm:mt-0">
+        <div class="flex flex-col sm:flex-row items-center sm:items-center">
+          <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg -mt-8 mb-2 sm:mt-0 sm:mb-0 sm:mr-4">
+            <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">Total temas</div>
+          <div class="text-center sm:text-left">
+            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {{ mainTopics().length }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Total temas</div>
+          </div>
         </div>
-      </div>
+
     </div>
 
     <!-- Distribución por niveles (columnas 3 y 4) -->
-    <div class="col-span-2 bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="col-span-2 bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-5 shadow-sm border border-gray-200 dark:border-gray-700">
       <div class="flex items-center">
         <div class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg mr-4">
           <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -111,17 +112,17 @@
   <div class="mb-8">
 
     @if (showFilters()) {
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-3 sm:p-6 mb-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filtros y Ordenación</h3>
             <p class="text-gray-600 dark:text-gray-400 text-sm">Personaliza la visualización de tests disponibles</p>
           </div>
           
-          <div class="flex gap-2">
+          <div class="flex gap-2 textsize-cnf">
             <button (click)="onFilterChange()"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
               </svg>
               Aplicar Filtros
@@ -129,7 +130,7 @@
             
             <button (click)="resetFilters()"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
               </svg>
               Limpiar Todo
@@ -146,7 +147,7 @@
             <select 
               [(ngModel)]="selectedMainTopic"
               (ngModelChange)="onFilterChange()"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+              class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
             >
               <option value="all">Todos los temas</option>
               @for (topic of mainTopics(); track topic) {
@@ -163,7 +164,7 @@
             <select 
               [(ngModel)]="selectedLevel"
               (ngModelChange)="onFilterChange()"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+              class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
             >
               <option value="all">Todos los niveles</option>
               @for (level of levelOptions; track level) {
@@ -180,7 +181,7 @@
             <select 
               [(ngModel)]="selectedSortBy"
               (ngModelChange)="onFilterChange()"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+              class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
             >
               <option value="test_title">Título</option>
               <option value="test_created_at">Fecha de creación</option>
@@ -197,7 +198,7 @@
             <div class="flex">
               <button 
                 (click)="toggleSortOrder()"
-                class="w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                class="textsize-cnf w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
                 @if (selectedSortOrder() === 'desc') {
                   <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -336,7 +337,7 @@
           <div class="p-5 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-start justify-between mb-3">
               <div class="flex flex-wrap gap-2">
-                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ getLevelBadgeClass(test.level) }}">
+                <span class="{{ getLevelBadgeClass(test.level) }}">
                   {{ test.level }}
                 </span>
 
@@ -376,13 +377,13 @@
             <!-- Estadísticas -->
             <div class="grid grid-cols-2 gap-3 mb-4">
               <div class="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                <div class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <div class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {{ test.total_questions || 0 }}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Preguntas</div>
               </div>
               <div class="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                <div class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
+                <div class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
                   {{ test.created_at | date:'dd/MM/yyyy' }}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Creado</div>
@@ -457,21 +458,24 @@
 
   <!-- Mostrar si no hay más tests -->
   @if (!hasMore() && notStartedTestsData().length > 0 && !showPagination()) {
-    <div class="mt-8 text-center">
-      <div class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700">
-        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        ¡Has visto todos los tests disponibles!
+    <div class="mt-8 text-center flex flex-col sm:flex-row gap-2 justify-center">
+      <div>
+        <div class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          ¡Has visto todos los tests disponibles!
+        </div>
       </div>
-
-      <button (click)="resetFilters()"
-              class="ml-2 inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
-        </svg>
-        Limpiar filtros
-      </button>
+      <div>
+        <button (click)="resetFilters()"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+          </svg>
+          Limpiar filtros
+        </button>
+      </div>
     </div>
   }
 
