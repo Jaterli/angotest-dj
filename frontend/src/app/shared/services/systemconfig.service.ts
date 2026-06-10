@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class SystemConfigServiceForUser {
-  private apiUrl = `${environment.apiUrl}/system-configsForUser`;
+  private apiUrl = `${environment.apiUrl}/shared/system-configsForUser`;
 
   constructor(private http: HttpClient) {}
 

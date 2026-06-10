@@ -18,12 +18,12 @@ export class InvitationService {
 
   // Crear invitación
   createInvitation(data: CreateInvitationInput): Observable<any> {
-    return this.http.post(`${this.apiUrl}/create`, data);
+    return this.http.post(`${this.apiUrl}/create/`, data);
   }
 
   // Obtener invitaciones del usuario
   getMyInvitations(): Observable<{invitations: TestInvitation[]}> {
-    return this.http.get<{invitations: TestInvitation[]}>(`${this.apiUrl}/my-invitations`);
+    return this.http.get<{invitations: TestInvitation[]}>(`${this.apiUrl}/my-invitations/`);
   }
 
   // Verificar invitación

@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class TopicsService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/topics`;
+  private apiUrl = `${environment.apiUrl}/shared/topics`;
 
   // Cache local para temas
   private mainTopicsCache = signal<string[]>([]);

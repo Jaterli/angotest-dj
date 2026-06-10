@@ -56,12 +56,12 @@ export class TestService {
   
   // Guardar progreso o finalizar test
   saveOrUpdateResult(data: SaveResultInput): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${data.test_id}/save`, data);
+    return this.http.post(`${this.apiUrl}/${data.test_id}/save/`, data);
   }
 
   // Obtener progreso de un test
   getTestProgress(testId: number): Observable<ResumeTestResponse> {
-    return this.http.get<ResumeTestResponse>(`${this.apiUrl}/${testId}/progress`);
+    return this.http.get<ResumeTestResponse>(`${this.apiUrl}/${testId}/progress/`);
   }
 
   // ====== Método para tests completados con filtros ======

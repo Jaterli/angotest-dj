@@ -141,20 +141,23 @@ export class AuthService {
   }
 
   /* ---------------- Public API ---------------- */
-  login(
-    email: string,
-    password: string
-  ): Observable<{ user: User; message: string }> {
+  login(email: string, password: string): Observable<{ user: User; message: string; access_token: string }> {
     return this.http
-      .post<{ user: User; message: string }>(
+      .post<{ user: User; message: string; access_token: string }>(
         `${this.apiUrl}/login`,
-        { email, password },
-        { withCredentials: true }
+        { email, password }
       )
       .pipe(
-        tap(res => this.setUser(res.user))
+        tap(res => {
+          // Guardar token en localStorage
+          if (res.access_token) {
+            localStorage.setItem('access_token', res.access_token);
+          }
+          this.setUser(res.user);
+        })
       );
   }
+
 
   register(userData: RegisterData): Observable<any> {
     return this.http.post(
@@ -164,20 +167,18 @@ export class AuthService {
   }
 
   logout(redirect = true): void {
+    // Limpiar localStorage
+    localStorage.removeItem('access_token');
+    
     this.invalidateCache();
-
+    
+    // Opcional: notificar al backend
     if (this.isBrowser()) {
       void firstValueFrom(
-        this.http.post(
-          `${this.apiUrl}/logout`,
-          {},
-          { withCredentials: true }
-        )
-      ).catch(err =>
-        console.error('Error cerrando sesión:', err)
-      );
+        this.http.post(`${this.apiUrl}/logout`, {})
+      ).catch(err => console.error('Error cerrando sesión:', err));
     }
-
+    
     if (redirect) {
       this.router.navigate(['/login'], {
         queryParams: { message: 'Sesión cerrada exitosamente' }
@@ -186,7 +187,10 @@ export class AuthService {
   }
 
   verifyAuth(): Observable<{ authenticated: boolean; user?: User }> {
-    return this.getCachedAuthCheck();
+    // El interceptor ya agregará el token automáticamente
+    return this.http.get<{ authenticated: boolean; user?: User }>(
+      `${this.apiUrl}/check-auth`
+    );
   }
 
   get CurrentUser(): Observable<User | null> {

@@ -15,15 +15,15 @@ export class TestsManagementService {
   }
 
   createTest(test: Test): Observable<any> {
-    return this.http.post(`${this.apiUrl}/create`, test);
+    return this.http.post(`${this.apiUrl}/create/`, test);
   }
 
   updateTest(id: number, test: Test): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/edit`, test);
+    return this.http.put(`${this.apiUrl}/${id}/edit/`, test);
   }
 
   deleteTest(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}/delete`);
+    return this.http.delete(`${this.apiUrl}/${id}/delete/`);
   }
 
   // Método para obtener tests con paginación, filtrado y ordenación

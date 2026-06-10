@@ -1,8 +1,10 @@
 # Backend
 backend/node_modules
 backend/.env
+backend/.venv
 backend/*.log
 backend/controllers/bots.go
+backend-go/*
 
 # Frontend
 frontend/node_modules

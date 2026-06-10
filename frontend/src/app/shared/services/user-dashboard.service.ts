@@ -10,7 +10,7 @@ import { environment } from "../../../environments/environment";
 export class DashboardService {
   private http = inject(HttpClient);
   
-  private readonly baseUrl = `${environment.apiUrl}/dashboard`;
+  private readonly baseUrl = `${environment.apiUrl}/user/dashboard`;
   
   /**
    * Obtiene solo las estadísticas del usuario (sin comparativas)

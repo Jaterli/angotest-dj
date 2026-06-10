@@ -28,22 +28,22 @@ export class SystemConfigService {
 
   // Obtener configuración por clave
   getByKey(key: string): Observable<string> {
-    return this.http.get(`${this.apiUrl}/key/${key}`, { responseType: 'text' });
+    return this.http.get(`${this.apiUrl}/key/${key}/`, { responseType: 'text' });
   }
 
   // Crear nueva configuración
   create(config: CreateSystemConfigDTO): Observable<SystemConfig> {
-    return this.http.post<SystemConfig>(this.apiUrl, config);
+    return this.http.post<SystemConfig>(this.apiUrl + '/create/', config);
   }
 
   // Actualizar configuración
   update(id: number, config: UpdateSystemConfigDTO): Observable<SystemConfig> {
-    return this.http.put<SystemConfig>(`${this.apiUrl}/${id}`, config);
+    return this.http.put<SystemConfig>(`${this.apiUrl}/update/${id}/`, config);
   }
 
   // Eliminar configuración
   delete(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/delete/${id}/`);
   }
 
   // Actualización masiva
