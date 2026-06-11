@@ -22,7 +22,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class TestService {
-  private apiUrl = `${environment.apiUrl}/tests`;
+  private apiUrl = `${environment.apiUrl}/test`;
 
   constructor(private http: HttpClient) {}
 

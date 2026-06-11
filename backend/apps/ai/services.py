@@ -3,7 +3,7 @@ import json
 import os
 from groq import Groq
 from django.conf import settings
-from ..tests.models import Test, Question, Answer, Topic
+from ..test.models import Test, Question, Answer, Topic
 
 class AITestGenerator:
     def __init__(self):

@@ -9,7 +9,7 @@ class Result(models.Model):
     )
     
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='results')
-    test = models.ForeignKey('tests.Test', on_delete=models.CASCADE, related_name='results')
+    test = models.ForeignKey('test.Test', on_delete=models.CASCADE, related_name='results')
     correct_answers = models.IntegerField(default=0)
     wrong_answers = models.IntegerField(default=0)
     time_taken = models.IntegerField(default=0)  # segundos

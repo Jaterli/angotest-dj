@@ -68,7 +68,7 @@ class CreateInvitationSerializer(serializers.Serializer):
     message = serializers.CharField(required=False, allow_blank=True)
     
     def validate_test_id(self, value):
-        from apps.tests.models import Test  # Importación diferida
+        from apps.test.models import Test  # Importación diferida
         if not Test.objects.filter(id=value, is_active=True).exists():
             raise serializers.ValidationError("Test no encontrado o inactivo")
         return value

@@ -2,9 +2,12 @@
 backend/node_modules
 backend/.env
 backend/.venv
+backend/venv
 backend/*.log
 backend/controllers/bots.go
 backend-go/*
+__pycache__/
+*.pyc
 
 # Frontend
 frontend/node_modules

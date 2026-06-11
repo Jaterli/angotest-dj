@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('answer_text', models.TextField()),
                 ('is_correct', models.BooleanField(default=False)),
-                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='answers', to='tests.question')),
+                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='answers', to='test.Question')),
             ],
             options={
                 'db_table': 'answers',
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('is_active', models.BooleanField(default=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tests', to=settings.AUTH_USER_MODEL)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='test', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'tests',
@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='question',
             name='test',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questions', to='tests.test'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questions', to='test.Test'),
         ),
         migrations.AddIndex(
             model_name='test',

@@ -1,5 +1,4 @@
 # apps/invitations/views.py
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -113,7 +112,7 @@ def create_invitation(request):
     test_id = serializer.validated_data['test_id']
     message = serializer.validated_data.get('message', '')
     
-    from apps.tests.models import Test
+    from apps.test.models import Test
     try:
         test = Test.objects.get(id=test_id, is_active=True)
     except Test.DoesNotExist:

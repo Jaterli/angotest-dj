@@ -18,11 +18,8 @@ urlpatterns = [
     path('users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
 
     # Endpoints de Resultados
-    path('results/', views.get_results_list, name='get_results_list'),
     path('results/stats/', views.get_result_stats, name='get_result_stats'),
     path('results/<int:result_id>/', views.get_result_detail, name='get_result_detail'),
-    path('results/<int:result_id>/delete/', views.delete_result, name='delete_result'),
-    path('results/bulk-delete/', views.delete_results_bulk, name='delete_results_bulk'),
     path('results/export/csv/', views.export_results_csv, name='export_results_csv'),    
 
     # Endpoints de Invitaciones

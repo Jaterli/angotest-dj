@@ -9,7 +9,7 @@ from django.core.paginator import Paginator
 from functools import wraps
 import json
 
-from apps.tests.models import Test, Question, Answer
+from apps.test.models import Test, Question, Answer
 from apps.results.models import Result
 from apps.shared.models import get_main_topics
 

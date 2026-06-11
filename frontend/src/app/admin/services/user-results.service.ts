@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class UserResultsService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/admin`;
+  private apiUrl = `${environment.apiUrl}/results`;
 
   getUserResults(userId: number, filters: UserResultsRequest = {}): Observable<UserResultsResponse> {
     let params = new HttpParams();
@@ -36,18 +36,18 @@ export class UserResultsService {
     // Nota: 'status' por defecto se maneja en el backend cuando viene vacío
     // No forzamos 'all' para permitir que el backend use su valor por defecto
 
-    return this.http.get<UserResultsResponse>(`${this.apiUrl}/users/${userId}/results`, { params });
+    return this.http.get<UserResultsResponse>(`${this.apiUrl}/user/${userId}/`, { params });
   }
 
   // Método para obtener detalles de resultados
   getResultDetails(userId: number, resultId: number): Observable<UserResultDetailsResponse> {
     return this.http.get<UserResultDetailsResponse>(
-      `${this.apiUrl}/users/${userId}/results/${resultId}`
+      `${this.apiUrl}/${resultId}/user/${userId}/`
     );
   }
 
   // Eliminar resultado individual
   deleteResult(resultId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/results/${resultId}`);
+    return this.http.delete(`${this.apiUrl}/${resultId}/delete/`);
   }
 }

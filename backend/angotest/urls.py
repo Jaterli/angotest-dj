@@ -1,4 +1,4 @@
-# anphytest/urls.py
+# angotest/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import permissions
@@ -7,7 +7,7 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="AnPhyTest API",
+        title="AnGoTest API",
         default_version='v1',
         description="API para plataforma de tests online",
     ),
@@ -19,7 +19,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),   
     path('api/admin/', include('apps.admin_panel.urls')),   
     path('api/auth/', include('apps.accounts.urls')),
-    path('api/tests/', include('apps.tests.urls')),
+    path('api/test/', include('apps.test.urls')),
     path('api/results/', include('apps.results.urls')),
     path('api/rankings/', include('apps.rankings.urls')),
     path('api/invitations/', include('apps.invitations.urls')),

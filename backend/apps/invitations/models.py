@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class TestInvitation(models.Model):
     """Modelo para invitaciones a tests"""
     test = models.ForeignKey(
-        'tests.Test', 
+        'test.Test', 
         on_delete=models.CASCADE,
         related_name='invitations'
     )

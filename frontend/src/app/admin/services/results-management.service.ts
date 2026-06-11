@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class ResultsManagementService {
-  private apiUrl = `${environment.apiUrl}/admin/results`;
+  private apiUrl = `${environment.apiUrl}/results`;
 
   constructor(private http: HttpClient) { }
 
@@ -110,12 +110,12 @@ export class ResultsManagementService {
 
   // Eliminar resultado individual
   deleteResult(resultId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${resultId}`);
+    return this.http.delete(`${this.apiUrl}/${resultId}/delete/`);
   }
 
   // Eliminar múltiples resultados
   deleteResultsBulk(resultIds: number[]): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/bulk`, {
+    return this.http.delete(`${this.apiUrl}/bulk-delete`, {
       body: { ids: resultIds }
     });
   }
