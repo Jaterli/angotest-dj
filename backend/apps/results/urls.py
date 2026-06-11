@@ -19,5 +19,5 @@ urlpatterns = [
     path('tests/completed/', views.get_my_completed_tests, name='completed_tests'),
     
     # Obtener respuestas incorrectas
-    path('results/<int:result_id>/incorrect-answers/', views.get_incorrect_answers, name='incorrect_answers'),
+    path('<int:result_id>/incorrect-answers/', views.get_incorrect_answers, name='incorrect_answers'),
 ]

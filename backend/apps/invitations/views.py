@@ -113,7 +113,7 @@ def create_invitation(request):
     test_id = serializer.validated_data['test_id']
     message = serializer.validated_data.get('message', '')
     
-    from ..admin_panel.models import Test
+    from apps.tests.models import Test
     try:
         test = Test.objects.get(id=test_id, is_active=True)
     except Test.DoesNotExist:
@@ -192,6 +192,7 @@ def check_invitation(request):
     response_data['current_user_id'] = current_user_id
     
     return JsonResponse(response_data)
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
