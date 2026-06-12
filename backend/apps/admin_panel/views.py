@@ -9,7 +9,7 @@ from functools import wraps
 import json
 import logging
 
-from .models import UserQuota, SystemConfig
+from apps.admin_panel.models import UserQuota, SystemConfig
 from apps.test.models import Test, Question, Answer
 from apps.results.models import Result
 from apps.invitations.models import TestInvitation
@@ -798,12 +798,12 @@ def delete_user(request, user_id):
                 'error': 'No se puede eliminar el único administrador activo del sistema'
             }, status=400)
     
-    # Verificar que el usuario destino (ID=1) existe
+    # Verificar que el usuario destino (admin actual) existe
     try:
-        target_user = User.objects.get(id=1)
+        target_user = User.objects.get(id=request.user.id)
     except User.DoesNotExist:
         return JsonResponse({
-            'error': 'El usuario destino para transferencia (ID=1) no existe'
+            'error': 'El usuario administrador actual no existe'
         }, status=500)
     
     # Ejecutar transacción para eliminación permanente con transferencia
@@ -813,7 +813,7 @@ def delete_user(request, user_id):
             PasswordResetToken.objects.filter(user_id=user_id).delete()
             
             # 2. Transferir tests al usuario ID=1
-            from ..admin_panel.models import Test
+            from apps.test.models import Test
             Test.objects.filter(created_by=user_id).update(created_by=1)
             
             # 3. Transferir resultados al usuario ID=1

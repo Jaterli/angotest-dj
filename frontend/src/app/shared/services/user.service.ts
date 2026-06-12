@@ -9,13 +9,13 @@ import { environment } from '../../../environments/environment';
 export class UserService {
 
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/profile`;
+  private apiUrl = `${environment.apiUrl}/auth`;
 
 
   user = signal<any | null>(null);
 
   getCurrentUser(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/me`);
+    return this.http.get(`${this.apiUrl}/current-user`);
   }
 
   // Actualizar datos del usuario
