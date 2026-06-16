@@ -63,13 +63,13 @@ export class QuotaManagementService {
     if (monthYear) {
       params = params.set('month_year', monthYear);
     }
-    return this.http.get<{ quota: UserQuota }>(`${this.apiUrl}/user/${userId}`, { params });
+    return this.http.get<{ quota: UserQuota }>(`${this.apiUrl}/user/${userId}/`, { params });
   }
 
   // Crear cuota
   createQuota(data: CreateQuotaInput): Observable<{ quota: UserQuota; message: string }> {
     return this.http.post<{ quota: UserQuota; message: string }>(
-      `${this.apiUrl}/admin/quotas`,
+      `${this.apiUrl}/admin/quotas/`,
       data
     );
   }
@@ -77,26 +77,26 @@ export class QuotaManagementService {
   // Actualizar cuota
   updateQuota(id: number, data: UpdateQuotaInput): Observable<{ quota: UserQuota; message: string }> {
     return this.http.put<{ quota: UserQuota; message: string }>(
-      `${this.apiUrl}/${id}`,
+      `${this.apiUrl}/${id}/`,
       data
     );
   }
 
   // Eliminar cuota
   deleteQuota(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}/`);
   }
 
   // Eliminar múltiples cuotas
   deleteQuotasBulk(ids: number[]): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/bulk`, {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/bulk/`, {
       body: { ids }
     });
   }
 
   // Obtener meses disponibles para un usuario
   getUserQuotaMonths(userId: number): Observable<{ months: string[] }> {
-    return this.http.get<{ months: string[] }>(`${this.apiUrl}/user/${userId}/months`);
+    return this.http.get<{ months: string[] }>(`${this.apiUrl}/user/${userId}/months/`);
   }
 
   // Verificar si hay cuota disponible
@@ -106,7 +106,7 @@ export class QuotaManagementService {
     message: string;
   }> {
     return this.http.get<{ available: boolean; quota: UserQuota; message: string }>(
-      `${this.apiUrl}/me/check`
+      `${this.apiUrl}/me/check/`
     );
   }
 }

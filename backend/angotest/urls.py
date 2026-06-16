@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/results/', include('apps.results.urls')),
     path('api/rankings/', include('apps.rankings.urls')),
     path('api/invitations/', include('apps.invitations.urls')),
-    path('api/ai/', include('apps.ai.urls')),
+    path('api/ai-requests/', include('apps.ai.urls')),
     path('api/shared/', include('apps.shared.urls')),
 
     # Swagger
