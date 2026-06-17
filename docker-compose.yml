@@ -25,6 +25,9 @@ services:
       dockerfile: docker/backend/Dockerfile
     container_name: angotest_dj_backend
     restart: always
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,8 +81,9 @@ services:
           memory: 256M
 
 volumes:
+  static_volume:
+  media_volume:
   postgres_data:
-    # El volumen mantiene su nombre, no necesita red
 
 # Usa la red externa compartida
 networks:
