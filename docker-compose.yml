@@ -19,8 +19,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/backend/Dockerfile
     container_name: angotest_dj_backend
     restart: always
     depends_on:
@@ -55,8 +55,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/frontend/Dockerfile
     container_name: angotest_dj_frontend
     restart: always
     depends_on:
