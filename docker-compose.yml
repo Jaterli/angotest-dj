@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    env_file:
+      - .env       
 
   backend:
     build:
@@ -47,11 +49,10 @@ services:
       EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
     networks:
       - web_network  # Cambiado: usa la red compartida
-    # ELIMINADO: puerto expuesto - ahora solo interno
-    # ports:
-    #   - "8081:8080"
     expose:
       - "8080"  # Expone internamente para el proxy
+    env_file:
+      - .env      
 
   frontend:
     build:
