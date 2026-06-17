@@ -3,21 +3,23 @@ services:
     image: postgres:15-alpine
     container_name: angotest_dj_postgres
     restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+    # environment:
+    #   POSTGRES_USER: ${DB_USER}
+    #   POSTGRES_PASSWORD: ${DB_PASSWORD}
+    #   POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
     networks:
-      - web_network  # Cambiado: usa la red compartida
+      - web_network
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"] 
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 5
-    env_file:
-      - .env       
+      retries: 5     
 
   backend:
     build:
