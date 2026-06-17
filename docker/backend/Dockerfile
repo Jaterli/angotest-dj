@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copiar dependencias primero (optimiza la caché de Docker)
 COPY ./backend/requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt gunicorn setuptools
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
 # Copiar el resto del código
 COPY ./backend /app/
