@@ -4,13 +4,13 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copiamos primero los archivos de dependencias
-COPY package.json yarn.lock ./
+COPY frontend/package.json frontend/yarn.lock ./
 
 # Instalamos dependencias
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --network-timeout 100000
 
 # Copiamos el resto del proyecto
-COPY . .
+COPY frontend/ .
 
 # Build en modo producción
 RUN yarn build --configuration production
@@ -25,7 +25,7 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
 # Copiamos la configuración personalizada de nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 
 EXPOSE 80
