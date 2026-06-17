@@ -1,18 +1,15 @@
 # apps/accounts/middleware.py
-from django.utils.deprecation import MiddlewareMixin
-from .models import User
+from django.contrib.auth.models import AnonymousUser
 
 class JWTCookieMiddleware:
-    """Middleware para autenticación JWT vía cookie o header"""
     
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        # Establecer user por defecto como None
-        request.user = None
+        # ✅ Siempre partir de AnonymousUser, nunca None
+        request.user = AnonymousUser()
         
-        # Intentar obtener token
         auth_header = request.headers.get('Authorization', '')
         token = None
         
@@ -22,7 +19,6 @@ class JWTCookieMiddleware:
             token = request.COOKIES.get('auth_token')
         
         if token:
-            # Importación diferida para evitar circular imports
             from .views import get_user_from_token
             user = get_user_from_token(token)
             if user and user.is_active:
