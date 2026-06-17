@@ -53,7 +53,7 @@ services:
     networks:
       - web_network  # Cambiado: usa la red compartida
     expose:
-      - "8080"  # Expone internamente para el proxy
+      - "8000"  # Expone internamente para el proxy
     env_file:
       - .env      
 

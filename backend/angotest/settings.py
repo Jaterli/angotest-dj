@@ -157,9 +157,12 @@ AI_REQUESTS_PER_MONTH = int(os.getenv('AI_REQUESTS_PER_MONTH', 5))
 
 # Static/Media
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'static'
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR.parent / "frontend/dist",  # Ruta a los archivos generados por Vite
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
