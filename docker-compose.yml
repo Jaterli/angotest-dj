@@ -35,7 +35,7 @@ services:
         condition: service_healthy
     environment:
       ENV: production
-      DB_HOST: postgres # Sobreescribe a .env
+      DB_HOST: angotest_dj_postgres # Sobreescribe a .env
 
     networks:
       - web_network
