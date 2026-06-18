@@ -19,6 +19,7 @@ from dotenv import load_dotenv # type: ignore
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'

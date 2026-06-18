@@ -48,5 +48,5 @@ export const APP_ROUTES: Routes = [
 
   { path: 'forbidden', loadComponent: () => import('./shared/components/forbidden/forbidden.component').then(m => m.ForbiddenComponent), canActivate: [authGuard] },
 
-  { path: '**', redirectTo: 'home' }
+  // { path: '**', redirectTo: 'home' }
 ];

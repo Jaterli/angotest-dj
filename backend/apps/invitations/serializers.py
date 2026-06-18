@@ -71,7 +71,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 class CreateInvitationSerializer(serializers.Serializer):
     """Serializer para crear invitaciones"""
     test_id = serializers.IntegerField()
-    message = serializers.CharField(required=False, allow_blank=True)
+    message = serializers.CharField(required=False, allow_blank=True, allow_null=True, default='')
 
     def validate_test_id(self, value):
         from apps.test.models import Test

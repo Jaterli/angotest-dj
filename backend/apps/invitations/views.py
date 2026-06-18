@@ -130,7 +130,7 @@ def create_invitation(request):
     invitation = TestInvitation.objects.create(
         test=test,
         invited_by=request.user,
-        message=message,
+        message=message or '',
     )
     log_invitation_event(invitation, 'created', request.user)
 
