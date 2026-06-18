@@ -3,7 +3,7 @@
 # Migrar base de datos
 python manage.py migrate --noinput
 
-# Recolectar archivos estáticos (incluye React build)
+# Recolectar archivos estáticos
 python manage.py collectstatic --noinput
 
 # Iniciar Gunicorn

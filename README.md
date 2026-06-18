@@ -1,12 +1,12 @@
-# AnGoTest - Plataforma de Tests Online con Angular, Go e IA
+# AnGoTest - Plataforma de Tests Online con Angular y Django
 
 ![Angular](https://img.shields.io/badge/Angular-20+-red?logo=angular)
-![Go](https://img.shields.io/badge/Go-1.21+-blue?logo=go)
+![Django](https://img.shields.io/badge/Django-5.2+-darkgreen?logo=django)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue?logo=postgresql)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3+-blue?logo=tailwindcss)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**AnGoTest** es una plataforma web completa para la creación, gestión y realización de tests online. El nombre fusiona las tecnologías principales: **Angular** (frontend), **Go** (backend) y **Test** (su utilidad principal).
+**AnGoTest** es una plataforma web completa para la creación, gestión y realización de tests online. Esta versión representa la evolución del proyecto, migrando el backend a **Django** para aprovechar sus potentes herramientas y acelerar el desarrollo, mientras se mantiene un frontend moderno y eficiente con **Angular**.
 
 > 🚀 **Proyecto final de Máster en Desarrollo Web Full Stack**
 
@@ -15,53 +15,53 @@
 ## ✨ Características Principales
 
 ### 👥 Gestión de Usuarios
-- Registro, login/logout con JWT en cookies HttpOnly
-- Recuperación de contraseña por email con tokens seguros
-- Tres roles: `user`, `admin`, `guest` (invitado)
-- Conversión de cuenta guest a usuario permanente
-- Desactivación de cuenta con anonimización de datos
+- Registro, login/logout con JWT en cookies HttpOnly.
+- Recuperación de contraseña por email con tokens seguros.
+- Tres roles: `user`, `admin` y `guest` (invitado).
+- Conversión de cuenta `guest` a usuario permanente.
+- Desactivación de cuenta con anonimización completa de datos.
 
 ### 📚 Sistema de Tests
-- Jerarquía de 3 niveles: Tema Principal > Subtema > Tema Específico
-- Niveles de dificultad: Principiante, Intermedio, Avanzado
-- Filtrado avanzado por tema, nivel y búsqueda
-- Guardado automático de progreso (tests en curso)
-- Historial de tests completados con estadísticas detalladas
-- Visualización de respuestas incorrectas al finalizar
+- Jerarquía de 3 niveles: **Tema Principal > Subtema > Tema Específico**.
+- Niveles de dificultad: **Principiante, Intermedio, Avanzado**.
+- Filtrado avanzado por tema, nivel y búsqueda.
+- Guardado automático de progreso (tests en curso).
+- Historial de tests completados con estadísticas detalladas.
+- Visualización de respuestas incorrectas al finalizar.
 
 ### 🏆 Rankings y Gamificación
 - Rankings globales por:
-  - Tests completados
-  - Precisión (primer intento vs. todos los intentos)
-  - Tiempo por pregunta
-  - Preguntas respondidas
-- Rankings específicos por nivel de dificultad
-- Posición actual del usuario en cada ranking
-- Promedios de la comunidad para comparativa
+  - Tests completados.
+  - Precisión (primer intento vs. todos los intentos).
+  - Tiempo por pregunta.
+  - Preguntas respondidas.
+- Rankings específicos por nivel de dificultad.
+- Posición actual del usuario en cada ranking.
+- Promedios de la comunidad para comparativa.
 
 ### 🛠️ Panel de Administración
-- Dashboard con KPIs y estadísticas en tiempo real
-- CRUD completo de tests con editor visual
-- Gestión de usuarios: ver perfiles, estadísticas, eliminar con transferencia
-- Gestión de resultados: listado, filtros, eliminación individual/masiva
-- Gestión de invitaciones a tests
-- Configuración del sistema mediante clave-valor
+- Dashboard con KPIs y estadísticas en tiempo real.
+- CRUD completo de tests con editor visual.
+- Gestión de usuarios: ver perfiles, estadísticas, eliminar con transferencia.
+- Gestión de resultados: listado, filtros, eliminación individual/masiva.
+- Gestión de invitaciones a tests.
+- Configuración del sistema mediante clave-valor.
 
 ### 🤖 Integración con IA (Groq)
-- Generación automática de tests por IA
-- Modo guiado (jerarquía existente) y modo libre (IA infiere la jerarquía)
-- Soporte multi-idioma: ES, EN, FR, DE, IT, PT
-- Sistema de cuotas mensuales por usuario (configurable)
-- **Importación desde asistentes externos** vía JSON estructurado
+- Generación automática de tests por IA.
+- Modo guiado (jerarquía existente) y modo libre (IA infiere la jerarquía).
+- Soporte multi-idioma: ES, EN, FR, DE, IT, PT.
+- Sistema de cuotas mensuales por usuario (configurable).
+- **Importación desde asistentes externos** vía JSON estructurado.
 
 ### 📧 Sistema de Invitaciones
-- Enlaces únicos para invitar a usuarios a tests específicos
-- Soporte para usuarios invitados (guest)
-- Transferencia automática de progreso al registrarse
+- Enlaces únicos para invitar a usuarios a tests específicos.
+- Soporte para usuarios invitados (`guest`).
+- Transferencia automática de progreso al registrarse.
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## 🏗️ Arquitectura del Proyecto (Versión Django)
 
 ```
 AnGoTest/
@@ -78,17 +78,18 @@ AnGoTest/
 │   │       └── admin/       # Panel administración
 │   └── ...
 │
-├── backend/                  # API en Go con Gin
-│   ├── cmd/server/          # Punto de entrada
-│   ├── internal/
-│   │   ├── controllers/     # Handlers (admin, shared, user)
-│   │   ├── middleware/      # Auth, roles, CORS
-│   │   ├── models/          # Modelos GORM
-│   │   └── services/        # Lógica de negocio
-│   ├── pkg/
-│   │   ├── config/          # Configuración DB
-│   │   └── routes/          # Definición de rutas
-│   └── go.mod
+├── backend/                 # API en Django
+│   ├── angotest/            # Configuración del proyecto
+│   │   ├── settings.py      # Configuración centralizada
+│   │   └── urls.py          # Enrutamiento principal
+│   └── apps/                # Aplicaciones modulares
+│       ├── accounts/        # Autenticación y usuarios
+│       ├── admin_panel/     # Administración, cuotas y configuración
+│       ├── ai/              # Generación de tests por IA
+│       ├── invitations/     # Sistema de invitaciones
+│       ├── results/         # Progreso y resultados de tests
+│       ├── shared/          # Modelos y lógica compartida (ej. temas)
+│       └── test/            # Modelo y gestión de tests
 │
 └── db/
     ├── migrations/          # Migraciones SQL
@@ -99,15 +100,15 @@ AnGoTest/
 
 ## 🛠️ Tecnologías Utilizadas
 
-### Backend
+### Backend (Nuevo en Django)
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
-| Go | 1.21+ | Lenguaje principal |
-| Gin | v1.9+ | Framework web |
-| GORM | v2 | ORM para PostgreSQL |
-| JWT | v5 | Autenticación |
-| bcrypt | - | Hash de contraseñas |
-| Groq API | - | Generación IA |
+| **Django** | 5.2+ | Framework web principal (MTV) |
+| **Django REST Framework** | - | API RESTful robusta y flexible |
+| **PostgreSQL** | 15+ | Base de datos relacional principal |
+| **Simple JWT** | - | Autenticación JWT integrada con DRF |
+| **CORS Headers** | - | Gestión de peticiones cross-origin |
+| **Redis / LocMem** | - | Sistema de caché para alto rendimiento |
 
 ### Frontend
 | Tecnología | Versión | Propósito |
@@ -117,41 +118,54 @@ AnGoTest/
 | Signals | - | Estado reactivo |
 | TypeScript | 5+ | Tipado estático |
 
-### Base de Datos
-| Tecnología | Versión |
-|------------|---------|
-| PostgreSQL | 15+ |
+### Por qué Django es una Elección Superior para este Proyecto
+
+La migración de Go a Django no es solo un cambio técnico, sino una decisión estratégica que aporta enormes beneficios:
+
+- **Productividad Exponencial (DRF y ORM):** El ORM de Django y Django REST Framework (DRF) permiten crear APIs complejas en una fracción del tiempo. La lógica de negocio, como los rankings o las estadísticas del dashboard, se implementa con unas pocas líneas de código Python, en lugar de cientos en Go. El `admin` integrado de Django ofrece un panel de gestión gratuito que aceleró el desarrollo y la depuración de datos.
+
+- **Seguridad "Out-of-the-Box":** Django incluye protección contra las vulnerabilidades web más comunes (XSS, CSRF, SQL Injection, Clickjacking) por defecto. Esto proporciona una base mucho más sólida y reduce el riesgo de errores de seguridad críticos que, en Go, requerirían una implementación manual más cuidadosa.
+
+- **Ecosistema y Comunidad Gigantescos:** Django tiene una de las comunidades más grandes y activas del mundo Python. Esto se traduce en miles de paquetes (`apps`) listos para usar (como `django-cors-headers`, `django-otp`, `django-import-export`), una documentación excelente y una gran cantidad de soluciones a problemas comunes.
+
+- **Escalabilidad y Mantenimiento:** La estructura modular de Django (basada en "apps") hace que el código sea mucho más mantenible y escalable. Añadir nuevas funcionalidades es sencillo, ya que se pueden crear nuevas apps que aíslan la lógica. Además, la curva de aprendizaje para nuevos desarrolladores es mucho menor que en Go, facilitando la incorporación de más personas al equipo.
+
+- **Rendimiento con Caché:** La integración nativa de Django con sistemas de caché como Redis, Memcached o incluso la caché en memoria local (`LocMemCache`), permite acelerar drásticamente las consultas más pesadas (como las del dashboard o los rankings) sin necesidad de implementar complejas soluciones de caching desde cero.
 
 ---
 
 ## 🚀 Instalación y Configuración
 
 ### Requisitos Previos
-- Go 1.21 o superior
+- Python 3.10 o superior
 - Node.js 20+ con npm/pnpm
 - PostgreSQL 15+
 - (Opcional) API Key de Groq para generación IA
 
-### Backend
+### Backend (Django)
 
 ```bash
 # Clonar el repositorio
 git clone https://github.com/tu-usuario/angotest.git
 cd angotest/backend
 
+# Crear y activar un entorno virtual
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
 # Copiar variables de entorno
 cp .env.example .env
 # Editar .env con tus credenciales (DB, JWT, etc.)
 
-# Instalar dependencias
-go mod download
-
 # Ejecutar migraciones
-go run cmd/server/main.go migrate
+python manage.py migrate
 
-# Iniciar servidor
-go run cmd/server/main.go
-# Servidor en http://localhost:8080
+# Iniciar servidor de desarrollo
+python manage.py runserver
+# Servidor en http://localhost:8000
 ```
 
 ### Frontend
@@ -170,31 +184,33 @@ npm start
 ### Variables de Entorno (Backend)
 
 ```env
+# Django
+DJANGO_SECRET_KEY=tu_secret_key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
 # Base de Datos
-DB_HOST=localhost
-DB_PORT=5432
+DB_NAME=angotest_db
 DB_USER=postgres
 DB_PASSWORD=tu_password
-DB_NAME=angotest
+DB_HOST=localhost
+DB_PORT=5432
 
-# JWT
+# JWT y Seguridad
 JWT_SECRET=tu_secret_key
+ENV=development
+
+# Email (SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=tu_email
+EMAIL_HOST_PASSWORD=tu_password
+DEFAULT_FROM_EMAIL=noreply@angotest.com
 
 # IA (Groq)
 GROQ_API_KEY=tu_api_key
 GROQ_MODEL=llama3-70b-8192
-
-# Email (SMTP)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=tu_email
-SMTP_PASSWORD=tu_password
-SMTP_FROM_EMAIL=noreply@angotest.com
-SMTP_FROM_NAME=AnGoTest
-
-# Entorno
-ENV=development
-FRONTEND_URL=http://localhost:4200
+AI_REQUESTS_PER_MONTH=5
 ```
 
 ---
@@ -208,36 +224,40 @@ FRONTEND_URL=http://localhost:4200
 | POST | `/api/auth/login` | Inicio de sesión |
 | POST | `/api/auth/logout` | Cierre de sesión |
 | GET | `/api/auth/check-auth` | Verificar autenticación |
+| POST | `/api/auth/forgot-password` | Recuperar contraseña |
+| POST | `/api/auth/reset-password` | Restablecer contraseña |
 
 ### Tests (Usuario)
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/tests/:test_id` | Obtener test |
-| POST | `/api/tests/:test_id/save` | Guardar progreso |
-| GET | `/api/tests/not-started` | Tests no iniciados |
-| GET | `/api/tests/in-progress` | Tests en progreso |
-| GET | `/api/tests/completed` | Tests completados |
+| GET | `/api/test/<int:test_id>/` | Obtener test con preguntas |
+| POST | `/api/test/<int:test_id>/save/` | Guardar progreso |
+| GET | `/api/test/not-started/` | Tests no iniciados |
+| GET | `/api/test/in-progress/` | Tests en progreso |
+| GET | `/api/test/completed/` | Tests completados |
+| GET | `/api/test/<int:test_id>/questions/` | Obtener preguntas paginadas |
+| GET | `/api/test/<int:test_id>/next-question/` | Siguiente pregunta sin responder |
 
 ### Rankings
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/dashboard/rankings` | Rankings globales |
+| GET | `/api/auth/dashboard/rankings` | Rankings globales |
 
 ### Administración
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/admin/dashboard` | Dashboard admin |
-| POST | `/api/admin/tests/create` | Crear test |
-| PUT | `/api/admin/tests/:id/edit` | Editar test |
-| DELETE | `/api/admin/tests/:id/delete` | Eliminar test |
-| GET | `/api/admin/users/stats` | Listar usuarios |
-| DELETE | `/api/admin/users/:id/delete` | Eliminar usuario |
+| GET | `/api/admin/dashboard/` | Dashboard admin |
+| POST | `/api/test/admin/create/` | Crear test |
+| PUT | `/api/test/admin/<int:test_id>/edit/` | Editar test |
+| DELETE | `/api/test/admin/<int:test_id>/delete/` | Eliminar test |
+| GET | `/api/auth/users/stats/` | Listar usuarios con estadísticas |
+| DELETE | `/api/auth/users/<int:user_id>/delete/` | Eliminar usuario |
 
 ### IA
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| POST | `/api/ai-requests/generate-ai-test` | Generar test con IA |
-| GET | `/api/ai-requests/quota` | Consultar cuota |
+| POST | `/api/ai-requests/generate-ai-test/` | Generar test con IA |
+| GET | `/api/ai-requests/quota/` | Consultar cuota |
 
 ---
 
@@ -271,38 +291,6 @@ Cualquier asistente de IA externo puede generar tests para AnGoTest siguiendo es
 
 ---
 
-## 📸 Capturas de Pantalla
-
-> *[Aquí puedes añadir capturas de tu aplicación: dashboard, realización de test, rankings, panel admin, etc.]*
-
----
-
-## 🗺️ Hoja de Ruta
-
-### ✅ Completado
-- [x] Autenticación JWT con cookies HttpOnly
-- [x] CRUD completo de tests
-- [x] Sistema de progreso y resultados
-- [x] Rankings globales y por nivel
-- [x] Panel de administración con dashboard
-- [x] Generación de tests con IA (Groq)
-- [x] Sistema de invitaciones
-- [x] Gestión de cuotas de IA
-- [x] Modo oscuro
-
-### 🔄 En desarrollo
-- [ ] Tests colaborativos (varios administradores)
-- [ ] Exportación de resultados a PDF/CSV
-- [ ] WebSockets para notificaciones en tiempo real
-
-### 📅 Planificado
-- [ ] API pública para desarrolladores
-- [ ] Modo examen con temporizador por pregunta
-- [ ] Sistema de logros y gamificación avanzada
-- [ ] Docker y Kubernetes para despliegue
-
----
-
 ## 🤝 Contribuciones
 
 Las contribuciones son bienvenidas. Por favor:
@@ -333,11 +321,12 @@ Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICE
 ## 🙏 Agradecimientos
 
 - [Angular](https://angular.dev/) - Framework frontend
-- [Gin](https://gin-gonic.com/) - Framework web para Go
-- [GORM](https://gorm.io/) - ORM para Go
+- [Django](https://www.djangoproject.com/) - Framework web para Python
+- [Django REST Framework](https://www.django-rest-framework.org/) - Toolkit para construir APIs
 - [TailwindCSS](https://tailwindcss.com/) - Framework CSS
 - [Groq](https://groq.com/) - API de IA para generación de tests
 
 ---
 
 ⭐ **Si te gusta este proyecto, no olvides darle una estrella en GitHub.**
+```

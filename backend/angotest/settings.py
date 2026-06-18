@@ -49,12 +49,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'django_filters',
+    # 'django_filters',
     # Local apps
     'apps.accounts',
     'apps.test',
     'apps.results',
-    'apps.rankings',
     'apps.admin_panel',
     'apps.invitations',
     'apps.ai',
