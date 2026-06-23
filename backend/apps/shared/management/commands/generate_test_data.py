@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class ResultStatus(Enum):
     COMPLETED = 'completed'
-    ABANDONED = 'abandoned'
+    EXPIRED = 'expired'
     IN_PROGRESS = 'in_progress'
 
 @dataclass
@@ -69,7 +69,7 @@ class Command(BaseCommand):
         
         # Configuración de resultados
         'INCOMPLETE_PERCENTAGE': 0.15,
-        'ABANDONED_PERCENTAGE': 0.10,
+        'expired_PERCENTAGE': 0.10,
         
         # Flags de control
         'CLEAR_EXISTING': False,
@@ -126,7 +126,7 @@ class Command(BaseCommand):
             'answers_created': 0,
             'results_created': 0,
             'completed': 0,
-            'abandoned': 0,
+            'expired': 0,
             'in_progress': 0
         }
         
@@ -146,7 +146,7 @@ class Command(BaseCommand):
         parser.add_argument('--test-start-date', type=str, help='Fecha inicio tests')
         parser.add_argument('--test-end-date', type=str, help='Fecha fin tests')
         parser.add_argument('--incomplete-percentage', type=float, help='% tests incompletos')
-        parser.add_argument('--abandoned-percentage', type=float, help='% tests abandonados')
+        parser.add_argument('--expired-percentage', type=float, help='% tests expirados')
         parser.add_argument('--clear-existing', action='store_true', help='Limpiar datos existentes')
         parser.add_argument('--skip-users', action='store_true', help='Saltar creación de usuarios')
         parser.add_argument('--seed', type=int, help='Semilla para reproducibilidad')
@@ -190,7 +190,7 @@ class Command(BaseCommand):
             'test_start_date': 'TEST_START_DATE',
             'test_end_date': 'TEST_END_DATE',
             'incomplete_percentage': 'INCOMPLETE_PERCENTAGE',
-            'abandoned_percentage': 'ABANDONED_PERCENTAGE',
+            'expired_percentage': 'expired_PERCENTAGE',
             'clear_existing': 'CLEAR_EXISTING',
             'skip_users': 'SKIP_USERS',
             'seed': 'SEED',
@@ -492,8 +492,8 @@ class Command(BaseCommand):
         
         # Probabilidades de estado
         probs = {
-            ResultStatus.COMPLETED: 1 - self.config['INCOMPLETE_PERCENTAGE'] - self.config['ABANDONED_PERCENTAGE'],
-            ResultStatus.ABANDONED: self.config['ABANDONED_PERCENTAGE'],
+            ResultStatus.COMPLETED: 1 - self.config['INCOMPLETE_PERCENTAGE'] - self.config['expired_PERCENTAGE'],
+            ResultStatus.EXPIRED: self.config['expired_PERCENTAGE'],
             ResultStatus.IN_PROGRESS: self.config['INCOMPLETE_PERCENTAGE']
         }
         
@@ -514,7 +514,7 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS(
             f'   ✅ {self.stats["results_created"]} resultados '
-            f'(✓{self.stats["completed"]} | ⊘{self.stats["abandoned"]} | ⋯{self.stats["in_progress"]})'
+            f'(✓{self.stats["completed"]} | ⊘{self.stats["expired"]} | ⋯{self.stats["in_progress"]})'
         ))
     
     def _create_single_result(self, user: User, test: Test, probs: Dict, correct_range: RangeConfig, time_range: RangeConfig):
@@ -532,7 +532,7 @@ class Command(BaseCommand):
         # Determinar número de preguntas respondidas
         if status == ResultStatus.COMPLETED:
             num_answered = len(questions)
-        elif status == ResultStatus.ABANDONED:
+        elif status == ResultStatus.EXPIRED:
             num_answered = random.randint(1, max(1, len(questions) // 2))
         else:  # IN_PROGRESS
             num_answered = random.randint(1, max(1, len(questions) - 1))
@@ -596,8 +596,8 @@ class Command(BaseCommand):
                 
                 if status == ResultStatus.COMPLETED:
                     self.stats['completed'] += 1
-                elif status == ResultStatus.ABANDONED:
-                    self.stats['abandoned'] += 1
+                elif status == ResultStatus.EXPIRED:
+                    self.stats['expired'] += 1
                 else:
                     self.stats['in_progress'] += 1
         except Exception as e:
@@ -646,7 +646,7 @@ class Command(BaseCommand):
             'answers': Answer.objects.count(),
             'results': Result.objects.count(),
             'completed': Result.objects.filter(status='completed').count(),
-            'abandoned': Result.objects.filter(status='abandoned').count(),
+            'expired': Result.objects.filter(status='expired').count(),
             'in_progress': Result.objects.filter(status='in_progress').count(),
         }
         
@@ -673,12 +673,12 @@ class Command(BaseCommand):
         
         if db_stats["results"] > 0:
             completed_pct = db_stats["completed"] / db_stats["results"] * 100
-            abandoned_pct = db_stats["abandoned"] / db_stats["results"] * 100
+            expired_pct = db_stats["expired"] / db_stats["results"] * 100
             progress_pct = db_stats["in_progress"] / db_stats["results"] * 100
             
             self.stdout.write(f'\n📊 RESULTADOS: {db_stats["results"]}')
             self.stdout.write(f'   ├─ Completados: {db_stats["completed"]} ({completed_pct:.1f}%)')
-            self.stdout.write(f'   ├─ Abandonados: {db_stats["abandoned"]} ({abandoned_pct:.1f}%)')
+            self.stdout.write(f'   ├─ expirados: {db_stats["expired"]} ({expired_pct:.1f}%)')
             self.stdout.write(f'   └─ En progreso: {db_stats["in_progress"]} ({progress_pct:.1f}%)')
             
             # Calcular score promedio

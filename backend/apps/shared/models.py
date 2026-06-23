@@ -4,6 +4,9 @@ from django.core.cache import cache
 from django.db.models import Count
 import logging
 
+from apps.test.models import Test
+from apps.results.models import Result
+
 CACHE_KEY_PREFIXES = {
     'topics_hierarchy': 'topics_hierarchy_',
     'main_topics': 'main_topics_',
@@ -12,6 +15,7 @@ CACHE_KEY_PREFIXES = {
     'topic_hierarchy_full': 'topic_hierarchy_full',
     'topic_statistics': 'topic_statistics'
 }
+
 
 logger = logging.getLogger(__name__)
 
@@ -296,10 +300,11 @@ def get_topic_statistics():
     cache.set(cache_key, stats, 3600)
     return stats
 
-def get_predefined_levels():
-    """Devuelve los niveles predefinidos"""
-    return ['Principiante', 'Intermedio', 'Avanzado']
 
-def get_predefined_status():
-    """Devuelve los estados predefinidos"""
-    return ['Activo', 'Inactivo']
+def get_level_choices():
+    """Obtiene los niveles desde el modelo Test"""
+    return [choice[0] for choice in Test.LEVEL_CHOICES]
+
+def get_status_choices():
+    """Obtiene los estados desde el modelo Result"""
+    return [choice[0] for choice in Result.STATUS_CHOICES]

@@ -540,7 +540,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
       
       <!-- Vista móvil: tarjetas -->
-      <div class="block sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+      <div class="block md:hidden divide-y divide-gray-200 dark:divide-gray-700">
         @for (result of adminResultsData(); track result.id) {
           <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
             <!-- Checkbox y cabecera -->
@@ -650,7 +650,7 @@
       </div>
 
       <!-- Vista desktop: tabla -->
-      <div class="hidden sm:block overflow-x-auto">
+      <div class="hidden md:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
@@ -701,8 +701,8 @@
                       <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {{ getUserFullName(result) }}
                       </div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ result.user_email }}
+                      <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        @{{ result.user_username }}
                       </div>
                     </div>
                   </div>
@@ -711,9 +711,9 @@
                 <!-- Columna Test -->
                 <td class="px-4 py-4">
                   <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    <span class="mr-2">{{ result.test_title }}</span> 
-                    <span class="{{ getLevelBadgeClass(result.test_level) }}">
-                      {{ result.test_level }}
+                    <span class="mr-1">{{ result.test_title }}</span> 
+                    <span class="{{ getLevelBadgeClass(result.test_level) }} ml-2">
+                      {{ result.test_level[0] }}
                     </span> 
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -743,10 +743,21 @@
                 <!-- Columna Fecha -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Inició: {{ formatDateTime(result.started_at) }}
+                    <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                    </svg>                   
+                    {{ formatDateTime(result.started_at) }}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ result.status === 'completed' ? 'Completado:' : 'Actualizado:' }}
+                    @if (result.status === 'completed') {
+                      <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>                      
+                    }@else{
+                      <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                      </svg>
+                    }
                     {{ formatDateTime(result.updated_at) }}                    
                   </div>
                 </td>

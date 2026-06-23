@@ -13,7 +13,7 @@ import logging
 
 from apps.test.models import Test, Question, Answer
 from apps.results.models import Result
-from apps.shared.models import get_main_topics, get_sub_topics, get_predefined_levels, insert_or_update_topic, delete_orphaned_topics, invalidate_topics_cache
+from apps.shared.models import get_main_topics, get_sub_topics, insert_or_update_topic, delete_orphaned_topics, invalidate_topics_cache, get_level_choices
 
 logger = logging.getLogger(__name__)
 
@@ -846,7 +846,7 @@ def create_test(request):
         return JsonResponse({'error': f'Campos requeridos faltantes: {", ".join(missing_fields)}'}, status=400)
     
     # Validar nivel
-    valid_levels = get_predefined_levels()
+    valid_levels = get_level_choices()
     if data['level'] not in valid_levels:
         return JsonResponse({
             'error': 'Nivel no válido',
@@ -916,7 +916,7 @@ def update_test(request, test_id):
     
     # Validar nivel si se proporciona
     if 'level' in data and data['level']:
-        valid_levels = get_predefined_levels()
+        valid_levels = get_level_choices()
         if data['level'] not in valid_levels:
             return JsonResponse({
                 'error': 'Nivel no válido',
@@ -1065,7 +1065,7 @@ def get_all_tests(request):
     # Obtener filtros disponibles
     main_topics = get_main_topics()
     sub_topics = get_sub_topics(main_topic) if main_topic else []
-    levels = get_predefined_levels()
+    levels = get_level_choices()
     
     return JsonResponse({
         'tests': tests_data,

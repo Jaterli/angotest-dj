@@ -16,7 +16,7 @@ from django.core.cache import cache
 from apps.test.models import Test, Question, Answer
 from apps.accounts.models import User
 from .models import Result
-from apps.shared.models import get_main_topics, get_predefined_levels, get_predefined_status
+from apps.shared.models import get_main_topics, get_level_choices, get_status_choices
 
 logger = logging.getLogger(__name__)
 
@@ -716,25 +716,174 @@ def get_result_detail(request, result_id):
         }
     })
 
+
 @require_http_methods(["GET"])
 @admin_required
 def export_results_csv(request):
-    """Exportar resultados a CSV"""
+    """Exportar resultados a CSV con filtros aplicados"""
     import csv
     
-    results = Result.objects.select_related('user', 'test').iterator(chunk_size=1000)
+    # Obtener parámetros de filtro
+    user_id = request.GET.get('user_id')
+    user_role = request.GET.get('user_role')
+    user_email = request.GET.get('user_email')
+    user_username = request.GET.get('user_username')
     
-    response = HttpResponse(content_type='text/csv')
+    test_id = request.GET.get('test_id')
+    test_title = request.GET.get('test_title')
+    test_main_topic = request.GET.get('test_main_topic')
+    test_sub_topic = request.GET.get('test_sub_topic')
+    test_specific_topic = request.GET.get('test_specific_topic')
+    test_level = request.GET.get('test_level')
+    test_created_by = request.GET.get('test_created_by')
+    
+    status = request.GET.get('status')
+    min_score = request.GET.get('min_score')
+    max_score = request.GET.get('max_score')
+    
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    search = request.GET.get('search')
+    
+    # Construir query con filtros
+    query = Result.objects.select_related('user', 'test')
+    
+    # Filtros de usuario
+    if user_id:
+        try:
+            query = query.filter(user_id=int(user_id))
+        except ValueError:
+            pass
+    
+    if user_role:
+        query = query.filter(user__role=user_role)
+    
+    if user_email:
+        query = query.filter(user__email__icontains=user_email)
+    
+    if user_username:
+        query = query.filter(user__username__icontains=user_username)
+    
+    # Filtros de test
+    if test_id:
+        try:
+            query = query.filter(test_id=int(test_id))
+        except ValueError:
+            pass
+    
+    if test_title:
+        query = query.filter(test__title__icontains=test_title)
+    
+    if test_main_topic:
+        query = query.filter(test__main_topic=test_main_topic)
+    
+    if test_sub_topic:
+        query = query.filter(test__sub_topic=test_sub_topic)
+    
+    if test_specific_topic:
+        query = query.filter(test__specific_topic=test_specific_topic)
+    
+    if test_level:
+        query = query.filter(test__level=test_level)
+    
+    if test_created_by:
+        try:
+            query = query.filter(test__created_by=int(test_created_by))
+        except ValueError:
+            pass
+    
+    # Filtros de resultado
+    if status and status != 'all':
+        query = query.filter(status=status)
+    
+    # Filtros de puntuación (usando annotate)
+    if min_score or max_score:
+        from django.db.models import F, Case, When, Value, FloatField
+        from django.db.models.functions import Coalesce, Round
+        
+        query = query.annotate(
+            score=Case(
+                When(
+                    status='completed',
+                    then=Coalesce(
+                        Round(F('correct_answers') * 100.0 / (F('correct_answers') + F('wrong_answers')), 2),
+                        Value(0.0)
+                    )
+                ),
+                default=Value(0.0),
+                output_field=FloatField()
+            )
+        )
+        
+        if min_score:
+            try:
+                min_val = float(min_score)
+                query = query.filter(score__gte=min_val)
+            except ValueError:
+                pass
+        
+        if max_score:
+            try:
+                max_val = float(max_score)
+                query = query.filter(score__lte=max_val)
+            except ValueError:
+                pass
+    
+    # Filtros de fecha
+    if start_date:
+        try:
+            from datetime import datetime
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            query = query.filter(started_at__date__gte=start)
+        except ValueError:
+            pass
+    
+    if end_date:
+        try:
+            from datetime import datetime
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+            query = query.filter(started_at__date__lte=end)
+        except ValueError:
+            pass
+    
+    # Búsqueda general
+    if search:
+        query = query.filter(
+            Q(user__username__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(test__title__icontains=search) |
+            Q(test__main_topic__icontains=search) |
+            Q(test__sub_topic__icontains=search)
+        )
+    
+    # Ordenar por fecha de actualización descendente (más recientes primero)
+    query = query.order_by('-updated_at')
+    
+    # Crear respuesta CSV
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="results_export.csv"'
     
+    # Añadir BOM para UTF-8 (compatibilidad con Excel)
+    response.write('\ufeff')
+    
     writer = csv.writer(response)
+    
+    # Cabeceras
     writer.writerow([
         'ID', 'Usuario', 'Email', 'Test', 'Nivel', 'Tema Principal',
-        'Subtema', 'Correctas', 'Incorrectas', 'Total', 'Puntuación (%)',
-        'Tiempo (seg)', 'Estado', 'Fecha Inicio', 'Última Actualización'
+        'Subtema', 'Tema Específico', 'Correctas', 'Incorrectas', 
+        'Total Respondidas', 'Puntuación (%)', 'Tiempo (seg)',
+        'Estado', 'Fecha Inicio', 'Última Actualización'
     ])
     
-    for result in results:
+    # Usar iterator para eficiencia con grandes conjuntos de datos
+    for result in query.iterator(chunk_size=1000):
+        total_answers = result.correct_answers + result.wrong_answers
+        score = 0
+        if result.status == 'completed' and total_answers > 0:
+            score = round((result.correct_answers / total_answers) * 100, 2)
+        
         writer.writerow([
             result.pk,
             result.user.username,
@@ -743,10 +892,11 @@ def export_results_csv(request):
             result.test.level,
             result.test.main_topic,
             result.test.sub_topic,
+            result.test.specific_topic,
             result.correct_answers,
             result.wrong_answers,
-            result.correct_answers + result.wrong_answers,
-            result.score_percentage,
+            total_answers,
+            score,
             result.time_taken,
             result.status,
             result.started_at.isoformat() if result.started_at else '',
@@ -754,6 +904,7 @@ def export_results_csv(request):
         ])
     
     return response
+
 
 # ====== Admin: Obtener lista de resultados con filtros avanzados ======
 @require_http_methods(["GET"])
@@ -918,8 +1069,8 @@ def get_results_list(request):
         'filters_applied': request.GET.dict(),
         'available_filters': {
             'main_topics': get_main_topics(),
-            'levels': get_predefined_levels(),
-            'statuses': get_predefined_status(),
+            'levels': get_level_choices(),
+            'statuses': get_status_choices(),
             'roles': ['user', 'admin'],
         },
         'stats': {
@@ -1207,7 +1358,7 @@ def get_user_results(request, user_id):
         },
         'available_filters': {
             'main_topics': main_topics,
-            'levels': get_predefined_levels(),
+            'levels': get_level_choices(),
             'statuses': ['all', 'completed', 'in_progress'],
         },
         'stats': {

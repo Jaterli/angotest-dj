@@ -14,6 +14,30 @@ export class ResultsManagementService {
 
   // Obtener resultados con filtros para administración
   getAdminResults(filter: AdminResultsFilter = {}): Observable<AdminResultsFullResponse> {
+    let params = this.buildFilterParams(filter);
+    return this.http.get<AdminResultsFullResponse>(`${this.apiUrl}`, { params });
+  }
+
+  // Exportar resultados a CSV con filtros
+  exportResults(filter: AdminResultsFilter = {}): Observable<Blob> {
+    let params = this.buildFilterParams(filter);
+    
+    // Añadir parámetros de ordenamiento si existen
+    if (filter.sort_by) {
+      params = params.set('sort_by', filter.sort_by);
+    }
+    if (filter.sort_order) {
+      params = params.set('sort_order', filter.sort_order);
+    }
+    
+    return this.http.get(`${this.apiUrl}/export-csv/`, {
+      params: params,
+      responseType: 'blob'
+    });
+  }
+
+  // Construir parámetros de filtro (método auxiliar)
+  private buildFilterParams(filter: AdminResultsFilter): HttpParams {
     let params = new HttpParams();
     
     // Parámetros básicos
@@ -102,10 +126,7 @@ export class ResultsManagementService {
       params = params.set('search', filter.search);
     }
 
-    return this.http.get<AdminResultsFullResponse>(
-      `${this.apiUrl}`, 
-      { params }
-    );
+    return params;
   }
 
   // Eliminar resultado individual
@@ -119,5 +140,4 @@ export class ResultsManagementService {
       body: { ids: resultIds }
     });
   }
-
 }

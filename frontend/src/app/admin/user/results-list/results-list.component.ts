@@ -473,7 +473,41 @@ export class ResultsListComponent implements OnInit {
 
   // Método para exportar resultados
   exportResults(): void {
-    console.log('Exportando resultados...');
+    if (this.loading()) return;
+    
+    // Mostrar indicador de carga
+    this.loading.set(true);
+    
+    // Obtener filtros actuales
+    const filters = this.selectedFilters();
+    
+    // Llamar al servicio de exportación
+    this.resultsManagementService.exportResults(filters).subscribe({
+      next: (blob: Blob) => {
+        // Crear URL para descarga
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Nombre del archivo con fecha
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        a.download = `resultados_${dateStr}.csv`;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        this.loading.set(false);
+        this.successMessage.set('Resultados exportados correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al exportar resultados:', err);
+        this.loading.set(false);
+        this.errorMessage.set('Error al exportar los resultados. Por favor, inténtalo de nuevo.');
+      }
+    });
   }
 
   // Método para ver detalles del resultado

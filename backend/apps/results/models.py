@@ -6,7 +6,7 @@ class Result(models.Model):
     STATUS_CHOICES = (
         ('in_progress', 'En progreso'),
         ('completed', 'Completado'),
-        ('abandoned', 'Abandonado'),
+        ('expired', 'Expirado'),
     )
 
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='results')

@@ -16,6 +16,12 @@
   --breakpoint-2xl: 100rem;
 }
 
+@media (max-width: 1280px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
 .textsize-cnf {
   @apply text-sm xs:text-base;
 }

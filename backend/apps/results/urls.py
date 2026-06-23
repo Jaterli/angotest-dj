@@ -19,5 +19,5 @@ urlpatterns = [
     path('bulk-delete/', views.delete_results_bulk, name='delete_results_bulk'),
     path('stats/', views.get_result_stats, name='get_result_stats'),
     path('<int:result_id>/', views.get_result_detail, name='get_result_detail'),
-    path('export/csv/', views.export_results_csv, name='export_results_csv'),
+    path('export-csv/', views.export_results_csv, name='export_results_csv'),
 ]

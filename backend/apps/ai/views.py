@@ -16,7 +16,7 @@ from .services import (
 )
 from .models import AIRequestLog
 from apps.admin_panel.models import SystemConfig, UserQuota
-from apps.shared.models import get_predefined_levels
+from apps.shared.models import get_level_choices
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def generate_ai_test(request):
     
     # Validar nivel
     level = data.get('level')
-    valid_levels = get_predefined_levels()
+    valid_levels = get_level_choices()
     if level not in valid_levels:
         return JsonResponse({
             'error': 'Nivel no válido',

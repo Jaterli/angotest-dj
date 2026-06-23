@@ -29,8 +29,8 @@ def get_ai_provider():
             api_key=groq_api_key,
             base_url='https://api.groq.com/openai/v1/chat/completions',
             model=os.getenv('GROQ_MODEL', 'mixtral-8x7b-32768'),
-            max_tokens=8000,
-            temperature=0.5
+            max_tokens=int(os.getenv('AI_MAX_TOKENS', 8000)),
+            temperature=float(os.getenv('AI_TEMPERATURE', 0.5))
         )
     return None
 
@@ -78,6 +78,7 @@ SPECS: dificultad={input_data.get('level')} | preguntas={n_q} | opciones/pregunt
 REGLAS:
 - Exactamente {n_q} preguntas y {n_a} opciones cada una
 - Solo 1 opción correcta por pregunta ("is_correct": true)
+- Opciones incorrectas verosímiles pero claramente erróneas
 - Sin opciones repetidas por pregunta
 
 RESPONDE SOLO CON ESTE JSON:
@@ -97,6 +98,7 @@ REGLAS:
 - Exactamente {n_q} preguntas y {n_a} opciones cada una
 - Solo 1 opción correcta ("is_correct": true), resto false
 - Opciones incorrectas verosímiles pero claramente erróneas
+- Sin opciones repetidas por pregunta
 
 RESPONDE SOLO CON ESTE JSON:
 {{"title":"...","description":"1-2 frases","questions":[{{"question_text":"...","answers":[{{"answer_text":"...","is_correct":true/false}}]}}]}}"""

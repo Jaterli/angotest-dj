@@ -11,7 +11,7 @@ from apps.admin_panel.models import SystemConfig
 from .models import (
     get_topics, get_main_topics, get_sub_topics, get_specific_topics,
     validate_and_suggest_topics, invalidate_topics_cache, get_topic_hierarchy,
-    get_topic_statistics, insert_or_update_topic, get_predefined_levels
+    get_topic_statistics, insert_or_update_topic, get_level_choices
 )
 
 logger = logging.getLogger(__name__)
@@ -174,7 +174,7 @@ def create_topic(request):
 @require_http_methods(["GET"])
 def get_predefined_levels_view(request):
     """Obtiene los niveles predefinidos"""
-    levels = get_predefined_levels()
+    levels = get_level_choices()
     return JsonResponse(levels, safe=False)
 
 
