@@ -32,7 +32,7 @@ CONFIG = {
     'correct_percentage_min': 30,
     'correct_percentage_max': 90,
     'completed_percentage': 60,
-    'abandoned_percentage': 20,
+    'expired_percentage': 20,
     'in_progress_percentage': 20,
 
     'start_date': None,
@@ -77,7 +77,7 @@ class Command(BaseCommand):
         parser.add_argument('--correct-percentage-min', type=float)
         parser.add_argument('--correct-percentage-max', type=float)
         parser.add_argument('--completed-percentage', type=float)
-        parser.add_argument('--abandoned-percentage', type=float)
+        parser.add_argument('--expired-percentage', type=float)
         parser.add_argument('--in-progress-percentage', type=float)
         parser.add_argument('--start-date', type=str)
         parser.add_argument('--end-date', type=str)
@@ -95,7 +95,7 @@ class Command(BaseCommand):
         self.tests = []
         self.results_created = 0
         self.date_range = None
-        self.stats = {'completed': 0, 'abandoned': 0, 'in_progress': 0, 'total': 0}
+        self.stats = {'completed': 0, 'expired': 0, 'in_progress': 0, 'total': 0}
 
     def handle(self, *args, **options):
         options = self._merge_config_with_options(options)
@@ -112,7 +112,7 @@ class Command(BaseCommand):
 
         total_percentage = (
             options['completed_percentage']
-            + options['abandoned_percentage']
+            + options['expired_percentage']
             + options['in_progress_percentage']
         )
         if abs(total_percentage - 100) > 0.01:
@@ -121,7 +121,7 @@ class Command(BaseCommand):
             ))
             factor = 100 / total_percentage
             options['completed_percentage'] *= factor
-            options['abandoned_percentage'] *= factor
+            options['expired_percentage'] *= factor
             options['in_progress_percentage'] *= factor
 
         if options['clear_existing_users']:
@@ -173,17 +173,7 @@ class Command(BaseCommand):
 
         return merged
 
-    # ------------------------------------------------------------------
-    # BUG FIX 2: fechas aware vs naive
-    # ------------------------------------------------------------------
-    # Problema anterior: cuando se usaban --start-date/--end-date, se creaban
-    # datetimes naive (sin timezone). Combinados con timezone.now() (aware) en
-    # la comparación `min_start = max(start_date, test.created_at)` esto lanzaba
-    # un TypeError o producía comparaciones incorrectas con USE_TZ=True.
-    #
-    # Solución: convertir siempre las fechas específicas a datetimes aware usando
-    # timezone.make_aware(), igual que el resultado de timezone.now().
-    # ------------------------------------------------------------------
+ 
     def _calculate_date_range(self, options):
         if options.get('start_date') and options.get('end_date'):
             try:
@@ -234,13 +224,6 @@ class Command(BaseCommand):
         self.stdout.write(f'   Duración: {self.date_range["days"]} días')
         self.stdout.write('=' * 60 + '\n')
 
-    # ------------------------------------------------------------------
-    # BUG FIX 3: clear_existing_users ignoraba usuarios con otros prefijos
-    # ------------------------------------------------------------------
-    # No había bug de lógica aquí, pero el método dependía de que BUG FIX 1
-    # estuviera resuelto para que 'clear_existing_users': True del CONFIG
-    # no fuera sobreescrito a False por el argumento CLI no pasado.
-    # ------------------------------------------------------------------
     def clear_existing_users(self):
         self.stdout.write('🗑️  Eliminando usuarios existentes...')
         users_to_delete = User.objects.filter(username__startswith='test_user_')
@@ -252,7 +235,7 @@ class Command(BaseCommand):
             self.stdout.write('   No se encontraron usuarios para eliminar')
 
     # ------------------------------------------------------------------
-    # MEJORA: bulk_create para usuarios — mucho más rápido con N grande
+    # Bulk_create para usuarios 
     # ------------------------------------------------------------------
     def get_users(self, options):
         if options['use_existing_users'] or options['skip_users']:
@@ -336,14 +319,12 @@ class Command(BaseCommand):
         deleted_count = Result.objects.filter(test_id__in=test_ids).delete()[0]
         self.stdout.write(self.style.SUCCESS(f'   Eliminados {deleted_count} resultados'))
 
-    # ------------------------------------------------------------------
-    # MEJORA: bulk_create para resultados — un INSERT en lugar de N
-    # ------------------------------------------------------------------
+
     def generate_results(self, options):
         self.stdout.write('📊 Generando resultados...')
 
         completed_pct = options['completed_percentage'] / 100
-        abandoned_pct = options['abandoned_percentage'] / 100
+        expired_pct = options['expired_percentage'] / 100
         correct_min = options['correct_percentage_min'] / 100
         correct_max = options['correct_percentage_max'] / 100
 
@@ -368,14 +349,14 @@ class Command(BaseCommand):
                 rand = random.random()
                 if rand < completed_pct:
                     status = 'completed'
-                elif rand < completed_pct + abandoned_pct:
-                    status = 'abandoned'
+                elif rand < completed_pct + expired_pct:
+                    status = 'expired'
                 else:
                     status = 'in_progress'
 
                 if status == 'completed':
                     num_answered = len(questions)
-                elif status == 'abandoned':
+                elif status == 'expired':
                     min_a = max(1, int(len(questions) * 0.2))
                     max_a = max(min_a + 1, int(len(questions) * 0.6))
                     num_answered = random.randint(min_a, min(max_a, len(questions)))
@@ -426,7 +407,7 @@ class Command(BaseCommand):
                 else:
                     started_at = test.created_at + timedelta(hours=1)
 
-                if status in ('in_progress', 'abandoned'):
+                if status in ('in_progress', 'expired'):
                     actual_time = int(time_taken * random.uniform(0.2, 0.8))
                     updated_at = started_at + timedelta(seconds=actual_time)
                 else:
@@ -462,7 +443,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f'   Resultados creados: {self.results_created} '
             f'(Completados: {self.stats["completed"]}, '
-            f'Abandonados: {self.stats["abandoned"]}, '
+            f'Expirados: {self.stats["expired"]}, '
             f'En progreso: {self.stats["in_progress"]})'
         ))
 
@@ -487,7 +468,7 @@ class Command(BaseCommand):
 
         if self.results_created > 0:
             self.stdout.write(f'\n📊 Resultados creados: {self.results_created}')
-            for key, label in (('completed', 'Completados'), ('abandoned', 'Abandonados'), ('in_progress', 'En progreso')):
+            for key, label in (('completed', 'Completados'), ('expired', 'Expirados'), ('in_progress', 'En progreso')):
                 pct = self.stats[key] / self.results_created * 100
                 self.stdout.write(f'   - {label}: {self.stats[key]} ({pct:.1f}%)')
 

@@ -12,7 +12,7 @@ export const APP_ROUTES: Routes = [
   { path: 'contact', loadComponent: () => import('./shared/components/pages/contact/contact.component').then(m => m.ContactComponent) },
   { path: 'faqs', loadComponent: () => import('./shared/components/pages/faqs/faqs.component').then(m => m.FaqsComponent) },  
   { path: 'ai-integration', loadComponent: () => import('./shared/components/pages/ai-integration/ai-integration.component').then(m => m.AiIntegrationComponent) },    
-  { path: 'home', loadComponent: () => import('./shared/components/pages/home/home.component').then(m => m.HomeComponent) },
+  { path: '', loadComponent: () => import('./shared/components/pages/home/home.component').then(m => m.HomeComponent) },
 
   // Rutas de administración
   { path: 'admin/tests', loadComponent: () => import('./admin/tests/admin-test-list/admin-test-list.component').then(m => m.AdminTestListComponent), canActivate: [authGuard] },
