@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   returnUrl: string | null = null;
-  message = signal<string | null>(null); // Nueva señal para el mensaje
+  message = signal<string | null>(null);
 
   ngOnInit() {
     // Obtener los parámetros de la query string
@@ -59,7 +59,7 @@ export class LoginComponent implements OnInit {
         this.loading.set(false);
         
         // Si hay returnUrl, redirigir allí
-        if (this.returnUrl && !this.returnUrl.startsWith('/login')) {
+        if (this.returnUrl && !this.returnUrl.startsWith('/login/')) {
           console.log('Redirigiendo a returnUrl:', this.returnUrl);
           this.router.navigateByUrl(this.returnUrl);
           return;
@@ -67,10 +67,10 @@ export class LoginComponent implements OnInit {
         
         // Si no hay returnUrl, continuar con la lógica original
         if (response.user.role !== 'admin') {
-          this.router.navigate(['/tests/not-started']);
+          this.router.navigate(['/tests/not-started/']);
           return;
         }
-        this.router.navigate(['/admin/tests']);
+        this.router.navigate(['/admin/tests/']);
       },
       error: (err) => {
         console.error('Error en login:', err);        

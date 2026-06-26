@@ -12,7 +12,7 @@ import logging
 from .services import (
     get_ai_provider, get_system_prompt, build_prompt,
     check_user_quota, generate_mock_test, make_ai_request,
-    parse_ai_response, create_test_from_ai_response
+    parse_ai_response, create_test_from_ai_response, get_or_create_user_quota, quota_to_dict
 )
 from .models import AIRequestLog
 from apps.admin_panel.models import SystemConfig, UserQuota
@@ -201,36 +201,9 @@ def generate_ai_test(request):
 @login_required
 def get_current_user_quota(request):
     """Obtiene la quota actual del usuario"""
-    
-    user_id = request.user.id
-    month_year = timezone.now().strftime('%Y-%m')
-    
-    try:
-        quota = UserQuota.objects.get(user_id=user_id, month_year=month_year)
-    except UserQuota.DoesNotExist:
-        max_requests = 5
-        try:
-            config = SystemConfig.objects.get(key='ai_requests_per_month')
-            max_requests = int(config.value)
-        except SystemConfig.DoesNotExist:
-            pass
-        
-        quota = UserQuota.objects.create(
-            user_id=user_id,
-            month_year=month_year,
-            max_requests=max_requests,
-            used_requests=0
-        )
-    
-    response = {
-        'month_year': month_year,
-        'max_requests': quota.max_requests,
-        'used_requests': quota.used_requests,
-        'remaining_requests': quota.max_requests - quota.used_requests,
-        'percentage_used': (quota.used_requests / quota.max_requests * 100) if quota.max_requests > 0 else 0
-    }
-    
-    return JsonResponse(response)
+    quota = get_or_create_user_quota(request.user.id)
+    return JsonResponse(quota_to_dict(quota))
+
 
 @require_http_methods(["GET"])
 @login_required

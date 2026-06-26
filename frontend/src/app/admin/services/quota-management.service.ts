@@ -69,7 +69,7 @@ export class QuotaManagementService {
   // Crear cuota
   createQuota(data: CreateQuotaInput): Observable<{ quota: UserQuota; message: string }> {
     return this.http.post<{ quota: UserQuota; message: string }>(
-      `${this.apiUrl}/admin/quotas/`,
+      `${this.apiUrl}/create/`,
       data
     );
   }

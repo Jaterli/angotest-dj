@@ -6,98 +6,185 @@
       <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Configuraciones del Sistema</h1>
       <p class="text-gray-600 dark:text-gray-400 mt-2">
         Gestiona las configuraciones globales de la aplicación
-        <span class="text-sm ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
-          {{ filteredConfigs().length }} configuración{{ filteredConfigs().length !== 1 ? 'es' : '' }}
-        </span>
       </p>
     </div>
     
     <!-- Botones de acción -->
     <div class="flex flex-wrap items-center gap-3">
+      <!-- Botón para mostrar información de configuraciones -->
+      <button (click)="showConfigInfo.set(!showConfigInfo())"
+        class="inline-flex items-center px-4 py-2.5 textsize-cnf font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-sm hover:shadow transition-all">
+        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        {{ showConfigInfo() ? 'Ocultar predeterminados' : 'Mostrar predeterminados' }}
+      </button>
+
       <button (click)="openCreateModal()"
-        class="inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-sm hover:shadow transition-all">
+        class="inline-flex items-center px-4 py-2 textsize-cnf font-medium rounded-lg text-white bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors border border-emerald-600 dark:border-emerald-700">
         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
         </svg>
         Nueva Configuración
       </button>
-      
-      <button (click)="loadConfigs()"
-        class="inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-sm hover:shadow transition-all">
+     
+      <button (click)="showFilters.set(!showFilters())"
+        class="inline-flex items-center px-4 py-2 textsize-cnf font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors border border-blue-600 dark:border-blue-700">
         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
         </svg>
-        Refrescar
+        {{ showFilters() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
       </button>
+      
     </div>
   </div>
 
-  <!-- Filtros y búsqueda -->
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-3 sm:p-6 mb-6">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filtros y Búsqueda</h3>
-        <p class="text-gray-600 dark:text-gray-400 text-sm">Filtra y ordena las configuraciones</p>
-      </div>
+  <!-- Panel de información de configuraciones predeterminadas -->
+  @if (showConfigInfo()) {
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800 p-4 sm:p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        ⚙️ Valores Predeterminados ({{ missingConfigs().length }} pendientes)
+      </h3>
       
-      <div>
-        <button (click)="searchTerm.set(''); filterOptions.set({sortBy: 'key', sortOrder: 'asc'}); applyFilters()"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
-          </svg>
-          Limpiar Filtros
-        </button>
+      @if (loadingDefaults()) {
+        <div class="flex justify-center py-6">
+          <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else {
+        @if (missingConfigs().length === 0) {
+          <div class="text-center py-4 text-green-600 dark:text-green-400">✅ Todas las configuraciones están creadas</div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            @for (config of missingConfigs(); track config.key) {
+              <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                <div class="flex justify-between items-center">
+                  <code class="text-sm font-semibold text-blue-600 dark:text-blue-400">{{ config.key }}</code>
+                </div>
+                <div class="text-sm mt-1">
+                  <span class="text-gray-500 dark:text-gray-400">Default:</span>
+                  <code class="font-mono font-medium text-gray-900 dark:text-gray-100 ml-1">{{ config.value }}</code>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+      
+      <div class="mt-3 text-xs text-blue-700 dark:text-blue-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2">
+        💡 Las configuraciones pendientes usarán el valor predeterminado hasta que sean creadas en BD.
       </div>
     </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+  }
+
+  <!-- Panel de Filtros -->
+  @if (showFilters()) {
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-3 sm:p-6 mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filtros y Búsqueda</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">Filtra y ordena las configuraciones</p>
+        </div>
+        
+        <div class="flex gap-2">
+          <button (click)="applyFilters()"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+            <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+            </svg>
+            Aplicar Filtros
+          </button>
+          
+          <button (click)="resetFilters()"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566a1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566a1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+            </svg>
+            Limpiar Todo
+          </button>
+        </div>
+      </div>
+      
       <!-- Búsqueda -->
-      <div class="md:col-span-2">
+      <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Buscar
+          Búsqueda General
         </label>
         <input
           type="text"
           [(ngModel)]="searchTerm"
           (ngModelChange)="onSearchChange()"
-          placeholder="Buscar por clave, valor..."
+          placeholder="Buscar por clave, valor o descripción..."
           class="textsize-cnf w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
         >
       </div>
-          
-      <!-- Ordenación -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Ordenar por
-        </label>
-        <select
-          [(ngModel)]="filterOptions().sortBy"
-          (ngModelChange)="onFilterChange()"
-          class="textsize-cnf w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-        >
-          <option value="key">Clave</option>
-          <option value="value">Valor</option>
-          <option value="updated_at">Fecha actualización</option>
-          <option value="created_at">Fecha creación</option>
-        </select>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Ordenar por -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Ordenar por
+          </label>
+          <select
+            [(ngModel)]="filterOptions().sortBy"
+            (ngModelChange)="setSortBy($event)"
+            class="textsize-cnf w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+          >
+            @for (option of sortOptions(); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Orden ascendente/descendente -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Orden
+          </label>
+          <div class="flex">
+            <button
+              (click)="toggleSortOrder()"
+              class="textsize-cnf w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+              @if ((filterOptions().sortOrder || 'asc') === 'asc') {
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Ascendente
+              } @else {
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Descendente
+              }
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Dirección
-        </label>
-        <select
-          [(ngModel)]="filterOptions().sortOrder"
-          (ngModelChange)="onFilterChange()"
-          class="textsize-cnf w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-        >
-          <option value="asc">Ascendente</option>
-          <option value="desc">Descendente</option>
-        </select>
-      </div>
+      <!-- Filtros activos -->
+      @if (showFilterIndicators()) {
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Filtros aplicados:</h4>
+          <div class="flex flex-wrap gap-2">
+            @if (searchTerm()) {
+              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-300">
+                Búsqueda: {{ searchTerm() }}
+                <button
+                  (click)="removeFilter('search')"
+                  class="ml-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200"
+                >
+                  ×
+                </button>
+              </span>
+            }
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-300">
+              Orden: {{ currentSortLabel() }} {{ getSortOrderIcon() }}
+            </span>
+          </div>
+        </div>
+      }
     </div>
-  </div>
+  }
 
   <!-- Estado de carga -->
   @if (loading()) {
@@ -141,6 +228,19 @@
 
   <!-- Lista de configuraciones -->
   @if (!loading() && filteredConfigs().length > 0) {
+    <!-- Información de resultados -->
+    <div class="mb-4 flex items-center justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
+      <div>
+        Mostrando <span class="font-medium">{{ filteredConfigs().length }}</span> configuración{{ filteredConfigs().length !== 1 ? 'es' : '' }}
+      </div>
+      <div>
+        Orden: 
+        <span class="text-gray-800 dark:text-gray-200">
+          {{ currentSortLabel() }} {{ getSortOrderIcon() }}
+        </span>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       @for (config of filteredConfigs(); track config.id) {
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl dark:hover:shadow-gray-900/50 transition-all duration-200 p-3 sm:p-6">

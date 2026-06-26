@@ -30,13 +30,13 @@ export class InvitationService {
 
   // Verificar invitación
   checkInvitation(token: string): Observable<CheckInvitationResponse> {
-    return this.http.get<CheckInvitationResponse>(`${this.apiUrl}/check-invitation?token=${token}`);
+    return this.http.get<CheckInvitationResponse>(`${this.apiUrl}/check-invitation/?token=${token}`);
   }
 
   // Aceptar invitación
   acceptInvitation(token: string, asGuest?: boolean): Observable<AcceptInvitationResponse> {
     return this.http.post<AcceptInvitationResponse>(
-      `${this.apiUrl}/accept-invitation?token=${token}`,
+      `${this.apiUrl}/accept-invitation/?token=${token}`,
       { as_guest: asGuest || false }
     ).pipe(
       tap(response => {

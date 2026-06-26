@@ -45,7 +45,7 @@ export class InvitationsManagementService {
       params = params.set('end_date', filters.end_date);
     }
 
-    return this.http.get<InvitationsResponse>(this.apiUrl, { params });
+    return this.http.get<InvitationsResponse>(`${this.apiUrl}/list/`, { params });
   }
 
   deleteInvitation(id: number): Observable<any> {

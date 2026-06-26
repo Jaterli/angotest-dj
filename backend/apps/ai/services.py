@@ -9,6 +9,7 @@ from typing import Dict, Any, Tuple
 from apps.test.models import Test, Question, Answer
 from apps.admin_panel.models import SystemConfig, UserQuota
 from apps.shared.models import get_main_topics, get_topics, insert_or_update_topic, invalidate_topics_cache
+from apps.admin_panel.utils import SystemConfigManager
 
 # Configuración de proveedores de IA
 class AIProviderConfig:
@@ -134,51 +135,58 @@ def build_topics_summary() -> str:
     except Exception as e:
         return "No se pudo cargar la estructura de temas existente."
 
-def check_user_quota(user_id: int) -> Tuple[bool, Dict[str, Any]]:
-    """Verifica y actualiza la quota del usuario"""
-    month_year = datetime.now().strftime('%Y-%m')
-    
+
+# Lógica de quotas
+def get_default_max_requests() -> int:
+    """Obtiene el máximo de requests mensuales configurado (única fuente de verdad)."""
     try:
-        quota = UserQuota.objects.get(user_id=user_id, month_year=month_year)
-    except UserQuota.DoesNotExist:
-        # Crear nueva quota
-        max_requests = int(os.getenv('AI_REQUESTS_PER_MONTH', 5))
-        try:
-            config = SystemConfig.objects.get(key='ai_requests_per_month')
-            max_requests = int(config.value)
-        except SystemConfig.DoesNotExist:
-            pass
-        
-        quota = UserQuota.objects.create(
-            user_id=user_id,
-            month_year=month_year,
-            max_requests=max_requests,
-            used_requests=0
-        )
-        return True, {
-            'month_year': month_year, 
-            'max_requests': max_requests, 
-            'used_requests': 0, 
-            'remaining_requests': max_requests
+        config = SystemConfig.objects.get(key='ai_requests_per_month')
+        return int(config.value)
+    except SystemConfig.DoesNotExist:
+        return SystemConfigManager.get('AI_REQUESTS_PER_MONTH') # Valor por defecto
+
+
+def get_or_create_user_quota(user_id: int) -> UserQuota:
+    """Obtiene la quota del usuario para el mes indicado, creándola si no existe."""
+    month_year = datetime.now().strftime('%Y-%m')
+
+    quota, _ = UserQuota.objects.get_or_create(
+        user_id=user_id,
+        month_year=month_year,
+        defaults={
+            'max_requests': get_default_max_requests(),
+            'used_requests': 0,
         }
-    
-    if quota.used_requests >= quota.max_requests:
-        return False, {
-            'month_year': month_year, 
-            'max_requests': quota.max_requests,
-            'used_requests': quota.used_requests,
-            'remaining_requests': 0,
-            'message': 'Límite de tests generados para este mes alcanzado'
-        }
-    
-    quota.used_requests += 1
-    quota.save()
-    
-    return True, {
+    )
+    return quota
+
+
+def quota_to_dict(quota: UserQuota) -> Dict[str, Any]:
+    """Serializa una quota siempre con el mismo formato."""
+    remaining = quota.max_requests - quota.used_requests
+    return {
+        'month_year': quota.month_year,
         'max_requests': quota.max_requests,
         'used_requests': quota.used_requests,
-        'remaining': quota.max_requests - quota.used_requests
+        'remaining_requests': remaining,
+        'percentage_used': (quota.used_requests / quota.max_requests * 100) if quota.max_requests > 0 else 0,
     }
+
+
+def check_user_quota(user_id: int) -> Tuple[bool, Dict[str, Any]]:
+    """Verifica si el usuario tiene quota disponible y, si es así, la consume."""
+    quota = get_or_create_user_quota(user_id)
+
+    if quota.used_requests >= quota.max_requests:
+        data = quota_to_dict(quota)
+        data['message'] = 'Límite de tests generados para este mes alcanzado'
+        return False, data
+
+    quota.used_requests += 1
+    quota.save()
+
+    return True, quota_to_dict(quota)
+
 
 def generate_mock_test(input_data: Dict[str, Any]) -> Dict[str, Any]:
     """Genera un test mock para desarrollo"""

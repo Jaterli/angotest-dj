@@ -7,6 +7,12 @@ export interface SystemConfig {
   updated_at: string;
 }
 
+export interface DefaultSystemConfig {
+  key: string;
+  value: string;
+  exists_in_db: boolean;
+}
+
 export interface CreateSystemConfigDTO {
   key: string;
   value: string;

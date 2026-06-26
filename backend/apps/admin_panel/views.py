@@ -16,7 +16,7 @@ from apps.results.models import Result
 from apps.accounts.models import User
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
-
+from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
@@ -424,6 +424,7 @@ def admin_update_user_quota(request, quota_id):
     return JsonResponse({'quota': _quota_to_dict(quota), 'message': 'Cuota actualizada exitosamente'})
 
 
+@csrf_exempt
 @require_http_methods(["DELETE"])
 @admin_required
 def admin_delete_user_quota(request, quota_id):
@@ -539,6 +540,26 @@ def admin_get_system_config_by_key(request, key):
     except SystemConfig.DoesNotExist:
         return JsonResponse({'error': 'Configuración no encontrada'}, status=404)
     return HttpResponse(config.value, content_type='text/plain')
+
+
+@require_http_methods(["GET"])
+@admin_required
+def admin_get_default_system_configs(request):
+    """Endpoint para obtener las configuraciones del sistema predeterminadas"""
+    
+    # Obtener todas las claves que existen en la base de datos
+    existing_keys = set(SystemConfig.objects.values_list('key', flat=True))
+    
+    configs = []
+    for key, value in settings.SYSTEM_CONFIG.items():
+        # Convertir la clave a minúsculas para comparar
+        key_lower = key.lower()
+        configs.append({
+            'key': key_lower,
+            'value': str(value),
+            'exists_in_db': key_lower in existing_keys
+        })
+    return JsonResponse(configs, safe=False)
 
 
 @csrf_exempt

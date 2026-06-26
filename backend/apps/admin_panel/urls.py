@@ -18,13 +18,14 @@ urlpatterns = [
     # Endpoints de Configuración del Sistema
     path('system-configs/', views.admin_get_system_configs, name='admin_get_system_configs'),
     path('system-configs/grouped/', views.admin_get_system_configs_grouped, name='admin_get_system_configs_grouped'),
+    path('system-configs/default/', views.admin_get_default_system_configs, name='admin_get_default_system_configs'),
     path('system-configs/export/csv/', views.admin_export_system_configs_csv, name='admin_export_system_configs_csv'),
     path('system-configs/bulk-update/', views.admin_bulk_update_system_configs, name='admin_bulk_update_system_configs'),
     path('system-configs/create/', views.admin_create_system_config, name='admin_create_system_config'),
     path('system-configs/key/<str:key>/', views.admin_get_system_config_by_key, name='admin_get_system_config_by_key'),
     path('system-configs/<int:config_id>/', views.admin_get_system_config, name='admin_get_system_config'),
-    path('system-configs/update/<int:config_id>/', views.admin_update_system_config, name='admin_update_system_config'),
-    path('system-configs/delete/<int:config_id>/', views.admin_delete_system_config, name='admin_delete_system_config'),
+    path('system-configs/<int:config_id>/update/', views.admin_update_system_config, name='admin_update_system_config'),
+    path('system-configs/<int:config_id>/delete/', views.admin_delete_system_config, name='admin_delete_system_config'),
 
     # Endpoints del Dashboard
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SystemConfigService } from '../services/system-config.service';
-import { SystemConfig, CreateSystemConfigDTO, UpdateSystemConfigDTO } from '../models/system-config.models';
+import { SystemConfig, CreateSystemConfigDTO, UpdateSystemConfigDTO, DefaultSystemConfig } from '../models/system-config.models';
 import { ModalComponent } from '../../shared/components/modal.component';
 
 @Component({
@@ -44,12 +44,44 @@ export class SystemConfigComponent implements OnInit {
     sortOrder: 'asc'
   });
 
+  // Opciones de ordenación disponibles
+  sortOptions = signal([
+    { value: 'key', label: 'Clave' },
+    { value: 'value', label: 'Valor' },
+    { value: 'updated_at', label: 'Fecha actualización' },
+    { value: 'created_at', label: 'Fecha creación' }
+  ]);
+
+  // Estado de la UI
+  showFilters = signal(false);
+
+
+  // Estado para mostrar/ocultar información de configuraciones
+  showConfigInfo = signal(false);
+
+  // Información de configuraciones predeterminadas (obtenida de la API)
+  defaultConfigsInfo = signal<DefaultSystemConfig[]>([]);
+  loadingDefaults = signal(false);
+
+  // Computed properties para el template
+  currentSortLabel = computed(() => {
+    const sortBy = this.filterOptions().sortBy;
+    const option = this.sortOptions().find(o => o.value === sortBy);
+    return option ? option.label : 'Clave';
+  });
+
+  getSortOrderIcon(): string {
+    const order = this.filterOptions().sortOrder || 'asc';
+    return order === 'asc' ? '↑' : '↓';
+  }
+
   isLoading = computed(() => this.loading());
 
   constructor() {}
 
   ngOnInit(): void {
     this.loadConfigs();
+    this.loadDefaultConfigs();
   }
 
   loadConfigs(): void {
@@ -67,6 +99,25 @@ export class SystemConfigComponent implements OnInit {
       }
     });
   }
+
+
+loadDefaultConfigs(): void {
+    this.loadingDefaults.set(true);
+    this.systemConfigService.getAllDefault().subscribe({
+      next: (defaultConfigs) => {
+        this.defaultConfigsInfo.set(defaultConfigs);
+        this.loadingDefaults.set(false);
+      },
+      error: (error) => {
+        console.error('Error al cargar configuraciones predeterminadas:', error);
+        this.loadingDefaults.set(false);
+      }
+    });
+  }
+
+  missingConfigs = computed(() => {
+    return this.defaultConfigsInfo().filter(c => !c.exists_in_db);
+  });
 
   applyFilters(): void {
     let filtered = [...this.configs()];
@@ -107,6 +158,38 @@ export class SystemConfigComponent implements OnInit {
 
   onFilterChange(): void {
     this.applyFilters();
+  }
+
+  resetFilters(): void {
+    this.searchTerm.set('');
+    this.filterOptions.set({
+      sortBy: 'key',
+      sortOrder: 'asc'
+    });
+    this.applyFilters();
+  }
+
+  toggleSortOrder(): void {
+    const currentOrder = this.filterOptions().sortOrder || 'asc';
+    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+    this.filterOptions.update(filters => ({ ...filters, sortOrder: newOrder }));
+    this.applyFilters();
+  }
+
+  setSortBy(sortBy: string): void {
+    this.filterOptions.update(filters => ({ ...filters, sortBy }));
+    this.applyFilters();
+  }
+
+  showFilterIndicators(): boolean {
+    return !!(this.searchTerm());
+  }
+
+  removeFilter(key: string): void {
+    if (key === 'search') {
+      this.searchTerm.set('');
+      this.applyFilters();
+    }
   }
 
   openCreateModal(): void {
@@ -183,7 +266,6 @@ export class SystemConfigComponent implements OnInit {
       }
     });
   }
-
 
   resetForm(): void {
     this.newConfig.set({ key: '', value: '', description: '' });

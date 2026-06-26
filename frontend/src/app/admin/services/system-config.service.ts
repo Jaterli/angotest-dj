@@ -5,7 +5,8 @@ import {
   SystemConfig, 
   CreateSystemConfigDTO, 
   UpdateSystemConfigDTO,
-  BulkUpdateConfigDTO
+  BulkUpdateConfigDTO,
+  DefaultSystemConfig
 } from '../models/system-config.models';
 import { environment } from '../../../environments/environment';
 
@@ -19,6 +20,10 @@ export class SystemConfigService {
   // Obtener todas las configuraciones
   getAll(): Observable<SystemConfig[]> {
     return this.http.get<SystemConfig[]>(this.apiUrl);
+  }
+
+  getAllDefault(): Observable<DefaultSystemConfig[]> {
+    return this.http.get<DefaultSystemConfig[]>(`${this.apiUrl}/default/`);
   }
 
   // Obtener configuración por ID
@@ -38,12 +43,12 @@ export class SystemConfigService {
 
   // Actualizar configuración
   update(id: number, config: UpdateSystemConfigDTO): Observable<SystemConfig> {
-    return this.http.put<SystemConfig>(`${this.apiUrl}/update/${id}/`, config);
+    return this.http.put<SystemConfig>(`${this.apiUrl}/${id}/update/`, config);
   }
 
   // Eliminar configuración
   delete(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/delete/${id}/`);
+    return this.http.delete(`${this.apiUrl}/${id}/delete/`);
   }
 
   // Actualización masiva

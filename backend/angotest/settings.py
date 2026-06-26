@@ -153,7 +153,13 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@angotest.com')
 # IA
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama3-70b-8192')
-AI_REQUESTS_PER_MONTH = int(os.getenv('AI_REQUESTS_PER_MONTH', 5))
+
+# Configuraciones del proyecto
+SYSTEM_CONFIG = {
+    'AI_REQUESTS_PER_MONTH': int(os.getenv('AI_REQUESTS_PER_MONTH', 5)),
+    'MARK_IN_PROGRESS_AS_EXPIRED_AFTER_DAYS': int(os.getenv('MARK_IN_PROGRESS_AS_EXPIRED_AFTER_DAYS', 120)),
+    'CONTAINER_USER_ID': int(os.getenv('CONTAINER_USER_ID', 1)),
+}
 
 # Static/Media
 STATIC_URL = 'static/'

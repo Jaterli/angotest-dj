@@ -20,9 +20,11 @@ from .models import User, PasswordResetToken
 from .serializers import UserResponseSerializer
 from apps.results.models import Result
 from apps.invitations.models import TestInvitation
-from django.db.models import Count, Avg, Q, F, FloatField, Case, When, Value, OuterRef, Subquery
-from django.db.models.functions import Coalesce, Cast, Round
+from django.db.models import Count, Avg, Q, F, FloatField, Case, When, Value
+from django.db.models.functions import Coalesce, Cast
 from .services import DataService, MIN_TESTS_FOR_RANKING, PREDEFINED_LEVELS
+from apps.admin_panel.utils import SystemConfigManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -1025,16 +1027,14 @@ def get_container_user():
     from apps.admin_panel.models import SystemConfig
     
     try:
-        config = SystemConfig.objects.get(key='container_user')
+        config = SystemConfig.objects.get(key='container_user_id')
         container_user_id = int(config.value)
     except SystemConfig.DoesNotExist:
-        return None, {
-            'error': 'No existe la configuración "container_user"',
-            'message': 'Por favor, crea una clave "container_user" en SystemConfig con el ID del usuario que recibirá los tests y resultados.'
-        }
+        SystemConfigManager.get('CONTAINER_USER_ID') # Valor por defecto
+        return SystemConfigManager.get('CONTAINER_USER_ID') # Valor por defecto
     except ValueError:
         return None, {
-            'error': 'La configuración "container_user" tiene un valor inválido',
+            'error': 'La configuración "container_user_id" tiene un valor inválido',
             'message': f'El valor "{config.value}" no es un número válido.'
         }
     
