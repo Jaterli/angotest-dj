@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Iniciar el servicio de cron
+service cron start
+
 # Migrar base de datos
 python manage.py migrate --noinput
 

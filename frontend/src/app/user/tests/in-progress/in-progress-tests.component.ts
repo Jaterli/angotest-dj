@@ -29,7 +29,7 @@ export class InProgressTestsComponent implements OnInit {
   // Tests y estado
   inProgressTestsData = signal<InProgressTestResponse[]>([]);
   expiredDays = toSignal(
-    this.systemConfigServiceForUser.getSystemConfigByKey("mark_in_progress_as_expired_after_days")
+    this.systemConfigServiceForUser.getSystemConfigByKey("MARK_IN_PROGRESS_AS_EXPIRED_AFTER_DAYS")
   );
   loading = signal(true);
 

@@ -1,0 +1,5 @@
+# docker/backend/cronjob
+# Ejecutar diariamente a las 2:00 AM
+0 2 * * * root cd /app && /usr/local/bin/python manage.py expire_in_progress_results >> /var/log/expire_results.log 2>&1
+
+# Línea vacía requerida al final del archivo

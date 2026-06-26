@@ -62,7 +62,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly FILTER_VISIBILITY_KEY = 'dashboard_filters_visible';
 
   expiredDays = toSignal(
-    this.systemConfigService.getByKey("mark_in_progress_as_expired_after_days")
+    this.systemConfigService.getByKey("MARK_IN_PROGRESS_AS_EXPIRED_AFTER_DAYS")
   );
 
   ngOnInit() {
