@@ -12,6 +12,36 @@
 
 ---
 
+## 👨‍🏫 Guía para el Evaluador
+
+Para facilitar la evaluación completa de todas las funcionalidades de la aplicación, se han creado los siguientes datos de prueba:
+
+### 🔑 Credenciales de Administrador (superusuario de Django)
+
+| Campo | Valor |
+|-------|-------|
+| **Email** | `admin@angotest.com` |
+| **Contraseña** | `13113013@WfX` |
+
+### 📚 Datos de Prueba
+
+La base de datos incluye datos de ejemplo precargados para que puedas explorar la aplicación sin necesidad de crearlos manualmente:
+
+- **Tests de ejemplo:** Varios tests completos con preguntas y respuestas en diferentes niveles de dificultad y temáticas.
+- **Usuarios de prueba:** Cuentas adicionales con diferentes roles y progreso para visualizar rankings y estadísticas.
+- **Resultados históricos:** Datos de tests completados para probar el dashboard y los rankings globales.
+
+### 🎯 Recomendaciones para la Evaluación
+
+1. **Panel de Administración:** Accede al dashboard administrativo para ver KPIs, gestionar usuarios, tests y resultados.
+2. **Generación por IA:** Prueba la funcionalidad de generación automática de tests usando la API de Groq.
+3. **Rankings:** Verifica los rankings globales y específicos por nivel de dificultad.
+4. **Recuperación de contraseña:** Simula el flujo de recuperación para comprobar el envío de emails.
+5. **Rol de invitado (Guest):** Crea un test con invitación y prueba el flujo de usuario invitado.
+6. **Importación JSON:** Utiliza la estructura documentada para importar tests desde asistentes externos.
+
+---
+
 ## ✨ Características Principales
 
 ### 👥 Gestión de Usuarios
