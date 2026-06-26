@@ -1027,14 +1027,14 @@ def get_container_user():
     from apps.admin_panel.models import SystemConfig
     
     try:
-        config = SystemConfig.objects.get(key='container_user_id')
+        config = SystemConfig.objects.get(key='CONTAINER_USER_ID')
         container_user_id = int(config.value)
     except SystemConfig.DoesNotExist:
         SystemConfigManager.get('CONTAINER_USER_ID') # Valor por defecto
         return SystemConfigManager.get('CONTAINER_USER_ID') # Valor por defecto
     except ValueError:
         return None, {
-            'error': 'La configuración "container_user_id" tiene un valor inválido',
+            'error': 'La configuración "CONTAINER_USER_ID" tiene un valor inválido',
             'message': f'El valor "{config.value}" no es un número válido.'
         }
     

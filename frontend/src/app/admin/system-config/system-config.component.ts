@@ -100,7 +100,6 @@ export class SystemConfigComponent implements OnInit {
     });
   }
 
-
 loadDefaultConfigs(): void {
     this.loadingDefaults.set(true);
     this.systemConfigService.getAllDefault().subscribe({

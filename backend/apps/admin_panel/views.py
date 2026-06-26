@@ -553,11 +553,10 @@ def admin_get_default_system_configs(request):
     configs = []
     for key, value in settings.SYSTEM_CONFIG.items():
         # Convertir la clave a minúsculas para comparar
-        key_lower = key.lower()
         configs.append({
-            'key': key_lower,
+            'key': key,
             'value': str(value),
-            'exists_in_db': key_lower in existing_keys
+            'exists_in_db': key in existing_keys
         })
     return JsonResponse(configs, safe=False)
 

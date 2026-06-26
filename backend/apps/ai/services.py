@@ -140,7 +140,7 @@ def build_topics_summary() -> str:
 def get_default_max_requests() -> int:
     """Obtiene el máximo de requests mensuales configurado (única fuente de verdad)."""
     try:
-        config = SystemConfig.objects.get(key='ai_requests_per_month')
+        config = SystemConfig.objects.get(key='AI_REQUESTS_PER_MONTH')
         return int(config.value)
     except SystemConfig.DoesNotExist:
         return SystemConfigManager.get('AI_REQUESTS_PER_MONTH') # Valor por defecto
