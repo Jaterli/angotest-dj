@@ -23,6 +23,14 @@ Para facilitar la evaluación completa de todas las funcionalidades de la aplica
 | **Email** | `admin@angotest.com` |
 | **Contraseña** | `13113013@WfX` |
 
+### 🔑 Credenciales de usuarios
+
+| Campo | Valor |
+|-------|-------|
+| **Email** | `test_user_n@example.com` |
+| **Contraseña** | `test123` |
+
+
 ### 📚 Datos de Prueba
 
 La base de datos incluye datos de ejemplo precargados para que puedas explorar la aplicación sin necesidad de crearlos manualmente:
