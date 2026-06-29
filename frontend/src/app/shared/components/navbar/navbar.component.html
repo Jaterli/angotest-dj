@@ -25,7 +25,7 @@
         
         <!-- Usuario no autenticado -->
         @if (!isLoggedIn) {
-          <a routerLink="/home" 
+          <a routerLink="/" 
              [class]="classes.link"
              [routerLinkActive]="activeClasses.link"
              class="hidden sm:block">
@@ -261,7 +261,7 @@
            
           @if (!isLoggedIn) {
               <div class="flex justify-between">
-                <a routerLink="/home" 
+                <a routerLink="/" 
                   (click)="closeMobileMenu()"
                   [class]="classes.mobileLink"
                   [routerLinkActive]="activeClasses.mobile">
