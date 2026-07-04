@@ -1,10 +1,11 @@
 # tests/views.py
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Avg, Sum, Case, When, F, FloatField, Value, Count, Q, Window
+from django.db.models.functions import Coalesce
+from django.db.models.functions import Rank
 from django.core.paginator import Paginator
 from django.db import transaction
 from functools import wraps
@@ -514,10 +515,11 @@ def get_my_in_progress_tests(request):
         }
     })
 
+
 @require_http_methods(["GET"])
 @login_required
 def get_my_completed_tests(request):
-    """Obtener tests completados del usuario actual (optimizado)"""
+    """Obtener tests completados del usuario actual"""
     
     user_id = request.user.id
     page, page_size = get_pagination_params(request)
@@ -556,11 +558,25 @@ def get_my_completed_tests(request):
     
     total_filtered_tests = query.count()
     
+
+    # Anotar posición y total de intentos por test, sin queries extra por fila
+    query = query.annotate(
+        total_attempts=Window(
+            expression=Count('id'),
+            partition_by=[F('test_id')]
+        ),
+        attempt_position=Window(
+            expression=Rank(),
+            partition_by=[F('test_id')],
+            order_by=[F('updated_at').asc(), F('id').asc()]
+        )
+    )
+
     if sort_by != 'score':
         query = query.order_by(order_field)
     else:
         query = query.order_by('-updated_at')
-    
+
     # Paginar
     paginator = Paginator(query, page_size)
     page_obj = paginator.get_page(page)
@@ -570,9 +586,6 @@ def get_my_completed_tests(request):
     for result in page_obj:
         total_questions = result.test.questions.count()
         score_percent = (result.correct_answers / total_questions * 100) if total_questions > 0 else 0
-        
-        total_answered = result.correct_answers + result.wrong_answers
-        accuracy = (result.correct_answers / total_answered * 100) if total_answered > 0 else 0
         
         results_data.append({
             'result_id': result.id,
@@ -592,32 +605,45 @@ def get_my_completed_tests(request):
             'test_level': result.test.level,
             'test_created_at': result.test.created_at.isoformat(),
             'total_questions': total_questions,
-            'attempt': 1,
-            'score_percent': round(score_percent, 2),
+            'attempt_position': result.attempt_position,
+            'total_attempts': result.total_attempts,
+            'score_percent': score_percent,
             'score_rounded': int(round(score_percent)),
-            'accuracy': round(accuracy, 2)
         })
     
     # Ordenar por score si es necesario
     if sort_by == 'score':
         results_data.sort(key=lambda x: x['score_percent'], reverse=(sort_order == 'desc'))
-        
-    # Calcular estadísticas generales
-    stats_query = query if main_topic or level else Result.objects.filter(user_id=user_id, status='completed')
-    stats_query = stats_query.select_related('test')
 
-    total_questions_sum = 0
-    total_correct_sum = 0
-    total_time_sum = 0
-
-    for result in stats_query.iterator():
-        q_count = result.test.questions.count()
-        total_questions_sum += q_count
-        total_correct_sum += result.correct_answers
-        total_time_sum += result.time_taken
-
-    avg_score = (total_correct_sum / total_questions_sum * 100) if total_questions_sum > 0 else 0
-
+    # ===== CALCULAR ESTADÍSTICAS =====
+    # Usar la misma query con filtros aplicados para las estadísticas
+    stats_query = query
+    
+    # Calcular estadísticas usando agregaciones de Django
+    
+    stats = stats_query.aggregate(
+        # Promedio por test (media de puntuaciones de cada test)
+        avg_score=Coalesce(
+            Avg(
+                Case(
+                    When(
+                        status='completed',
+                        then=F('correct_answers') * 100.0 / (F('correct_answers') + F('wrong_answers'))
+                    ),
+                    output_field=FloatField()
+                )
+            ),
+            Value(0.0)
+        ),
+        total_time_spent=Coalesce(Sum('time_taken'), Value(0)),
+        total_correct_answers=Coalesce(Sum('correct_answers'), Value(0)),
+        total_questions_answered=Coalesce(
+            Sum(F('correct_answers') + F('wrong_answers')),
+            Value(0)
+        ),
+        total_completed_tests=Count('id')
+    )
+    
     # Obtener temas principales
     main_topics = list(
         Result.objects.filter(user_id=user_id, status='completed')
@@ -638,12 +664,15 @@ def get_my_completed_tests(request):
             'main_topics': main_topics
         },
         'stats': {
-            'average_score': round(avg_score, 2),
-            'total_time_spent': total_time_sum,
+            'average_score': round(stats['avg_score'], 2),
+            'total_time_spent': stats['total_time_spent'],
             'total_filtered_tests': total_filtered_tests,
-            'total_questions_answered': total_correct_sum
+            'total_questions_answered': stats['total_questions_answered'],
+            'total_correct_answers': stats['total_correct_answers'],
+            'total_completed_tests': stats['total_completed_tests']
         }
     })
+
 
 @require_http_methods(["DELETE"])
 @login_required

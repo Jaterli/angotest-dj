@@ -6,8 +6,6 @@ from functools import wraps
 import json
 import logging
 
-from apps.admin_panel.models import SystemConfig
-
 from .models import (
     get_topics, get_main_topics, get_sub_topics, get_specific_topics,
     validate_and_suggest_topics, invalidate_topics_cache, get_topic_hierarchy,
@@ -177,13 +175,12 @@ def create_topic(request):
 @require_http_methods(["GET"])
 def get_system_config_by_key(request, key):
     """Obtiene el valor de una configuración por su clave (público, sin autenticación)"""
-    
+    from apps.admin_panel.utils import SystemConfigManager
+
     try:
-        system_config = SystemConfig.objects.get(key=key)
+        system_config = SystemConfigManager.get_value(key=key, default=5)
         # Devolver solo el valor como texto plano
-        return HttpResponse(system_config.value, content_type='text/plain')
-    except SystemConfig.DoesNotExist:
-        return JsonResponse({'error': 'Configuración no encontrada'}, status=404)
+        return HttpResponse(system_config, content_type='text/plain')
     except Exception as e:
         logger.error(f"Error getting system config by key {key}: {str(e)}")
-        return JsonResponse({'error': 'Error al obtener configuración'}, status=500)
+        return JsonResponse({'error': 'Error al obtener configuración'})

@@ -7,13 +7,12 @@ from django.core.paginator import Paginator
 from functools import wraps
 import json
 import logging
-from django.db.models import Q, Sum, Count, Avg, F, Case, When, Value, FloatField, Prefetch, IntegerField
-from django.db.models.functions import Coalesce, Round
+from django.db.models import Q, Sum, Count, Avg, F, Case, When, Value, FloatField, IntegerField
+from django.db.models.functions import Coalesce, Round, Cast
 from datetime import datetime, timedelta
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
-from apps.test.models import Test, Question, Answer
+from apps.test.models import Question, Answer
 from apps.accounts.models import User
 from .models import Result
 from apps.shared.models import get_main_topics, get_level_choices, get_status_choices
@@ -64,399 +63,6 @@ def get_correct_answers_for_test(test_id):
     
     return correct_answers
 
-# ====== Guardar o actualizar resultado ======
-@csrf_exempt
-@require_http_methods(["POST"])
-@login_required
-def save_or_update_result(request, test_id):
-    """Guardar o actualizar resultado (progreso o finalización)"""
-    
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    status = data.get('status')
-    if status not in ['in_progress', 'completed', 'expired']:
-        return JsonResponse({'error': 'status debe ser in_progress, completed o expired'}, status=400)
-    
-    # Verificar que el test existe
-    try:
-        test = Test.objects.only('id').get(id=test_id)
-    except Test.DoesNotExist:
-        return JsonResponse({'error': 'test no encontrado'}, status=404)
-    
-    user_id = request.user.id
-    answers = data.get('answers', {})
-    time_taken = data.get('time_taken', 0)
-    
-    # Buscar resultado existente - usar select_for_update para evitar condiciones de carrera
-    result = Result.objects.filter(
-        user_id=user_id,
-        test_id=test_id,
-        status='in_progress'
-    ).select_for_update().first()
-    
-    correct_count = 0
-    wrong_count = 0
-    
-    # Calcular puntuación si está completado y hay respuestas
-    if status == 'completed' and answers:
-        correct_answers_map = get_correct_answers_for_test(test_id)
-        
-        for question_id, user_answer_id in answers.items():
-            try:
-                q_id = int(question_id)
-                u_answer_id = int(user_answer_id)
-                if correct_answers_map.get(q_id, {}).get('id') == u_answer_id:
-                    correct_count += 1
-                else:
-                    wrong_count += 1
-            except (ValueError, TypeError):
-                wrong_count += 1
-    
-    if not result:
-        # Crear nuevo resultado
-        result = Result.objects.create(
-            user_id=user_id,
-            test_id=test_id,
-            status=status,
-            time_taken=time_taken,
-            correct_answers=correct_count,
-            wrong_answers=wrong_count,
-            answers=answers
-        )
-    else:
-        # Actualizar resultado existente
-        result.status = status
-        result.time_taken = time_taken
-        result.updated_at = timezone.now()
-        
-        if status == 'completed':
-            result.correct_answers = correct_count
-            result.wrong_answers = wrong_count
-        
-        if answers:
-            result.answers = answers
-        
-        result.save(update_fields=['status', 'time_taken', 'updated_at', 'correct_answers', 'wrong_answers', 'answers'])
-    
-    total_answers = len(answers)
-    score_percentage = (correct_count / total_answers * 100) if total_answers > 0 else 0
-    
-    response = {
-        'message': 'Resultado guardado exitosamente',
-        'result_id': result.pk,
-        'test_id': result.test_id,
-        'status': result.status,
-        'correct_answers': result.correct_answers,
-        'wrong_answers': result.wrong_answers,
-        'total': total_answers,
-        'time_taken': result.time_taken,
-        'score_percentage': round(score_percentage, 2)
-    }
-    
-    return JsonResponse(response)
-
-# ====== Obtener progreso actual de un test ======
-@require_http_methods(["GET"])
-@login_required
-def get_test_progress(request, test_id):
-    """Obtener progreso actual de un test"""
-    
-    user_id = request.user.id
-    result = Result.objects.filter(
-        user_id=user_id,
-        test_id=test_id,
-        status='in_progress'
-    ).only('id', 'answers', 'time_taken', 'status').first()
-    
-    # Obtener test con preguntas y respuestas en una sola consulta
-    try:
-        test = Test.objects.prefetch_related(
-            Prefetch('questions', queryset=Question.objects.prefetch_related('answers'))
-        ).get(id=test_id)
-    except Test.DoesNotExist:
-        return JsonResponse({'error': 'test no encontrado'}, status=404)
-    
-    if not result:
-        return JsonResponse({
-            'test': test_to_dict(test),
-            'answers': {},
-            'time_elapsed': 0,
-            'progress': 0,
-            'is_resuming': False
-        })
-    
-    saved_answers = result.answers if isinstance(result.answers, dict) else (json.loads(result.answers) if result.answers else {})
-    
-    total_questions = test.questions.count()
-    progress = (len(saved_answers) / total_questions * 100) if total_questions > 0 else 0
-    
-    return JsonResponse({
-        'test': test_to_dict(test),
-        'answers': saved_answers,
-        'time_elapsed': result.time_taken,
-        'progress': round(progress, 2),
-        'is_resuming': True,
-        'result_id': result.pk
-    })
-
-# ====== Obtener tests en progreso ======
-@require_http_methods(["GET"])
-@login_required
-def get_my_in_progress_tests(request):
-    """Obtener tests en progreso del usuario actual con filtros y paginación"""
-    
-    user_id = request.user.id
-    
-    # Obtener parámetros de consulta con valores por defecto seguros
-    page = max(1, int(request.GET.get('page', 1)))
-    page_size = min(50, max(1, int(request.GET.get('page_size', 10))))
-    main_topic = request.GET.get('main_topic', '')
-    level = request.GET.get('level', '')
-    sort_by = request.GET.get('sort_by', 'result_updated_at')
-    sort_order = request.GET.get('sort_order', 'desc')
-    
-    # Construir consulta base optimizada
-    query = Result.objects.filter(
-        user_id=user_id,
-        status='in_progress'
-    ).select_related('test')
-    
-    if main_topic:
-        query = query.filter(test__main_topic=main_topic)
-    if level:
-        query = query.filter(test__level=level)
-    
-    total_tests = Result.objects.filter(user_id=user_id, status='in_progress').count()
-    total_filtered_tests = query.count()
-    
-    # Mapeo de ordenación
-    sort_mapping = {
-        'result_updated_at': 'updated_at',
-        'result_started_at': 'started_at',
-        'result_time_taken': 'time_taken',
-        'test_title': 'test__title',
-        'test_created_at': 'test__created_at',
-        'test_level': 'test__level',
-    }
-    order_field = sort_mapping.get(sort_by, 'updated_at')
-    if sort_order == 'desc':
-        order_field = f'-{order_field}'
-    
-    query = query.order_by(order_field)
-    
-    # Paginación
-    paginator = Paginator(query, page_size)
-    page_obj = paginator.get_page(page)
-    
-    # Procesar resultados eficientemente
-    results_data = []
-    total_progress = 0
-    total_answered = 0
-    total_time = 0
-    
-    for result in page_obj:
-        answers = result.answers if isinstance(result.answers, dict) else (json.loads(result.answers) if result.answers else {})
-        answered_count = len(answers)
-        total_questions = result.test.questions.count()
-        progress = (answered_count / total_questions * 100) if total_questions > 0 else 0
-        
-        total_progress += progress
-        total_answered += answered_count
-        total_time += result.time_taken
-        
-        results_data.append({
-            'result_id': result.id,
-            'user_id': result.user_id,
-            'test_id': result.test.id,
-            'time_taken': result.time_taken,
-            'status': result.status,
-            'answers': result.answers,
-            'started_at': result.started_at.isoformat(),
-            'updated_at': result.updated_at.isoformat(),
-            'test_title': result.test.title,
-            'test_description': result.test.description,
-            'test_main_topic': result.test.main_topic,
-            'test_sub_topic': result.test.sub_topic,
-            'test_specific_topic': result.test.specific_topic,
-            'test_level': result.test.level,
-            'test_created_at': result.test.created_at.isoformat(),
-            'total_questions': total_questions,
-            'attempt': 1,
-            'progress': round(progress, 2),
-            'answered_count': answered_count,
-            'remaining_count': total_questions - answered_count,
-            'time_spent': format_time(result.time_taken)
-        })
-    
-    # Ordenar por campos calculados si es necesario
-    if sort_by == 'progress':
-        results_data.sort(key=lambda x: x['progress'], reverse=(sort_order == 'desc'))
-    elif sort_by == 'remaining_count':
-        results_data.sort(key=lambda x: x['remaining_count'], reverse=(sort_order == 'desc'))
-    
-    # Estadísticas
-    avg_progress = (total_progress / len(results_data)) if results_data else 0
-    avg_time_per_test = (total_time // total_filtered_tests) if total_filtered_tests > 0 else 0
-    
-    # Obtener temas principales (optimizado con distinct)
-    main_topics = Result.objects.filter(
-        user_id=user_id,
-        status='in_progress'
-    ).exclude(test__main_topic='').values_list('test__main_topic', flat=True).distinct().order_by('test__main_topic')
-    
-    return JsonResponse({
-        'data': {
-            'results': results_data,
-            'total_tests': total_tests,
-            'total_pages': paginator.num_pages,
-            'current_page': page,
-            'page_size': page_size,
-            'has_more': page < paginator.num_pages,
-            'main_topics': list(main_topics)
-        },
-        'stats': {
-            'total_filtered_tests': total_filtered_tests,
-            'average_progress': round(avg_progress, 2),
-            'total_questions_answered': total_answered,
-            'total_time_spent': total_time,
-            'avg_time_per_test': avg_time_per_test
-        }
-    })
-
-# ====== Obtener tests completados ======
-@require_http_methods(["GET"])
-@login_required
-def get_my_completed_tests(request):
-    """Obtener tests completados del usuario actual con filtros y paginación"""
-    
-    user_id = request.user.id
-    
-    page = max(1, int(request.GET.get('page', 1)))
-    page_size = min(50, max(1, int(request.GET.get('page_size', 10))))
-    main_topic = request.GET.get('main_topic', '')
-    level = request.GET.get('level', '')
-    sort_by = request.GET.get('sort_by', 'result_updated_at')
-    sort_order = request.GET.get('sort_order', 'desc')
-    
-    query = Result.objects.filter(
-        user_id=user_id,
-        status='completed',
-        test__is_active=True
-    ).select_related('test')
-    
-    if main_topic:
-        query = query.filter(test__main_topic=main_topic)
-    if level:
-        query = query.filter(test__level=level)
-    
-    total_tests = Result.objects.filter(user_id=user_id, status='completed').count()
-    total_filtered_tests = query.count()
-    
-    # Mapeo de ordenación
-    sort_mapping = {
-        'result_updated_at': 'updated_at',
-        'result_started_at': 'started_at',
-        'result_time_taken': 'time_taken',
-        'test_title': 'test__title',
-        'test_created_at': 'test__created_at',
-        'test_level': 'test__level',
-    }
-    order_field = sort_mapping.get(sort_by, 'updated_at')
-    
-    if sort_by != 'score' and order_field:
-        if sort_order == 'desc':
-            order_field = f'-{order_field}'
-        query = query.order_by(order_field)
-    else:
-        query = query.order_by('-updated_at')
-    
-    paginator = Paginator(query, page_size)
-    page_obj = paginator.get_page(page)
-    
-    results_data = []
-    total_questions_sum = 0
-    total_correct_sum = 0
-    total_time_sum = 0
-    
-    for result in page_obj:
-        total_questions = result.test.questions.count()
-        score_percent = (result.correct_answers / total_questions * 100) if total_questions > 0 else 0
-        total_answered = result.correct_answers + result.wrong_answers
-        accuracy = (result.correct_answers / total_answered * 100) if total_answered > 0 else 0
-        
-        total_questions_sum += total_questions
-        total_correct_sum += result.correct_answers
-        total_time_sum += result.time_taken
-        
-        results_data.append({
-            'result_id': result.id,
-            'user_id': result.user_id,
-            'test_id': result.test.id,
-            'correct_answers': result.correct_answers,
-            'wrong_answers': result.wrong_answers,
-            'time_taken': result.time_taken,
-            'status': result.status,
-            'started_at': result.started_at.isoformat(),
-            'updated_at': result.updated_at.isoformat(),
-            'test_title': result.test.title,
-            'test_description': result.test.description,
-            'test_main_topic': result.test.main_topic,
-            'test_sub_topic': result.test.sub_topic,
-            'test_specific_topic': result.test.specific_topic,
-            'test_level': result.test.level,
-            'test_created_at': result.test.created_at.isoformat(),
-            'total_questions': total_questions,
-            'attempt': 1,
-            'score_percent': round(score_percent, 2),
-            'score_rounded': int(round(score_percent)),
-            'accuracy': round(accuracy, 2)
-        })
-    
-    if sort_by == 'score':
-        results_data.sort(key=lambda x: x['score_percent'], reverse=(sort_order == 'desc'))
-    
-    avg_score = (total_correct_sum / total_questions_sum * 100) if total_questions_sum > 0 else 0
-    
-    main_topics = Result.objects.filter(
-        user_id=user_id,
-        status='completed'
-    ).exclude(test__main_topic='').values_list('test__main_topic', flat=True).distinct().order_by('test__main_topic')
-    
-    return JsonResponse({
-        'data': {
-            'test_results': results_data,
-            'total_tests': total_tests,
-            'total_pages': paginator.num_pages,
-            'current_page': page,
-            'page_size': page_size,
-            'has_more': page < paginator.num_pages,
-            'main_topics': list(main_topics)
-        },
-        'stats': {
-            'average_score': round(avg_score, 2),
-            'total_time_spent': total_time_sum,
-            'total_filtered_tests': total_filtered_tests,
-            'total_questions_answered': total_correct_sum
-        }
-    })
-
-# ====== Eliminar progreso de un test ======
-@csrf_exempt
-@require_http_methods(["DELETE"])
-@login_required
-def delete_test_progress(request, test_id):
-    """Eliminar progreso de un test"""
-    
-    deleted_count, _ = Result.objects.filter(
-        user_id=request.user.id,
-        test_id=test_id,
-        status='in_progress'
-    ).delete()
-    
-    return JsonResponse({'message': 'progreso eliminado' if deleted_count > 0 else 'no se encontró progreso para eliminar'})
 
 # ====== Obtener respuestas incorrectas ======
 @require_http_methods(["GET"])
@@ -1131,12 +737,15 @@ def delete_results_bulk(request):
 def get_user_results(request, user_id):
     """Obtener resultados de tests de un usuario específico"""
     
+    # ===== OBTENER USUARIO =====
     try:
-        user = User.objects.only('id', 'username', 'email', 'first_name', 'last_name', 'role', 'registered_at').get(id=user_id)
+        user = User.objects.only(
+            'id', 'username', 'email', 'first_name', 'last_name', 'role', 'registered_at'
+        ).get(id=user_id)
     except User.DoesNotExist:
         return JsonResponse({'error': 'usuario no encontrado'}, status=404)
     
-    # Obtener parámetros de consulta
+    # ===== PARÁMETROS DE CONSULTA =====
     page = max(1, int(request.GET.get('page', 1)))
     page_size = min(100, max(1, int(request.GET.get('page_size', 20))))
     status_filter = request.GET.get('status', '')
@@ -1149,13 +758,10 @@ def get_user_results(request, user_id):
     from_date = request.GET.get('from_date', '')
     to_date = request.GET.get('to_date', '')
     
-    # ===== CONTAR TOTAL DE RESULTADOS (sin filtros) =====
-    total_results = Result.objects.filter(user_id=user_id).count()
-    
-    # ===== CONSTRUIR CONSULTA BASE CON FILTROS =====
+    # ===== CONSULTA BASE =====
     query = Result.objects.filter(user_id=user_id).select_related('test')
     
-    # Aplicar filtros
+    # ===== APLICAR FILTROS =====
     if status_filter and status_filter != 'all':
         query = query.filter(status=status_filter)
     
@@ -1189,10 +795,11 @@ def get_user_results(request, user_id):
         except ValueError:
             pass
     
-    # ===== CONTAR RESULTADOS FILTRADOS =====
-    total_filtered_results = query.count()
+    # ===== CONTAR TOTAL Y FILTRADO =====
+    total_results = Result.objects.filter(user_id=user_id).count()
+    total_filtered = query.count()
     
-    # ===== APLICAR ORDENACIÓN =====
+    # ===== ORDENAR Y PAGINAR =====
     sort_mapping = {
         'average_score': 'score_percentage',
         'title': 'test__title',
@@ -1206,23 +813,19 @@ def get_user_results(request, user_id):
     order_field = sort_mapping.get(sort_by, 'updated_at')
     
     if sort_by == 'average_score':
-        # Ordenar por score_percentage (propiedad calculada)
+        # Ordenamiento especial para average_score
         results_list = list(query)
         results_list.sort(
             key=lambda x: x.score_percentage if x.status == 'completed' else 0,
             reverse=(sort_order == 'desc')
         )
-        # Paginación manual
         offset = (page - 1) * page_size
         paginated_results = results_list[offset:offset + page_size]
         total_pages = (len(results_list) + page_size - 1) // page_size if page_size > 0 else 1
     else:
-        # Ordenación normal
         if sort_order == 'desc':
             order_field = f'-{order_field}'
         query = query.order_by(order_field)
-        
-        # Paginación
         paginator = Paginator(query, page_size)
         page_obj = paginator.get_page(page)
         paginated_results = page_obj.object_list
@@ -1233,13 +836,11 @@ def get_user_results(request, user_id):
     for result in paginated_results:
         total_questions = result.test.questions.count()
         
-        # Calcular score
         score = 0.0
         if total_questions > 0 and result.status == 'completed':
             score = (result.correct_answers / total_questions * 100)
-            score = round(score * 10) / 10  # Redondear a 1 decimal
+            score = round(score * 10) / 10
         
-        # Calcular answered_count
         answered_count = 0
         if result.status == 'completed':
             answered_count = result.correct_answers + result.wrong_answers
@@ -1268,13 +869,10 @@ def get_user_results(request, user_id):
             'answered_count': answered_count
         })
     
-    # ===== OBTENER ESTADÍSTICAS DETALLADAS =====
-    # Construir query de estadísticas con los mismos filtros
+    # ===== ESTADÍSTICAS =====
     stats_query = Result.objects.filter(user_id=user_id)
     
-    if status_filter and status_filter != 'all':
-        stats_query = stats_query.filter(status=status_filter)
-    
+    # Aplicar filtros de fecha a las estadísticas
     if from_date:
         try:
             from_date_parsed = datetime.strptime(from_date, '%Y-%m-%d').date()
@@ -1290,6 +888,9 @@ def get_user_results(request, user_id):
         except ValueError:
             pass
     
+    if status_filter and status_filter != 'all':
+        stats_query = stats_query.filter(status=status_filter)
+    
     stats = stats_query.aggregate(
         completed_tests=Count('id', filter=Q(status='completed')),
         in_progress_tests=Count('id', filter=Q(status='in_progress')),
@@ -1304,6 +905,15 @@ def get_user_results(request, user_id):
             ),
             Value(0)
         ),
+        average_score=Coalesce(
+            Avg(
+                Case(
+                    When(status='completed', then=F('correct_answers') * 100.0 / (F('correct_answers') + F('wrong_answers'))),
+                    output_field=FloatField()
+                )
+            ),
+            Value(0.0)
+        ),
         total_correct_answers=Coalesce(
             Sum(
                 Case(
@@ -1316,13 +926,7 @@ def get_user_results(request, user_id):
         )
     )
     
-    # Calcular promedio de score
-    avg_score = 0.0
-    if stats['completed_tests'] > 0 and stats['total_questions_answered'] > 0:
-        avg_score = (stats['total_correct_answers'] / stats['total_questions_answered'] * 100)
-        avg_score = round(avg_score * 10) / 10
-    
-    # Obtener temas disponibles para filtros
+    # ===== FILTROS DISPONIBLES =====
     main_topics = list(
         Result.objects.filter(user_id=user_id)
         .exclude(test__main_topic='')
@@ -1332,7 +936,40 @@ def get_user_results(request, user_id):
     )
     
     # ===== CONSTRUIR RESPUESTA =====
-    response = {
+    return JsonResponse({
+        'results': user_results,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total_filtered': total_filtered,
+            'total_pages': total_pages,
+        },
+        'filters_applied': {
+            'status': status_filter,
+            'level': level,
+            'main_topic': main_topic,
+            'sub_topic': sub_topic,
+            'from_date': from_date,
+            'to_date': to_date,
+            'search': search,
+            'sort_by': sort_by,
+            'sort_order': sort_order,
+        },
+        'stats': {
+            'total_results': total_results,
+            'total_filtered_results': total_filtered,
+            'completed_tests': stats['completed_tests'] or 0,
+            'in_progress_tests': stats['in_progress_tests'] or 0,
+            'average_score': stats['average_score'],
+            'total_time_spent': stats['total_time_spent'] or 0,
+            'total_questions_answered': stats['total_questions_answered'] or 0,
+            'total_correct_answers': stats['total_correct_answers'] or 0,
+        },
+        'available_filters': {
+            'main_topics': main_topics,
+            'levels': get_level_choices(),
+            'statuses': ['all', 'completed', 'in_progress'],
+        },
         'user': {
             'id': user.pk,
             'username': user.username,
@@ -1341,49 +978,8 @@ def get_user_results(request, user_id):
             'last_name': user.last_name,
             'role': user.role,
             'registered_at': user.registered_at.isoformat() if user.registered_at else None,
-        },
-        'results': user_results,
-        'filters_applied': {
-            'page': page,
-            'page_size': page_size,
-            'sort_by': sort_by,
-            'sort_order': sort_order,
-            'status': status_filter,
-            'level': level,
-            'main_topic': main_topic,
-            'sub_topic': sub_topic,
-            'from_date': from_date,
-            'to_date': to_date,
-            'search': search,
-        },
-        'available_filters': {
-            'main_topics': main_topics,
-            'levels': get_level_choices(),
-            'statuses': ['all', 'completed', 'in_progress'],
-        },
-        'stats': {
-            'total_results': total_results,
-            'total_filtered_results': total_filtered_results,
-            'completed_tests': stats['completed_tests'] or 0,
-            'in_progress_tests': stats['in_progress_tests'] or 0,
-            'average_score': avg_score,
-            'total_time_spent': stats['total_time_spent'] or 0,
-            'total_questions_answered': stats['total_questions_answered'] or 0,
-            'total_correct_answers': stats['total_correct_answers'] or 0,
         }
-    }
-    
-    # Si se ordenó por average_score, añadir paginación manual
-    if sort_by == 'average_score':
-        total_pages = (len(results_list) + page_size - 1) // page_size if page_size > 0 else 1
-        response['pagination'] = {
-            'current_page': page,
-            'page_size': page_size,
-            'total_pages': total_pages,
-            'total_items': len(results_list)
-        }
-    
-    return JsonResponse(response)
+    })
 
 
 @require_http_methods(["GET"])

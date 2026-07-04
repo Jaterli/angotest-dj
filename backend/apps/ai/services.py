@@ -143,7 +143,7 @@ def get_default_max_requests() -> int:
         config = SystemConfig.objects.get(key='AI_REQUESTS_PER_MONTH')
         return int(config.value)
     except SystemConfig.DoesNotExist:
-        return SystemConfigManager.get('AI_REQUESTS_PER_MONTH') # Valor por defecto
+        return SystemConfigManager.get('AI_REQUESTS_PER_MONTH')
 
 
 def get_or_create_user_quota(user_id: int) -> UserQuota:
