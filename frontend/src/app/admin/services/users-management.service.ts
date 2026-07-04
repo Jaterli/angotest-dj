@@ -24,8 +24,8 @@ export class UsersManagementService {
     });
 
     // Si no se especificó página, usar valores por defecto
-    if (!filters.current_page) {
-      params = params.set('current_page', '1');
+    if (!filters.page) {
+      params = params.set('page', '1');
     }
     if (!filters.page_size) {
       params = params.set('page_size', '10');

@@ -169,7 +169,6 @@ export class ResultsListComponent implements OnInit {
     // Resetear a página 1 cuando cambian los filtros
     this.selectedFilters.update(filters => ({ ...filters, page: 1 }));
     this.currentPage.set(1);
-    console.log("Filtros cambiados");
     this.loadResults();
   }
 
@@ -218,9 +217,8 @@ export class ResultsListComponent implements OnInit {
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
-    console.log("Yendo a página: ",page);
     this.currentPage.set(page);
-    this.selectedFilters.update(filters => ({ ...filters, page }));
+    this.selectedFilters.update(filters => ({ ...filters, page: page }));
     this.loadResults();
   }
 

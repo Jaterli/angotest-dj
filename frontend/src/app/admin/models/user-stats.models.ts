@@ -21,19 +21,25 @@ export interface UserStats {
 
 // Interfaz para los filtros de usuarios
 export interface UsersStatsFilters {
-  page?: number;
   page_size?: number;
-  current_page?: number;
+  page?: number;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
   role?: string;
   search?: string;
 }
 
+export interface Pagination {
+  page: number;
+  page_size: number;
+  total_filtered: number;
+  total_pages: number;
+}
 
 export interface UserStatsFullResponse {
-  users: UserStats[];
-  filters: UsersStatsFilters;
+  data: UserStats[];
+  sort_fields: string[];
+  pagination: Pagination;
   stats: {
     total_users: number;
     total_filtered_users: number;

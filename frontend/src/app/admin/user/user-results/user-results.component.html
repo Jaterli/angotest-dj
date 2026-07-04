@@ -45,7 +45,7 @@
         <!-- Estado -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
-          <select [(ngModel)]="filters().status" (ngModelChange)="applyFilters()"
+          <select [(ngModel)]="filters_applied().status" (ngModelChange)="applyFilters()"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
             @for (option of statusOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
@@ -56,7 +56,7 @@
         <!-- Nivel -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nivel</label>
-          <select [(ngModel)]="filters().level" (ngModelChange)="applyFilters()"
+          <select [(ngModel)]="filters_applied().level" (ngModelChange)="applyFilters()"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
             <option value="">Todos los niveles</option>
             @for (level of levelOptions; track level) {
@@ -68,7 +68,7 @@
         <!-- Tema Principal -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tema Principal</label>
-          <select [(ngModel)]="filters().main_topic" (ngModelChange)="applyFilters()"
+          <select [(ngModel)]="filters_applied().main_topic" (ngModelChange)="applyFilters()"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
             <option value="">Todos los temas</option>
             @for (topic of mainTopicOptions; track topic) {
@@ -80,7 +80,7 @@
         <!-- Ordenar por -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ordenar por</label>
-          <select [(ngModel)]="filters().sort_by" (ngModelChange)="applyFilters()"
+          <select [(ngModel)]="filters_applied().sort_by" (ngModelChange)="applyFilters()"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
             @for (option of sortOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
@@ -91,7 +91,7 @@
         <!-- Búsqueda -->
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Buscar</label>
-          <input type="text" [(ngModel)]="filters().search" (ngModelChange)="applyFilters()"
+          <input type="text" [(ngModel)]="filters_applied().search" (ngModelChange)="applyFilters()"
                  placeholder="Buscar por título o descripción..."
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
         </div>
@@ -101,12 +101,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Desde</label>
-              <input type="date" [(ngModel)]="filters().from_date" (ngModelChange)="applyFilters()"
+              <input type="date" [(ngModel)]="filters_applied().from_date" (ngModelChange)="applyFilters()"
                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Hasta</label>
-              <input type="date" [(ngModel)]="filters().to_date" (ngModelChange)="applyFilters()"
+              <input type="date" [(ngModel)]="filters_applied().to_date" (ngModelChange)="applyFilters()"
                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all">
             </div>
           </div>
@@ -247,7 +247,7 @@
   }
 
   <!-- Sin resultados -->
-  @if (!loading() && userResults().length === 0) {
+  @if (!loading() && totalUserResults() === 0) {
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-8 text-center">
       <div class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4">
         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -256,13 +256,13 @@
       </div>
       <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No se encontraron resultados</h3>
       <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-        @if (filters().status !== 'all' || filters().search || filters().level || filters().main_topic) {
+        @if (filters_applied().status !== 'all' || filters_applied().search || filters_applied().level || filters_applied().main_topic) {
           No hay resultados que coincidan con los filtros aplicados.
         } @else {
           Este usuario aún no ha realizado ningún test.
         }
       </p>
-      @if (filters().status !== 'all' || filters().search || filters().level || filters().main_topic) {
+      @if (filters_applied().status !== 'all' || filters_applied().search || filters_applied().level || filters_applied().main_topic) {
         <button (click)="clearFilters()"
                 class="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
           Mostrar todos los resultados
@@ -272,7 +272,7 @@
   }
 
   <!-- Lista de resultados -->
-  @if (!loading() && userResults().length > 0) {
+  @if (!loading() && totalUserResults() > 0) {
     <div class="space-y-4">
 
       <!-- Información de resultados -->

@@ -1,12 +1,14 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../shared/services/auth.service';
 import { DashboardService } from '../../shared/services/user-dashboard.service';
 import { DashboardStats, RankingsResponse, LEVELS } from '../../shared/models/user-dashboard.models';
 import { SharedUtilsService } from '../../shared/services/shared-utils.service';
 import { User } from '../../shared/models/user.models';
+import { SystemConfigServiceForUser } from '../../shared/services/systemconfig.service';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,6 +33,7 @@ export class DashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
   private sharedUtilsService = inject(SharedUtilsService);
+  private systemConfigServiceForUser = inject(SystemConfigServiceForUser);
 
   // Signals
   dashboardData = signal<DashboardStats | null>(null);
@@ -39,6 +42,13 @@ export class DashboardComponent implements OnInit {
   rankingsLoading = signal(false);
   error = signal<string | null>(null);
   lastUpdated = signal<string>('');
+
+  min_test_for_raning = toSignal(
+    this.systemConfigServiceForUser.getSystemConfigByKey('MIN_TESTS_FOR_RANKING').pipe(
+      map(value => parseInt(value, 10))
+    ),
+    { initialValue: 5 }
+  );
 
   // Control de intentos (first_attempt vs all_attempts)
   attemptType = signal<'first_attempt' | 'all_attempts'>('first_attempt');
@@ -56,7 +66,6 @@ export class DashboardComponent implements OnInit {
   
   // Estadísticas del usuario actual (desde rankings)
   currentUserPositions = computed(() => this.rankingsData()?.current_user_positions);
-  communityAverages = computed(() => this.rankingsData()?.community_averages);
   
   // Computed para datos actuales según attemptType
   currentAttemptData = computed(() => {
@@ -269,6 +278,8 @@ export class DashboardComponent implements OnInit {
   }
 
   formatTimeShort(seconds: number): string {
+    if (seconds < 60) return `${Math.round(seconds * 100) / 100}s`;
+
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
@@ -451,10 +462,6 @@ export class DashboardComponent implements OnInit {
       : 0;
   });
 
-
-
-// Agregar estas propiedades y métodos a tu componente
-
 // Métodos para rankings globales
 getCurrentUserPosition(tab: string): number | string {
   const positions = this.currentUserPositions();
@@ -554,9 +561,6 @@ getMyLevelAccuracyPosition(level: string): number | null {
   return positions?.levels[level]?.accuracy|| null;
 }
 
-getLevelAccuracyValue(level: string): string {
-  return this.getLevelAccuracy(level);
-}
 
 
   // Ocultar rankings

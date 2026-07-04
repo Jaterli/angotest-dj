@@ -43,7 +43,7 @@ export class UserResultsComponent implements OnInit {
   resultsData = signal<UserResultsResponse | null>(null);
   
   // Filtros
-  filters = signal<UserResultsRequest>({
+  filters_applied = signal<UserResultsRequest>({
     page: 1,
     page_size: 20,
     level: '',
@@ -103,13 +103,13 @@ export class UserResultsComponent implements OnInit {
 
   // Computed properties para el template
   currentSortLabel = computed(() => {
-    const sortBy = this.filters().sort_by;
+    const sortBy = this.filters_applied().sort_by;
     const option = this.sortOptions.find(o => o.value === sortBy);
     return option ? option.label : 'Fecha de Actualización';
   });
 
   currentSortOrderLabel = computed(() => {
-    return this.filters().sort_order === 'asc' ? '↑' : '↓';
+    return this.filters_applied().sort_order === 'asc' ? '↑' : '↓';
   });
 
   constructor() {}
@@ -143,7 +143,7 @@ export class UserResultsComponent implements OnInit {
     if (!this.userId()) return;
     
     this.loading.set(true);
-    this.userResultsService.getUserResults(this.userId()!, this.filters()).subscribe({
+    this.userResultsService.getUserResults(this.userId()!, this.filters_applied()).subscribe({
       next: (res) => {
         this.resultsData.set(res);
         this.userResults.set(res.results); // Nota: directamente res.results, no res.data.results
@@ -158,12 +158,12 @@ export class UserResultsComponent implements OnInit {
 
   // Métodos para filtros
   applyFilters(): void {
-    this.filters.update(f => ({ ...f, page: 1 }));
+    this.filters_applied.update(f => ({ ...f, page: 1 }));
     this.loadResults();
   }
 
   clearFilters(): void {
-    this.filters.set({
+    this.filters_applied.set({
       page: 1,
       page_size: 20,
       status: 'all',
@@ -180,18 +180,18 @@ export class UserResultsComponent implements OnInit {
   }
 
   onSortChange(sortBy: string): void {
-    const currentFilters = this.filters();
+    const currentFilters = this.filters_applied();
     
     // Si ya está ordenado por este campo, cambiar el orden
     if (currentFilters.sort_by === sortBy) {
-      this.filters.set({
+      this.filters_applied.set({
         ...currentFilters,
         sort_order: currentFilters.sort_order === 'asc' ? 'desc' : 'asc',
         page: 1
       });
     } else {
       // Ordenar por nuevo campo
-      this.filters.set({
+      this.filters_applied.set({
         ...currentFilters,
         sort_by: sortBy as UserResultsRequest['sort_by'],
         sort_order: 'desc',
@@ -241,7 +241,7 @@ export class UserResultsComponent implements OnInit {
 
   // Métodos para paginación
   goToPage(page: number): void {
-    this.filters.update(f => ({ ...f, page }));
+    this.filters_applied.update(f => ({ ...f, page }));
     this.loadResults();
   }
 

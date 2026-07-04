@@ -16,7 +16,7 @@ export class DashboardService {
    * Obtiene solo las estadísticas del usuario (sin comparativas)
    */
   getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.baseUrl}/personaldata`).pipe(
+    return this.http.get<DashboardStats>(`${this.baseUrl}/personaldata/`).pipe(
       catchError(this.handleError)
     );
   }

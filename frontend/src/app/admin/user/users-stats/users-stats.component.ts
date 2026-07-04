@@ -9,7 +9,6 @@ import { SharedUtilsService } from '../../../shared/services/shared-utils.servic
 import { UsersStatsFilters, UserStats } from '../../models/user-stats.models';
 import { UserModalService } from '../../services/user-modal.service';
 import { UserProfileModalComponent } from '../user-profile-modal.component/user-profile-modal.component';
-import { sign } from 'crypto';
 
 @Component({
   selector: 'app-users-stats',
@@ -41,18 +40,31 @@ export class UsersStatsComponent implements OnInit {
     page: 1,
     sort_by: 'registered_at',
     sort_order: 'desc',
-    search: ''
+    search: '',
   });
 
-  // Opciones disponibles
-  sortOptions = signal([
-    { value: 'registered_at', label: 'Fecha de registro' },
-    { value: 'login_at', label: 'Último inicio de sesión' },    
-    { value: 'username', label: 'Nombre de usuario' },
-    { value: 'email', label: 'Email' },
-    { value: 'tests_completed', label: 'Tests completados' },
-    { value: 'average_score', label: 'Puntuación media' }
-  ]);
+  // Opciones disponibles (se cargan desde el backend)
+  // sortFields es un array de strings con los campos de ordenación disponibles
+  sortFields = signal<string[]>([]);
+
+  // Opciones de ordenación generadas desde sortFields
+  sortOptions = computed(() => {
+    const sortFieldLabels: Record<string, string> = {
+      'id': 'ID',
+      'username': 'Nombre de usuario',
+      'email': 'Email',
+      'role': 'Rol',
+      'registered_at': 'Fecha de registro',
+      'login_at': 'Último inicio de sesión',
+      'tests_completed': 'Tests completados',
+      'average_score': 'Puntuación media'
+    };
+    
+    return this.sortFields().map(field => ({
+      value: field,
+      label: sortFieldLabels[field] || field.replace('_', ' ').toUpperCase()
+    }));
+  });
 
   // Estado de la UI
   showFilters = signal(false);
@@ -95,7 +107,6 @@ export class UsersStatsComponent implements OnInit {
       const savedFilters = localStorage.getItem(this.FILTER_STORAGE_KEY);
       if (savedFilters) {
         const filters = JSON.parse(savedFilters);
-        // Actualizar currentPage con el valor guardado
         if (filters.page) {
           this.currentPage.set(filters.page);
         }
@@ -119,20 +130,26 @@ export class UsersStatsComponent implements OnInit {
     
     this.usersManagementService.getUsersStats(this.selectedFilters()).subscribe({
       next: (res) => {
-        this.usersData.set(res.users);
-        this.totalFilteredUsers.set(res.stats.total_filtered_users);
-        this.totalUsers.set(res.stats.total_users);
-        this.currentPage.set(res.filters.page || 1);          
-        this.totalPages.set(Math.ceil(res.stats.total_filtered_users / (this.selectedFilters().page_size || 20)));
+        
+        this.usersData.set(res.data);
+        this.totalFilteredUsers.set(res.stats.total_filtered_users || 0);
+        this.totalUsers.set(res.stats.total_users || 0);
+        this.currentPage.set(res.pagination.page || 1);
+        this.totalPages.set(res.pagination.total_pages || 0);
         this.hasMore.set(this.currentPage() < this.totalPages());
 
+        // Cargar campos de ordenación disponibles
+        if (res.sort_fields && Array.isArray(res.sort_fields)) {
+          this.sortFields.set(res.sort_fields);
+        }
+
         this.loading.set(false);
-        this.saveFilters(); // Guardar filtros después de carga exitosa
+        this.saveFilters();
       },
       error: (err) => {
         console.error('Error al cargar usuarios:', err);
-        this.errorTitle.set('Error al cargar la lista de usuarios')
-        this.errorMessage.set(err);
+        this.errorTitle.set('Error al cargar la lista de usuarios');
+        this.errorMessage.set(err.error?.error || err.message || 'Error desconocido');
         this.showErrorModal.set(true);
         this.loading.set(false);
       }
@@ -152,7 +169,8 @@ export class UsersStatsComponent implements OnInit {
       page_size: 10,
       sort_by: 'registered_at',
       sort_order: 'desc',
-      search: ''
+      search: '',
+      role: ''
     });
     this.currentPage.set(1);
     this.loadUsers();
@@ -166,7 +184,7 @@ export class UsersStatsComponent implements OnInit {
   }
 
   removeFilter(key: keyof UsersStatsFilters): void {
-    this.updateFilter(key, '');
+    this.updateFilter(key, '' as any);
   }
 
   // Métodos para ordenamiento
@@ -189,7 +207,7 @@ export class UsersStatsComponent implements OnInit {
     if (page < 1 || page > this.totalPages()) return;
     
     this.currentPage.set(page);
-    this.selectedFilters.update(filters => ({ ...filters, page }));
+    this.selectedFilters.update(filters => ({ ...filters, page: page }));
     this.loadUsers();
   }
 
@@ -222,7 +240,7 @@ export class UsersStatsComponent implements OnInit {
   // Métodos para mostrar filtros activos
   showFilterIndicators(): boolean {
     const filters = this.selectedFilters();
-    return !!(filters.search);
+    return !!(filters.search || filters.role);
   }
 
   showPagination(): boolean {
@@ -293,7 +311,7 @@ export class UsersStatsComponent implements OnInit {
         this.deleting.set(false);
         this.showDeleteModal.set(false);
         this.errorTitle.set(err.error?.error || 'Error al eliminar el usuario');
-        this.errorMessage.set(err.error?.message);
+        this.errorMessage.set(err.error?.message || 'Inténtalo de nuevo');
         this.showErrorModal.set(true);
       }
     });

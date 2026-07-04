@@ -205,7 +205,8 @@ export interface CompletedTestResponse {
   test_created_at: string;
   
   // Estadísticas
-  attempt: number;
+  attempt_position: number;
+  total_attempts: number;
   total_questions: number;
   score_percent: number;
   score_rounded: number;

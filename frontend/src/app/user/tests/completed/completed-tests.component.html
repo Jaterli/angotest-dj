@@ -365,7 +365,7 @@
             <!-- Puntuación destacada -->
             <div class="flex-shrink-0">
               <div class="text-center">
-                <div class="text-3xl font-bold {{ getAccuracyColor(data.accuracy) }}">
+                <div class="text-3xl font-bold {{ getAccuracyColor(data.score_rounded) }}">
                   {{ data.score_rounded }}%
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -395,7 +395,7 @@
             <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
               <div class="text-center">
                 <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {{ data.attempt }}
+                  {{ data.attempt_position }} / {{ data.total_attempts }}
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">Intento</div>
               </div>

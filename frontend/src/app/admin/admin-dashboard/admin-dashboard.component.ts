@@ -37,7 +37,7 @@ export class AdminDashboardComponent implements OnInit {
   // Control de visibilidad de filtros
   showFilters = signal(false);
   
-  // Filtros - Modificado para rango de fechas
+  // Filtros 
   filters = signal<DashboardFilters>({
     start_date: this.getDefaultStartDate(), // 6 meses atrás por defecto
     end_date: this.getTodayDate(), // Hoy por defecto

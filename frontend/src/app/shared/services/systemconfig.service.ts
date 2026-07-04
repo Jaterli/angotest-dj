@@ -14,6 +14,6 @@ export class SystemConfigServiceForUser {
     
   // Obtener configuración por clave
   getSystemConfigByKey(key: string): Observable<string> {
-    return this.http.get(`${this.apiUrl}/key/${key}`, { responseType: 'text' });
+    return this.http.get(`${this.apiUrl}/key/${key}/`, { responseType: 'text' });
 }
 }
