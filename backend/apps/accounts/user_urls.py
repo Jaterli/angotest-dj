@@ -5,7 +5,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/personaldata/', views.get_dashboard_data, name='dashboard_data'),
-    path('dashboard/rankings/', views.get_rankings, name='rankings'),
+    path('dashboard/rankings', views.get_rankings, name='rankings'),
 
     # Profile    
     path('current-user', views.get_current_user, name='current_user'),   

@@ -22,8 +22,9 @@ from apps.results.models import Result
 from apps.invitations.models import TestInvitation
 from django.db.models import Count, Avg, Q, F, FloatField, Case, When, Value
 from django.db.models.functions import Coalesce, Cast
-from .services import DataService, MIN_TESTS_FOR_RANKING, PREDEFINED_LEVELS
+from .services import DataService
 from apps.admin_panel.utils import SystemConfigManager
+from apps.shared.models import get_level_choices
 
 
 logger = logging.getLogger(__name__)
@@ -664,7 +665,6 @@ def deactivate_account(request):
         return JsonResponse({'error': 'Contraseña actual incorrecta'}, status=400)
     
 
-
     # Obtener usuario contenedor
     container_user, error = get_container_user()
     if container_user == None:
@@ -735,7 +735,8 @@ def get_dashboard_data(request):
 @login_required
 def get_rankings(request):
     """Obtiene rankings y posición del usuario"""
-    limit = min(max(int(request.GET.get('limit', 10)), 1), 50)  # Limitar entre 1 y 50
+
+    limit = 50# min(max(int(request.GET.get('limit', 10)), 1), 50)  # Limitar entre 1 y 50
     
     data_service = DataService()
     
@@ -755,13 +756,12 @@ def get_rankings(request):
         },
         'top_by_levels': {},
         'top_by_levels_accuracy': {},
-        'current_user_position': data_service.get_user_all_ranking_positions(request.user.id),
-        'community_averages': data_service.get_community_averages(),
-        'min_tests_for_ranking': MIN_TESTS_FOR_RANKING
+        'current_user_positions': data_service.get_user_all_ranking_positions(request.user.id),
+        'min_tests_for_ranking': int(SystemConfigManager.get_value(key='MIN_TESTS_FOR_RANKING'))
     }
     
     # Rankings por nivel
-    for level in PREDEFINED_LEVELS:
+    for level in get_level_choices():
         response['top_by_levels'][level] = data_service.get_top_by_metric('top_by_level', limit, level)
         response['top_by_levels_accuracy'][level] = data_service.get_top_by_metric('top_by_levels_accuracy', limit, level)
     
@@ -803,59 +803,12 @@ def get_user_profile(request, user_id):
     return JsonResponse({'user': user})
 
 
-# @csrf_exempt
-# @require_http_methods(["PUT", "PATCH"])
-# @admin_required
-# def update_user(request, user_id):
-#     """Actualizar usuario (admin)"""
-#     try:
-#         user = User.objects.get(id=user_id)
-#     except User.DoesNotExist:
-#         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-    
-#     try:
-#         data = json.loads(request.body)
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-#     # Actualizar campos permitidos
-#     updatable_fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'country', 'role']
-    
-#     for field in updatable_fields:
-#         if field in data and data[field]:
-#             if field == 'email':
-#                 value = data[field].lower()
-#                 if User.objects.filter(email=value).exclude(id=user.pk).exists():
-#                     return JsonResponse({'error': 'El email ya está en uso'}, status=400)
-#             elif field == 'role' and data[field] not in ['user', 'admin']:
-#                 continue
-#             else:
-#                 value = data[field]
-#             setattr(user, field, value)
-    
-#     if 'birth_date' in data and data['birth_date']:
-#         try:
-#             user.birth_date = datetime.strptime(data['birth_date'], '%Y-%m-%d').date()
-#         except ValueError:
-#             return JsonResponse({'error': 'Formato de fecha inválido. Use YYYY-MM-DD'}, status=400)
-    
-#     try:
-#         user.save()
-#     except Exception as e:
-#         logger.error(f"Error updating user {user_id}: {str(e)}")
-#         return JsonResponse({'error': 'Error al actualizar usuario'}, status=500)
-    
-#     return JsonResponse({
-#         'user': user_to_response(user),
-#         'message': 'Usuario actualizado correctamente'
-#     })
-
-
 @require_http_methods(["GET"])
 @admin_required
 def get_users_with_stats(request):
     """Obtener usuarios con estadísticas (paginado)"""
-    # Parámetros con valores por defecto y validación
+    
+    # ===== PARÁMETROS DE CONSULTA =====
     page = max(int(request.GET.get('page', 1)), 1)
     page_size = min(max(int(request.GET.get('page_size', 10)), 1), 100)
     sort_by = request.GET.get('sort_by', 'registered_at')
@@ -863,11 +816,13 @@ def get_users_with_stats(request):
     role = request.GET.get('role', '')
     search = request.GET.get('search', '')
     
-    valid_sort_fields = ['id', 'username', 'email', 'role', 'registered_at', 'login_at']
+    # ===== VALIDACIÓN =====
+    valid_sort_fields = ['id', 'username', 'email', 'role', 'registered_at', 
+                         'login_at', 'tests_completed', 'average_score']
     if sort_by not in valid_sort_fields:
         sort_by = 'registered_at'
     
-    # Query base con anotaciones optimizadas
+    # ===== CONSULTA BASE =====
     users_with_stats = User.objects.annotate(
         tests_completed=Coalesce(Count('results', filter=Q(results__status='completed')), Value(0)),
         tests_in_progress=Coalesce(Count('results', filter=Q(results__status='in_progress')), Value(0)),
@@ -882,7 +837,7 @@ def get_users_with_stats(request):
         total_tests_taken=Coalesce(Count('results'), Value(0))
     )
     
-    # Aplicar filtros
+    # ===== APLICAR FILTROS =====
     if role:
         users_with_stats = users_with_stats.filter(role=role)
     
@@ -894,15 +849,17 @@ def get_users_with_stats(request):
             Q(last_name__icontains=search)
         )
     
+    # ===== CONTAR TOTAL FILTRADO =====
     total_filtered = users_with_stats.count()
     
-    # Ordenar y paginar
+    # ===== ORDENAR Y PAGINAR =====
     order_prefix = '-' if sort_order == 'desc' else ''
     users_with_stats = users_with_stats.order_by(f'{order_prefix}{sort_by}')
     
     start = (page - 1) * page_size
     users_paginated = users_with_stats[start:start + page_size]
     
+    # ===== PROCESAR DATOS =====
     from apps.test.models import Test
     total_tests_count = Test.objects.count()
     
@@ -924,24 +881,24 @@ def get_users_with_stats(request):
             'tests_completed': getattr(user, 'tests_completed', 0),
             'tests_in_progress': getattr(user, 'tests_in_progress', 0),
             'tests_not_started': total_tests_count - getattr(user, 'total_tests_taken', 0),
-            'average_score': round(getattr(user, 'average_score', 0.0), 2),
+            'average_score': getattr(user, 'average_score', 0.0),
             'total_tests_taken': getattr(user, 'total_tests_taken', 0),
         })
     
+    # ===== CONSTRUIR RESPUESTA =====
     return JsonResponse({
-        'users': users_data,
+        'data': users_data,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total_filtered': total_filtered,
+            'total_pages': (total_filtered + page_size - 1) // page_size if page_size > 0 else 1,
+        },
         'stats': {
             'total_users': User.objects.count(),
             'total_filtered_users': total_filtered,
         },
-        'filters': {
-            'page': page,
-            'page_size': page_size,
-            'role': role,
-            'search': search,
-            'sort_by': sort_by,
-            'sort_order': sort_order,
-        }
+        'sort_fields': valid_sort_fields,
     })
 
 
@@ -1018,7 +975,6 @@ def delete_user(request, user_id):
     })
 
 
-
 def get_container_user():
     """
     Obtiene el usuario contenedor desde la configuración.
@@ -1027,22 +983,16 @@ def get_container_user():
     from apps.admin_panel.models import SystemConfig
     
     try:
-        config = SystemConfig.objects.get(key='CONTAINER_USER_ID')
-        container_user_id = int(config.value)
-    except SystemConfig.DoesNotExist:
-        SystemConfigManager.get('CONTAINER_USER_ID') # Valor por defecto
-        return SystemConfigManager.get('CONTAINER_USER_ID') # Valor por defecto
-    except ValueError:
-        return None, {
-            'error': 'La configuración "CONTAINER_USER_ID" tiene un valor inválido',
-            'message': f'El valor "{config.value}" no es un número válido.'
-        }
-    
-    try:
+        container_user_id = int(SystemConfigManager.get_value(key='CONTAINER_USER_ID'))
         container_user = User.objects.get(id=container_user_id)
         return container_user, None
     except User.DoesNotExist:
         return None, {
             'error': f'El usuario contenedor con ID {container_user_id} no existe',
-            'message': 'Por favor, asegúrate de que el usuario especificado existe o actualiza la configuración de "container_user".'
+            'message': 'Por favor, asegúrate de que el usuario especificado existe o actualiza la configuración de "CONTAINER_USER_ID".'
+        }
+    except SystemConfig.DoesNotExist:
+        return None, {
+            'error': 'La configuración "CONTAINER_USER_ID" no está definida',
+            'message': 'Por favor, asegúrate de que la configuración de "CONTAINER_USER_ID" esté presente en el sistema.'
         }

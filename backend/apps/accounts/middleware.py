@@ -33,7 +33,7 @@ class JWTCookieMiddleware:
                 user = get_user_from_token(token)
                 if user and user.is_active:
                     request.user = user
-                    logger.error(f"JWT User set: {user.email}")
+                    logger.info(f"JWT User set: {user.email}")
                 else:
                     # Si el token es inválido, usar AnonymousUser
                     request.user = AnonymousUser()
