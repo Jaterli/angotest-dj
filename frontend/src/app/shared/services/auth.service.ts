@@ -241,7 +241,7 @@ export class AuthService {
   resetPassword(data: ResetPasswordRequest): Observable<ForgotPasswordResponse> {
     this.resetLoading.set(true);
     return this.http.post<ForgotPasswordResponse>(
-      `${this.apiUrl}/reset-password`,
+      `${this.apiUrl}/reset-password-with-token`,
       data
     ).pipe(
       tap(() => {

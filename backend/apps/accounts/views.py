@@ -10,12 +10,12 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.db import transaction
 from django.contrib.auth import logout as django_logout
+from django.shortcuts import render
 from functools import wraps
 import json
 import jwt # type: ignore
 import secrets
 import logging
-
 from .models import User, PasswordResetToken
 from .serializers import UserResponseSerializer
 from apps.results.models import Result
@@ -63,7 +63,7 @@ def get_user_from_token(token):
         if not user_id:
             return None
         
-        # Usar solo() para mejorar rendimiento
+        # Usar only() para mejorar rendimiento
         return User.objects.only('id', 'email', 'username', 'role', 'is_active').filter(id=user_id).first()
         
     except jwt.InvalidTokenError:
@@ -216,7 +216,6 @@ def register(request):
             address=data.get('address', ''),
             country=country,
             birth_date=birth_date,
-            role=data.get('role', 'user')
         )
         user.save()
         
@@ -305,7 +304,7 @@ def logout(request):
 def send_password_reset_email(to_email, reset_link):
     """Envía email de recuperación de contraseña"""
     subject = 'Recuperación de contraseña'
-    html_message = render_to_string('emails/password_reset.html', {
+    html_message = render_to_string('reset-password.html', {
         'reset_link': reset_link,
         'expires_in': '24 horas'
     })
@@ -361,14 +360,15 @@ def forgot_password(request):
     )
     reset_token.save()
     
-    reset_link = f"https://{request.get_host()}/reset-password?token={token}"
+    scheme = "https" if request.is_secure() else "http"
+    reset_link = f"{scheme}://{settings.SITE_URL}/reset-password?token={token}"
+
     logger.info(f"Password reset link for {user.email}: {reset_link}")
     
-    # Enviar email (en desarrollo, también devolvemos el link)
     try:
         send_password_reset_email(user.email, reset_link)
-    except Exception as e:
-        logger.error(f"Error sending password reset email: {str(e)}")
+    except Exception:
+        logger.exception(f"Error sending password reset email")
     
     response_data = {'message': 'Si el email existe, se ha enviado un enlace de recuperación'}
     
@@ -400,7 +400,7 @@ def validate_reset_token(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def reset_password(request):
+def reset_password_with_token(request):
     """Restablecer contraseña con token"""
     try:
         data = json.loads(request.body)
@@ -439,6 +439,26 @@ def reset_password(request):
     token_record.save(update_fields=['used'])
     
     return JsonResponse({'message': 'Contraseña actualizada exitosamente'})
+
+
+def reset_password_page(request):
+    """
+    Vista que renderiza la página de restablecimiento de contraseña
+    """
+    token = request.GET.get('token')
+    
+    if not token:
+        # Si no hay token, redirigir o mostrar error
+        return render(request, 'reset_password_error.html', {
+            'error': 'Token no proporcionado'
+        })
+    
+    # Verificar si el token es válido (opcional, puedes hacerlo desde el frontend)
+    # O simplemente pasar el token al template para que el frontend lo use
+    
+    return render(request, 'reset-password.html', {
+        'token': token
+    })
 
 
 # ============== PERFIL DE USUARIO ==============
@@ -736,7 +756,7 @@ def get_dashboard_data(request):
 def get_rankings(request):
     """Obtiene rankings y posición del usuario"""
 
-    limit = 50# min(max(int(request.GET.get('limit', 10)), 1), 50)  # Limitar entre 1 y 50
+    limit = min(max(int(request.GET.get('limit', 10)), 1), 50)  # Limitar entre 1 y 50
     
     data_service = DataService()
     

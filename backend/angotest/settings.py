@@ -19,7 +19,7 @@ from dotenv import load_dotenv # type: ignore
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:7200')  # Ajusta según tu entorno
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
@@ -79,7 +79,9 @@ ROOT_URLCONF = 'angotest.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',  
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -174,6 +176,29 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# settings.py (entorno desarrollo)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',  # Mostrar todo en consola
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # Nivel raíz
+    },
+    'loggers': {
+        'apps.users': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 # Configuración de caché (usando Redis o memoria)
 CACHES = {
