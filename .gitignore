@@ -9,7 +9,7 @@ backend/venv
 backend/env/
 backend/*.log
 backend/controllers/bots.go
-backend-go/*
+backend-go
 
 # Python
 __pycache__/
@@ -149,6 +149,14 @@ testem.log
 *.orig
 *.rej
 .merge_file*
+
+# ============================================\
+# AI TOOLS AND IDE EXTENSIONS\
+# ============================================\
+.continue
+.aider*
+.cursor/
+.github/copilot*' 
 
 # ============================================
 # SYSTEM FILES

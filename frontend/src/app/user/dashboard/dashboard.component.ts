@@ -187,10 +187,10 @@ export class DashboardComponent implements OnInit {
     
     switch(this.activeRankingTab()) {
       case 'tests': return rankings.top_by_tests || [];
-      case 'time_all': return rankings.top_by_avg_time_taken_per_question?.all_attempts || [];
-      case 'time_first': return rankings.top_by_avg_time_taken_per_question?.first_attempt || [];
       case 'accuracy_all': return rankings.top_by_accuracy?.all_attempts || [];
       case 'accuracy_first': return rankings.top_by_accuracy?.first_attempt || [];
+      case 'time_all': return rankings.top_by_avg_time_taken_per_question?.all_attempts || [];
+      case 'time_first': return rankings.top_by_avg_time_taken_per_question?.first_attempt || [];
       case 'questions_all': return rankings.top_by_questions_answered?.all_attempts || [];
       case 'questions_first': return rankings.top_by_questions_answered?.first_attempt || [];
       default: return [];
@@ -386,10 +386,10 @@ export class DashboardComponent implements OnInit {
   getRankingTabLabel(tab: string): string {
     switch(tab) {
       case 'tests': return 'Tests Completados';
-      case 'time_all': return 'Tiempo Promedio/pregunta';
-      case 'time_first': return 'Tiempo 1er Intento/pregunta';
       case 'accuracy_all': return 'Precisión General';
       case 'accuracy_first': return 'Precisión 1er Intento';
+      case 'time_all': return 'Tiempo Promedio/pregunta';
+      case 'time_first': return 'Tiempo 1er Intento/pregunta';
       case 'questions_all': return 'Preguntas Respondidas';
       case 'questions_first': return 'Preguntas 1er Intento';
       default: return tab;

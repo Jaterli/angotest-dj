@@ -47,13 +47,13 @@
           <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button (click)="setAttemptType('first_attempt')"
                     [class]="attemptType() === 'first_attempt' 
-                      ? 'px-3 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-gray-700 shadow-sm' 
+                      ? 'px-3 py-1.5 text-sm font-medium rounded-md bg-yellow-300 dark:bg-yellow-700 shadow-sm' 
                       : 'px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'">
               Primer Intento
             </button>
             <button (click)="setAttemptType('all_attempts')"
                     [class]="attemptType() === 'all_attempts' 
-                      ? 'px-3 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-gray-700 shadow-sm' 
+                      ? 'px-3 py-1.5 text-sm font-medium rounded-md bg-sky-300 dark:bg-sky-700 shadow-sm' 
                       : 'px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'">
               Todos los Intentos
             </button>
@@ -65,7 +65,8 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         
         <!-- Tests Completados -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-2"
+          [class]="attemptType() === 'first_attempt' ? 'border-yellow-300 dark:border-yellow-700' : 'border-sky-300 dark:border-sky-700'">
           <div class="flex items-center mb-4">
             <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg mr-4">
               <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
@@ -97,7 +98,8 @@
         </div>
 
         <!-- Precisión -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-2"
+             [class]="attemptType() === 'first_attempt' ? 'border-yellow-300 dark:border-yellow-700' : 'border-sky-300 dark:border-sky-700'">
           <div class="flex items-center mb-4">
             <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-4">
               <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -128,7 +130,8 @@
         </div>
 
         <!-- Tiempo -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-2"
+             [class]="attemptType() === 'first_attempt' ? 'border-yellow-300 dark:border-yellow-700' : 'border-sky-300 dark:border-sky-700'">
           <div class="flex items-center mb-4">
             <div class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg mr-4">
               <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -139,7 +142,7 @@
               <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {{ formatTimeShort(currentAverageTimePerQuestion()) }}
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Tiempo/pregunta</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Tiempo/pregunta {{ attemptType() === 'first_attempt' ? '1er intento' : 'general' }}</div>
             </div>
           </div>
           <div class="space-y-2">
@@ -159,7 +162,8 @@
         </div>
 
         <!-- Rendimiento -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-2"
+             [class]="attemptType() === 'first_attempt' ? 'border-yellow-300 dark:border-yellow-700' : 'border-sky-300 dark:border-sky-700'">
           <div class="flex items-center mb-4">
             <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg mr-4">
               <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
@@ -168,9 +172,9 @@
             </div>
             <div>
               <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ currentAttemptData()?.total_correct || 0 }}
+                {{ currentAttemptData()?.total_questions_answered || 0 }}
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">Respuestas correctas</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Total respuestas {{ attemptType() === 'first_attempt' ? '1er intento' : 'general' }}</div>
             </div>
           </div>
           
@@ -193,49 +197,10 @@
         </div>
       </div>
 
-      <!-- Sección: Mejoras entre intentos -->
-      @if (improvementData()) {
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Mejoras con Repetición</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div class="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-            <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {{ improvementData()!.accuracy_improvement >= 0 ? '+' : '' }}{{ improvementData()!.accuracy_improvement.toFixed(2) }}%
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Mejora en precisión</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">
-              {{ getImprovementSymbol(improvementData()!.accuracy_improvement, 'accuracy') }}
-              {{ getImprovementText(improvementData()!.accuracy_improvement, 'accuracy') }}
-            </div>
-          </div>
-          
-          <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {{ improvementData()!.time_improvement >= 0 ? '+' : '' }}{{ improvementData()!.time_improvement.toFixed(1) }}s
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Mejora en tiempo/pregunta</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">
-              {{ getImprovementSymbol(improvementData()!.time_improvement, 'time') }}
-              {{ getImprovementText(improvementData()!.time_improvement, 'time') }}
-            </div>
-          </div>
-          
-          <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              +{{ improvementData()!.questions_improvement }}
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Preguntas adicionales</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">
-              Con repetición para mejorar
-            </div>
-          </div>
-        </div>
-      </div>
-      }
-
       <!-- Sección: Niveles -->
       @if (levelStatsByAttempt().length > 0) {
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-2"
+           [class]="attemptType() === 'first_attempt' ? 'border-yellow-300 dark:border-yellow-700' : 'border-sky-300 dark:border-sky-700'">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Desempeño por Nivel</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           @for (level of levelStatsByAttempt(); track level.level) {
@@ -289,6 +254,46 @@
       </div>
       }
     </div>
+
+    <!-- Sección: Mejoras entre intentos -->
+    @if (improvementData()) {
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-3 xs:p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Mejoras con Repetición</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+          <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            {{ improvementData()!.accuracy_improvement >= 0 ? '+' : '' }}{{ improvementData()!.accuracy_improvement.toFixed(2) }}%
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Mejora en precisión</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            {{ getImprovementSymbol(improvementData()!.accuracy_improvement, 'accuracy') }}
+            {{ getImprovementText(improvementData()!.accuracy_improvement, 'accuracy') }}
+          </div>
+        </div>
+        
+        <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            {{ improvementData()!.time_improvement >= 0 ? '+' : '' }}{{ improvementData()!.time_improvement.toFixed(1) }}s
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Mejora en tiempo/pregunta</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            {{ getImprovementSymbol(improvementData()!.time_improvement, 'time') }}
+            {{ getImprovementText(improvementData()!.time_improvement, 'time') }}
+          </div>
+        </div>
+        
+        <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            +{{ improvementData()!.questions_improvement }}
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Preguntas adicionales</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            Con repetición para mejorar
+          </div>
+        </div>
+      </div>
+    </div>
+    }
 
     <!-- Sección: Rankings (solo se muestra al hacer click) -->
     @if (!showRankings()) {
@@ -478,7 +483,7 @@
       <div class="mb-4">
         <!-- Desktop: Botones -->
         <div class="hidden sm:flex sm:flex-wrap sm:gap-2">
-          @for (tab of ['tests', 'time_all', 'time_first', 'accuracy_all', 'accuracy_first', 'questions_all', 'questions_first']; track tab) {
+          @for (tab of ['tests', 'accuracy_all', 'accuracy_first', 'time_all', 'time_first', 'questions_all', 'questions_first']; track tab) {
           <button (click)="setRankingTab(tab)"
                   [class]="activeRankingTab() === tab 
                   ? 'px-3 py-1.5 text-xs font-medium rounded-full border' 
