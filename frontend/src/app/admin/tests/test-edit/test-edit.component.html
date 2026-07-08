@@ -1,5 +1,5 @@
 <div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-4xl pb-20 md:pb-24">
-  
+
   <!-- Estado de error -->
   @if (error()) {
     <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 mb-6">
@@ -38,7 +38,7 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Editar Test #{{ testId }}</h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2">Modifica la información del test existente</p>
       </div>
-      
+
       <!-- Botón de cancelar -->
       <div>
         <button (click)="cancel()"
@@ -55,7 +55,7 @@
       <!-- Información básica del test -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900 border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Información General</h2>
-        
+
         <!-- Título -->
         <div class="space-y-2 mb-6">
           <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -106,264 +106,100 @@
             }
           </div>
 
-          <!-- Tema Principal -->
-          <div class="space-y-2">
-            <label for="main_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tema Principal *
-              @if (validationState().main.message) {
-                <span class="ml-2 text-xs font-normal" 
-                      [class.text-green-600]="validationState().main.isValid"
-                      [class.text-red-600]="!validationState().main.isValid">
-                  {{ validationState().main.message }}
-                </span>
-              }
-            </label>
-            
-            <div class="relative">
-              <input
-                id="main_topic"
-                formControlName="main_topic"
-                placeholder="Ej: Ciencias de la Computación"
-                [class.border-red-500]="!validationState().main.isValid && testForm.get('main_topic')?.value"
-                [class.border-green-500]="validationState().main.isValid && testForm.get('main_topic')?.value"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-              >
-              
-              <!-- Botón para ver temas principales -->
-              <button
-                type="button"
-                (click)="showLists.main = !showLists.main"
-                class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-                title="Ver temas principales disponibles"
-              >
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
-                </svg>
-              </button>
-            </div>
-            
-            <!-- Estado de carga -->
-            @if (isLoading().main) {
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Cargando temas...
-              </p>
-            }
-            
-            <!-- Lista de temas principales -->
-            @if (showLists.main && mainTopics().length > 0) {
-              <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
-                <div class="p-3 border-b border-gray-100 dark:border-gray-700">
-                  <div class="flex justify-between items-center">
-                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Temas disponibles:</p>
-                    <button
-                      type="button"
-                      (click)="showLists.main = false"
-                      class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="max-h-48 overflow-y-auto p-2">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    @for (topic of mainTopics(); track topic) {
-                      <button
-                        type="button"
-                        (click)="onMainTopicSelect(topic)"
-                        class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
-                      >
-                        {{ topic }}
-                      </button>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-            
-          </div>
+          <!-- Jerarquía de temas: Tema Principal / Subtema / Tema Específico -->
+          <!-- Unificados con ng-template para evitar repetir 3 bloques casi idénticos -->
+          <ng-template #topicFieldTpl let-field>
+            <div class="space-y-2">
+              <label [for]="field.key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ field.label }} *
+                @if (field.validation.message) {
+                  <span class="ml-2 text-xs font-normal"
+                        [class.text-green-600]="field.validation.isValid"
+                        [class.text-red-600]="!field.validation.isValid">
+                    {{ field.validation.message }}
+                  </span>
+                }
+              </label>
 
-          <!-- Subtema -->
-          <div class="space-y-2">
-            <label for="sub_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Subtema *
-              @if (validationState().sub.message) {
-                <span class="ml-2 text-xs font-normal" 
-                      [class.text-green-600]="validationState().sub.isValid"
-                      [class.text-red-600]="!validationState().sub.isValid">
-                  {{ validationState().sub.message }}
-                </span>
-              }
-            </label>
-            
-            <div class="relative">
-              <input
-                id="sub_topic"
-                formControlName="sub_topic"
-                placeholder="Ej: Fundamentos de Programación"
-                [disabled]="!testForm.get('main_topic')?.value"
-                [class.border-red-500]="!validationState().sub.isValid && testForm.get('sub_topic')?.value"
-                [class.border-green-500]="validationState().sub.isValid && testForm.get('sub_topic')?.value"
-                [class.opacity-50]="!testForm.get('main_topic')?.value"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-              >
-              
-              <!-- Botón para ver subtemas -->
-              @if (testForm.get('main_topic')?.value) {
-                <button
-                  type="button"
-                  (click)="showLists.sub = !showLists.sub"
-                  class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-                  title="Ver subtemas disponibles"
+              <div class="relative">
+                <input
+                  [id]="field.key"
+                  [formControlName]="field.key"
+                  [placeholder]="field.placeholder"
+                  [class.border-red-500]="!field.validation.isValid && testForm.get(field.key)?.value"
+                  [class.border-green-500]="field.validation.isValid && testForm.get(field.key)?.value"
+                  [class.opacity-50]="field.disabled"
+                  [disabled]="field.disabled"
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
                 >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
-              }
-            </div>
-            
-            <!-- Estado de carga -->
-            @if (isLoading().sub) {
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Cargando subtemas...
-              </p>
-            }
-            
-            <!-- Mensaje si no hay tema principal -->
-            @if (!testForm.get('main_topic')?.value) {
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Introduce un tema principal primero
-              </p>
-            }
-            
-            <!-- Lista de subtemas -->
-            @if (showLists.sub && subTopics().length > 0) {
-              <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
-                <div class="p-3 border-b border-gray-100 dark:border-gray-700">
-                  <div class="flex justify-between items-center">
-                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                      Subtemas disponibles para "{{ testForm.get('main_topic')?.value }}":
-                    </p>
-                    <button
-                      type="button"
-                      (click)="showLists.sub = false"
-                      class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="max-h-48 overflow-y-auto p-2">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    @for (sub_topic of subTopics(); track sub_topic) {
-                      <button
-                        type="button"
-                        (click)="onSubTopicSelect(sub_topic)"
-                        class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
-                      >
-                        {{ sub_topic }}
-                      </button>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-            
-          </div>
 
-          <!-- Tema Específico -->
-          <div class="space-y-2">
-            <label for="specific_topic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tema Específico *
-              @if (validationState().specific.message) {
-                <span class="ml-2 text-xs font-normal" 
-                      [class.text-green-600]="validationState().specific.isValid"
-                      [class.text-red-600]="!validationState().specific.isValid">
-                  {{ validationState().specific.message }}
-                </span>
+                <!-- Botón para ver la lista de opciones (equivalente al @if de main, y al [main_topic]?.value de sub/specific) -->
+                @if (field.key === 'main_topic' || testForm.get(field.key === 'sub_topic' ? 'main_topic' : 'sub_topic')?.value) {
+                  <button
+                    type="button"
+                    (click)="toggleList(field.showKey)"
+                    class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                    [title]="'Ver ' + field.label.toLowerCase() + ' disponibles'"
+                  >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+
+              <!-- Estado de carga -->
+              @if (field.loading) {
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Cargando {{ field.label.toLowerCase() }}...
+                </p>
               }
-            </label>
-            
-            <div class="relative">
-              <input
-                id="specific_topic"
-                formControlName="specific_topic"
-                placeholder="Ej: Funciones y Procedimientos"
-                [class.border-red-500]="!validationState().specific.isValid && testForm.get('specific_topic')?.value"
-                [class.border-green-500]="validationState().specific.isValid && testForm.get('specific_topic')?.value"
-                [class.opacity-50]="!testForm.get('sub_topic')?.value"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-              >
-              
-              <!-- Botón para ver temas específicos -->
-              @if (testForm.get('sub_topic')?.value) {
-                <button
-                  type="button"
-                  (click)="showLists.specific = !showLists.specific"
-                  class="absolute right-3 top-3 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-                  title="Ver temas específicos disponibles"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
+
+              <!-- Mensaje si falta el campo padre -->
+              @if (field.emptyHint) {
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ field.emptyHint }}
+                </p>
               }
-            </div>
-            
-            <!-- Estado de carga -->
-            @if (isLoading().specific) {
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Cargando temas específicos...
-              </p>
-            }
-            
-            <!-- Mensaje si no hay subtema -->
-            @if (!testForm.get('sub_topic')?.value) {
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Introduce un subtema primero
-              </p>
-            }
-            
-            <!-- Lista de temas específicos -->
-            @if (showLists.specific && specificTopics().length > 0) {
-              <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
-                <div class="p-3 border-b border-gray-100 dark:border-gray-700">
-                  <div class="flex justify-between items-center">
-                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                      Temas específicos para "{{ testForm.get('sub_topic')?.value }}":
-                    </p>
-                    <button
-                      type="button"
-                      (click)="showLists.specific = false"
-                      class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="max-h-48 overflow-y-auto p-2">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    @for (specific_topic of specificTopics(); track specific_topic) {
+
+              <!-- Lista de opciones -->
+              @if (showLists[field.showKey] && field.list.length > 0) {
+                <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                  <div class="p-3 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between items-center">
+                      <p class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ field.listHeader }}</p>
                       <button
                         type="button"
-                        (click)="onSpecificTopicSelect(specific_topic)"
-                        class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
+                        (click)="closeList(field.showKey)"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                       >
-                        {{ specific_topic }}
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
                       </button>
-                    }
+                    </div>
+                  </div>
+                  <div class="max-h-48 overflow-y-auto p-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      @for (topic of field.list; track topic) {
+                        <button
+                          type="button"
+                          (click)="field.onSelect(topic)"
+                          class="text-left px-3 py-2 text-sm rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
+                        >
+                          {{ topic }}
+                        </button>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-            
-          </div>
+              }
+            </div>
+          </ng-template>
+
+          @for (field of topicFields; track field.key) {
+            <ng-container *ngTemplateOutlet="topicFieldTpl; context: { $implicit: field }"></ng-container>
+          }
 
           <!-- Estado Activo -->
           <div class="space-y-2">
@@ -403,7 +239,7 @@
                 </p>
               </div>
             </div>
-          </div>          
+          </div>
         </div>
 
         <!-- Descripción -->
@@ -439,7 +275,7 @@
         }
       </div>
 
-      <!-- Preguntas (MANTIENE EL CÓDIGO ORIGINAL) -->
+      <!-- Preguntas (sin cambios funcionales) -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900 border border-gray-200 dark:border-gray-700 p-6">
         <div class="mb-6">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Preguntas</h2>
@@ -561,7 +397,7 @@
                     </div>
                   }
                 </div>
-                
+
                 <!-- Indicador de respuesta correcta -->
                 @if (hasCorrectAnswer(i)) {
                   <div class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center">
@@ -622,7 +458,7 @@
             </p>
           </div>
         </div>
-        
+
         <div class="flex gap-3 justify-end">
           <button
             type="button"
@@ -631,7 +467,7 @@
           >
             Cancelar
           </button>
-          
+
           <button
             type="button"
             (click)="addQuestion()"
@@ -665,6 +501,30 @@
               Guardar Cambios
             }
           </button>
+
+          <button
+            type="button"
+            (click)="submitAsNew()"
+            [disabled]="testForm.invalid || questions.length === 0 || !allQuestionsHaveCorrectAnswer() || saving()"
+            [ngClass]="{
+              'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600': testForm.valid && questions.length > 0 && allQuestionsHaveCorrectAnswer() && !saving(),
+              'bg-gray-400 dark:bg-gray-600 cursor-not-allowed': testForm.invalid || questions.length === 0 || !allQuestionsHaveCorrectAnswer() || saving()
+            }"
+            class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600 focus:outline-hidden focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors min-w-[160px] justify-center"
+          >
+            @if (saving()) {
+              <svg class="w-4 h-4 mr-2 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+              </svg>
+              Creando copia...
+            } @else {
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8 3a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1h-1v1a1 1 0 01-1 1H6a1 1 0 01-1-1v-6a1 1 0 011-1h1V3z" clip-rule="evenodd"/>
+              </svg>
+              Guardar como copia
+            }
+          </button>
+
         </div>
       </div>
     </div>
@@ -672,7 +532,7 @@
 }
 
 <!-- Modal de advertencia de temas -->
-<app-modal 
+<app-modal
   [isOpen]="showTopicWarningModal()"
   title="⚠️ Temas no encontrados"
   icon="warning"
@@ -681,11 +541,11 @@
   [customContent]="true"
   (confirm)="onTopicWarningConfirm(true)"
   (cancel)="onTopicWarningConfirm(false)">
-  
+
   <!-- Contenido personalizado del modal -->
   <div class="text-sm text-gray-600 dark:text-gray-300">
     <p class="mb-3">Los siguientes temas no existen en el sistema:</p>
-    
+
     <ul class="list-disc pl-5 mb-4 space-y-1">
       @for (topic of invalidTopics(); track topic) {
         <li>
@@ -693,13 +553,13 @@
         </li>
       }
     </ul>
-    
+
     <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-lg p-3 mb-3">
       <p class="text-xs text-yellow-800 dark:text-yellow-300">
         <strong>Nota:</strong> Puedes continuar editando el test, pero los usuarios podrían tener dificultades para encontrarlo.
       </p>
     </div>
-    
+
     <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
       Revisa las sugerencias disponibles en los campos de entrada.
     </p>
@@ -707,17 +567,34 @@
 </app-modal>
 
 <!-- Modal de éxito -->
-<app-modal 
+<app-modal
   [isOpen]="showSuccessModal()"
-  title="¡Test Actualizado!"
-  message="El test se ha actualizado correctamente. Serás redirigido a la lista de tests."
+  [title]="successTitle()"
+  [message]="successMessage()"
   icon="success"
   (confirm)="onSuccessModalConfirm()"
   [showCancelButton]="false">
 </app-modal>
 
+<!-- Modal de advertencia de modificación -->
+<app-modal
+  [isOpen]="showModificationWarning()"
+  title="Modificación de test existente"
+  icon="warning"
+  confirmText="Guardar de todos modos"
+  cancelText="Guardar como copia"
+  (confirm)="onModificationConfirm()"
+  (cancel)="onModificationCancel()"
+>
+  <div class="text-sm text-gray-600 dark:text-gray-300">
+    <p class="mb-3">Modificar este test puede afectar a los resultados de los usuarios que ya lo hayan realizado.</p>
+    <p class="mb-3">Te recomendamos <strong>guardar una copia</strong> para preservar los datos originales.</p>
+    <p class="text-xs text-gray-500 dark:text-gray-400">Si decides continuar, los cambios se aplicarán al test existente y los resultados previos podrían verse afectados.</p>
+  </div>
+</app-modal>
+
 <!-- Modal de error -->
-<app-modal 
+<app-modal
   [isOpen]="showErrorModal()"
   title="Error al Guardar"
   [message]="errorMessage()"
