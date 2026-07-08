@@ -54,7 +54,6 @@ class TestInvitation(models.Model):
         if not self.token:
             self.token = secrets.token_hex(32)
         if not self.expires_at:
-            # FIX: timezone.timedelta does not exist; use datetime.timedelta
             self.expires_at = timezone.now() + timedelta(days=7)
         super().save(*args, **kwargs)
 

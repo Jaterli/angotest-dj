@@ -295,10 +295,7 @@ def save_or_update_result(request, test_id):
     correct_count = wrong_count = 0
     if status == 'completed' and answers:
         correct_count, wrong_count = calculate_score(answers, test_id)
-    
-    # Preparar datos
-    answers_json = json.dumps(answers) if answers else ''
-    
+       
     if result:
         # Actualizar resultado existente
         result.status = status
@@ -310,7 +307,7 @@ def save_or_update_result(request, test_id):
             result.wrong_answers = wrong_count
         
         if answers:
-            result.answers = answers_json
+            result.answers = answers
         
         result.save()
     else:
@@ -322,7 +319,7 @@ def save_or_update_result(request, test_id):
             time_taken=time_taken,
             correct_answers=correct_count,
             wrong_answers=wrong_count,
-            answers=answers_json
+            answers=answers
         )
     
     # Calcular respuesta
@@ -371,13 +368,7 @@ def get_test_progress(request, test_id):
             'is_resuming': False
         })
     
-    # Decodificar respuestas guardadas
-    saved_answers = {}
-    if result.answers:
-        try:
-            saved_answers = json.loads(result.answers)
-        except json.JSONDecodeError:
-            pass
+    saved_answers = result.answers or {}
     
     total_questions = test.questions.count()
     progress = (len(saved_answers) / total_questions * 100) if total_questions > 0 else 0
@@ -446,7 +437,7 @@ def get_my_in_progress_tests(request):
         answers = {}
         if result.answers:
             try:
-                answers = json.loads(result.answers)
+                answers = result.answers or {}
             except json.JSONDecodeError:
                 pass
         
@@ -731,7 +722,7 @@ def get_test_questions(request, test_id):
     progress = 0.0
     if result and result.answers:
         try:
-            saved_answers = json.loads(result.answers)
+            saved_answers = result.answers or {}
             progress = (len(saved_answers) / total_questions * 100) if total_questions > 0 else 0
         except json.JSONDecodeError:
             pass
@@ -810,7 +801,7 @@ def get_next_unanswered_question(request, test_id):
     answered_question_ids = set()
     if result and result.answers:
         try:
-            saved_answers = json.loads(result.answers)
+            saved_answers = result.answers or {}
             answered_question_ids = set(int(qid) for qid in saved_answers.keys())
         except json.JSONDecodeError:
             pass

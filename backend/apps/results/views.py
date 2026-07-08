@@ -75,8 +75,7 @@ def get_incorrect_answers(request, result_id):
     except Result.DoesNotExist:
         return JsonResponse({'error': 'resultado no encontrado'}, status=404)
     
-    # Parsear respuestas del usuario
-    user_answers = result.answers if isinstance(result.answers, dict) else (json.loads(result.answers) if result.answers else {})
+    user_answers = result.answers if isinstance(result.answers, dict) else {}
     
     # Obtener respuestas correctas del test (usando caché)
     correct_answers_map = get_correct_answers_for_test(result.test_id)
@@ -287,7 +286,7 @@ def get_result_detail(request, result_id):
     total_answered = result.correct_answers + result.wrong_answers
     score = round((result.correct_answers * 100.0 / total_answered), 2) if result.status == 'completed' and total_answered > 0 else 0
     
-    answers_data = result.answers if isinstance(result.answers, dict) else (json.loads(result.answers) if result.answers else None)
+    answers_data = result.answers if isinstance(result.answers, dict) else {}
     
     return JsonResponse({
         'id': result.pk,
@@ -457,6 +456,8 @@ def export_results_csv(request):
     if search:
         query = query.filter(
             Q(user__username__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search) |
             Q(user__email__icontains=search) |
             Q(test__title__icontains=search) |
             Q(test__main_topic__icontains=search) |
@@ -620,6 +621,8 @@ def get_results_list(request):
     if search := request.GET.get('search'):
         results_query = results_query.filter(
             Q(user__username__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search) |
             Q(user__email__icontains=search) |
             Q(test__title__icontains=search) |
             Q(test__main_topic__icontains=search) |
@@ -845,7 +848,7 @@ def get_user_results(request, user_id):
         if result.status == 'completed':
             answered_count = result.correct_answers + result.wrong_answers
         elif result.status == 'in_progress' and result.answers:
-            answers = result.answers if isinstance(result.answers, dict) else (json.loads(result.answers) if result.answers else {})
+            answers = result.answers if isinstance(result.answers, dict) else {}
             answered_count = len(answers)
         
         user_results.append({
@@ -1005,8 +1008,7 @@ def get_user_result_details(request, result_id, user_id=None):
     except Result.DoesNotExist:
         return JsonResponse({'error': 'resultado no encontrado'}, status=404)
     
-    # Parsear respuestas del usuario
-    user_answers = result.answers if isinstance(result.answers, dict) else (json.loads(result.answers) if result.answers else {})
+    user_answers = result.answers if isinstance(result.answers, dict) else {}
     
     # Obtener preguntas con respuestas
     questions = Question.objects.filter(test_id=result.test_id).prefetch_related('answers')
