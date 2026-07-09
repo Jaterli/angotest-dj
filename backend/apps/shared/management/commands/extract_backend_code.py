@@ -36,6 +36,22 @@ class Command(BaseCommand):
         'staticfiles',
     ]
     
+    # Archivos a ignorar (siempre)
+    IGNORE_FILES = [
+        'manage.py',
+        'admin.py',
+        'wsgi.py',
+        'asgi.py',
+        '__init__.py',
+        'conftest.py',
+        'setup.py',
+        'tox.ini',
+        'pytest.ini',
+        'conftest.py',
+        'test_*.py',
+        '*_test.py',
+    ]
+    
     def add_arguments(self, parser):
         """
         Añade argumentos para el comando
@@ -201,7 +217,7 @@ class Command(BaseCommand):
                 )
             
             # Archivos por defecto
-            self.include_files = {'settings.py', 'models.py', 'views.py', 'urls.py', 'admin.py', 'serializer.py', 'service.py'}
+            self.include_files = {'settings.py', 'models.py', 'views.py', 'urls.py', 'admin.py', 'serializers.py', 'services.py'}
     
     def should_ignore_dir(self, dir_path):
         """Determina si un directorio debe ser ignorado"""
@@ -227,6 +243,23 @@ class Command(BaseCommand):
         
         return False
     
+    def should_ignore_file(self, file_path):
+        """
+        Determina si un archivo debe ser ignorado basado en IGNORE_FILES
+        """
+        file_name = file_path.name
+        
+        # Verificar si el archivo debe ser ignorado por nombre exacto
+        if file_name in self.IGNORE_FILES:
+            return True
+        
+        # Verificar si el archivo debe ser ignorado por patrón
+        for pattern in self.IGNORE_FILES:
+            if fnmatch.fnmatch(file_name, pattern):
+                return True
+        
+        return False
+    
     def should_include_file(self, file_path):
         """
         Determina si un archivo debe ser incluido en la extracción
@@ -234,6 +267,10 @@ class Command(BaseCommand):
         """
         # Verificar si es un archivo .py
         if file_path.suffix != '.py':
+            return False
+        
+        # Verificar si el archivo está en IGNORE_FILES
+        if self.should_ignore_file(file_path):
             return False
         
         # Obtener nombre del archivo y ruta relativa

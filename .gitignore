@@ -80,6 +80,7 @@ frontend/.pnp.*
 /docs/*.pdf
 *.docx
 *.xlsx
+*.txt
 
 # ============================================
 # COMPILED OUTPUT
