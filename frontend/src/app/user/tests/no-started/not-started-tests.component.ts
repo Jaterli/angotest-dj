@@ -106,19 +106,25 @@ export class NotStartedTestsComponent implements OnInit {
   loadTests(): void {
     this.loading.set(true);
 
+    const fieldMap: Record<string, string> = {
+      'test_title': 'title',
+      'test_created_at': 'created_at',
+      'test_level': 'level',
+      'questions': 'total_questions',
+    };
+    const sortField = fieldMap[this.selectedSortBy() || 'test_created_at'] || this.selectedSortBy();
+    const ordering = this.selectedSortOrder() === 'desc' ? `-${sortField}` : sortField;
+
     const filter: NotStartedTestsFilter = {
       page: this.currentPage(),
       page_size: this.selectedPageSize(),
       main_topic: this.selectedMainTopic() !== 'all' ? this.selectedMainTopic() : undefined,
       level: this.selectedLevel() !== 'all' ? this.selectedLevel() : undefined,
-      sort_by: this.selectedSortBy(),
-      sort_order: this.selectedSortOrder()
+      ordering: sortField ? ordering : undefined,
     };
 
-    // Necesitamos crear un método en TestService para usar NotStartedTestsFilter
     this.testService.getNotStartedTests(filter).subscribe({
       next: (res) => {
-        // Manejar tanto la respuesta antigua como la nueva estructura
         this.notStartedTestsData.set(res.data.tests);
         this.totalTests.set(res.data.total_tests);
         this.totalFilteredTests.set(res.stats.total_filtered_tests);
@@ -126,8 +132,7 @@ export class NotStartedTestsComponent implements OnInit {
         this.currentPage.set(res.data.current_page);
         this.hasMore.set(res.data.has_more);
         this.mainTopics.set(res.data.main_topics);
-        this.stats.set(res.stats);   
-        
+        this.stats.set(res.stats);
         this.loading.set(false);
         this.saveFilters();
       },

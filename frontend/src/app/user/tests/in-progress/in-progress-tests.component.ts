@@ -114,14 +114,29 @@ export class InProgressTestsComponent implements OnInit {
 
   loadTests(): void {
     this.loading.set(true);
-    
+
+    const fieldMap: Record<string, string> = {
+      'test_title': 'test__title',
+      'test_created_at': 'test__created_at',
+      'result_started_at': 'started_at',
+      'result_updated_at': 'updated_at',
+      'result_time_taken': 'time_taken',
+    };
+    const sortField = fieldMap[this.selectedSortBy() || 'result_updated_at'] || this.selectedSortBy();
+    // Si el campo es 'progress' o 'remaining_count', no lo soportamos, usamos orden por defecto
+    let ordering: string | undefined;
+    if (this.selectedSortBy() === 'progress' || this.selectedSortBy() === 'remaining_count') {
+      ordering = undefined;
+    } else {
+      ordering = this.selectedSortOrder() === 'desc' ? `-${sortField}` : sortField;
+    }
+
     const filter: InProgressTestsFilter = {
       page: this.currentPage(),
       page_size: this.selectedPageSize(),
       main_topic: this.selectedMainTopic() !== 'all' ? this.selectedMainTopic() : undefined,
       level: this.selectedLevel() !== 'all' ? this.selectedLevel() : undefined,
-      sort_by: this.selectedSortBy(),
-      sort_order: this.selectedSortOrder()
+      ordering: ordering,
     };
 
     this.testService.getMyInProgressTests(filter).subscribe({
@@ -131,13 +146,8 @@ export class InProgressTestsComponent implements OnInit {
         this.totalPages.set(res.data.total_pages);
         this.currentPage.set(res.data.current_page);
         this.hasMore.set(res.data.has_more);
+        this.mainTopics.set(res.data.main_topics);
         this.stats.set(res.stats);
-        
-        // Actualizar opciones de filtros si es la primera página
-        if (this.currentPage() === 1) {
-          this.mainTopics.set(res.data.main_topics || []);
-        }
-        
         this.loading.set(false);
         this.saveFilters();
       },

@@ -65,107 +65,70 @@ export class TestService {
   }
 
   // ====== Método para tests completados con filtros ======
-  getMyCompletedTests(
-    filter: CompletedTestsFilter = {}
-  ): Observable<CompletedTestsFullResponse> {
-    let params = new HttpParams();
-    
-    // Parámetros obligatorios con valores por defecto
-    params = params.set('page', (filter.page || 1).toString());
-    params = params.set('page_size', (filter.page_size || 10).toString());
-    
-    // Parámetros de filtro (solo si tienen valor y no son 'all')
+  getMyCompletedTests(filter: CompletedTestsFilter = {}): Observable<CompletedTestsFullResponse> {
+    let params = new HttpParams()
+      .set('page', (filter.page || 1).toString())
+      .set('page_size', (filter.page_size || 10).toString());
+
     if (filter.main_topic && filter.main_topic !== 'all') {
       params = params.set('main_topic', filter.main_topic);
     }
-    
     if (filter.level && filter.level !== 'all') {
       params = params.set('level', filter.level);
     }
-    
-    // Parámetros de ordenación con valores por defecto
-    params = params.set('sort_by', filter.sort_by || 'date');
-    params = params.set('sort_order', filter.sort_order || 'desc');
-
-    // Agregar nuevos filtros opcionales
+    if (filter.ordering) {
+      params = params.set('ordering', filter.ordering);
+    }
     if (filter.search) {
       params = params.set('search', filter.search);
     }
-    
     if (filter.from_date) {
       params = params.set('from_date', filter.from_date);
     }
-    
     if (filter.to_date) {
       params = params.set('to_date', filter.to_date);
     }
 
-    return this.http.get<CompletedTestsFullResponse>(
-      `${this.apiUrl}/completed`, 
-      { params }
-    );
+    return this.http.get<CompletedTestsFullResponse>(`${this.apiUrl}/completed`, { params });
   }
 
   // ====== Método para tests en progreso con filtros ======
-  getMyInProgressTests(
-    filter: InProgressTestsFilter = {}
-  ): Observable<InProgressTestsFullResponse> {
-    let params = new HttpParams();
-    
-    // Parámetros obligatorios con valores por defecto
-    params = params.set('page', (filter.page || 1).toString());
-    params = params.set('page_size', (filter.page_size || 10).toString());
-    
-    // Parámetros de filtro (solo si tienen valor y no son 'all')
+  getMyInProgressTests(filter: InProgressTestsFilter = {}): Observable<InProgressTestsFullResponse> {
+    let params = new HttpParams()
+      .set('page', (filter.page || 1).toString())
+      .set('page_size', (filter.page_size || 10).toString());
+
     if (filter.main_topic && filter.main_topic !== 'all') {
       params = params.set('main_topic', filter.main_topic);
     }
-    
     if (filter.level && filter.level !== 'all') {
       params = params.set('level', filter.level);
     }
-    
-    // Parámetros de ordenación con valores por defecto
-    params = params.set('sort_by', filter.sort_by || 'updated');
-    params = params.set('sort_order', filter.sort_order || 'desc');
+    if (filter.ordering) {
+      params = params.set('ordering', filter.ordering);
+    }
 
-    return this.http.get<InProgressTestsFullResponse>(
-      `${this.apiUrl}/in-progress`, 
-      { params }
-    );
+    return this.http.get<InProgressTestsFullResponse>(`${this.apiUrl}/in-progress`, { params });
   }
-  
+    
 
   // ======= Método para tests por hacer ======
-  getNotStartedTests(filter: NotStartedTestsFilter): Observable<NotStartedTestsFullResponse> {
-    let params = new HttpParams();
-    
-    // Parámetros obligatorios con valores por defecto
-    params = params.set('page', (filter.page || 1).toString());
-    params = params.set('page_size', (filter.page_size || 10).toString());
-    
-    // Parámetros de filtro
+  getNotStartedTests(filter: NotStartedTestsFilter = {}): Observable<NotStartedTestsFullResponse> {
+    let params = new HttpParams()
+      .set('page', (filter.page || 1).toString())
+      .set('page_size', (filter.page_size || 10).toString());
+
     if (filter.main_topic && filter.main_topic !== 'all') {
       params = params.set('main_topic', filter.main_topic);
     }
-    
     if (filter.level && filter.level !== 'all') {
       params = params.set('level', filter.level);
     }
-    
-    // Parámetros de ordenación
-    if (filter.sort_by) {
-      params = params.set('sort_by', filter.sort_by);
-    }
-    
-    if (filter.sort_order) {
-      params = params.set('sort_order', filter.sort_order);
+    if (filter.ordering) {
+      params = params.set('ordering', filter.ordering);
     }
 
-    return this.http.get<NotStartedTestsFullResponse>(
-      `${this.apiUrl}/not-started`, 
-      { params }
-    );
+    return this.http.get<NotStartedTestsFullResponse>(`${this.apiUrl}/not-started`, { params });
   }
 
 

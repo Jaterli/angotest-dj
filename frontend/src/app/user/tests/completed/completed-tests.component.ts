@@ -119,29 +119,36 @@ export class CompletedTestsComponent implements OnInit {
 
   loadTests(): void {
     this.loading.set(true);
-    
+
+    const fieldMap: Record<string, string> = {
+      'test_title': 'test__title',
+      'test_created_at': 'test__created_at',
+      'test_level': 'test__level',
+      'result_started_at': 'started_at',
+      'result_updated_at': 'updated_at',
+      'result_time_taken': 'time_taken',
+      'score': 'score',
+    };
+    const sortField = fieldMap[this.selectedSortBy() || 'result_updated_at'] || this.selectedSortBy();
+    const ordering = this.selectedSortOrder() === 'desc' ? `-${sortField}` : sortField;
+
     const filter: CompletedTestsFilter = {
       page: this.currentPage(),
       page_size: this.selectedPageSize(),
       main_topic: this.selectedMainTopic() !== 'all' ? this.selectedMainTopic() : undefined,
       level: this.selectedLevel() !== 'all' ? this.selectedLevel() : undefined,
-      sort_by: this.selectedSortBy(),
-      sort_order: this.selectedSortOrder()
+      ordering: sortField ? ordering : undefined,
     };
 
     this.testService.getMyCompletedTests(filter).subscribe({
       next: (res) => {
         this.completedTestsData.set(res.data.test_results);
         this.totalTests.set(res.data.total_tests);
-        this.totalPages.set(res.data.total_pages);        
+        this.totalPages.set(res.data.total_pages);
         this.currentPage.set(res.data.current_page);
         this.hasMore.set(res.data.has_more);
+        this.mainTopics.set(res.data.main_topics);
         this.stats.set(res.stats);
-        
-        if (this.currentPage() === 1) {
-          this.mainTopics.set(res.data.main_topics);
-        }
-        
         this.loading.set(false);
         this.saveFilters();
       },

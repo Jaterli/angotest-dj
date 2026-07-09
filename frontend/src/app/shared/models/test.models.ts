@@ -1,3 +1,31 @@
+export interface NotStartedTestsFilter {
+  page?: number;
+  page_size?: number;
+  main_topic?: string;
+  level?: string;
+  ordering?: string; // ej: 'title', '-created_at'
+}
+
+export interface InProgressTestsFilter {
+  page?: number;
+  page_size?: number;
+  main_topic?: string;
+  level?: string;
+  ordering?: string;
+}
+
+export interface CompletedTestsFilter {
+  page?: number;
+  page_size?: number;
+  main_topic?: string;
+  level?: string;
+  ordering?: string;
+  search?: string;
+  from_date?: string;
+  to_date?: string;
+}
+
+
 export interface Answer {
   id?: number;
   answer_text: string;
