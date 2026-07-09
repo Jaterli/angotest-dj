@@ -1,20 +1,15 @@
 # apps/accounts/authentication.py
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import AccessToken
-from django.conf import settings
+from rest_framework.authentication import BaseAuthentication
 
-class JWTCookieAuthentication(JWTAuthentication):
+class JWTCookieAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        # Obtener token de la cookie
-        raw_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+        from .views import get_user_from_token
+        raw_token = request.COOKIES.get('auth_token')
         
-        if raw_token is None:
+        if not raw_token:
             return None
         
-        try:
-            validated_token = AccessToken(raw_token)
-            user = self.get_user(validated_token)
-            return (user, validated_token)
-        except Exception:
-            return None
-
+        user = get_user_from_token(raw_token)
+        if user and user.is_active:
+            return (user, None)
+        return None

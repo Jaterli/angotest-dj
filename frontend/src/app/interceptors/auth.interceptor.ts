@@ -9,22 +9,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   
-  // Obtener token del localStorage
-  const token = localStorage.getItem('access_token');
-  
-  // Clonar la solicitud
+  // Clonar la solicitud con withCredentials: true
   let reqWithAuth = req.clone({
-    withCredentials: false  // No necesitamos cookies si usamos JWT en header
+    withCredentials: true 
   });
-  
-  // Agregar token al header si existe
-  if (token) {
-    reqWithAuth = reqWithAuth.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-  }
   
   return next(reqWithAuth).pipe(
     catchError((error: HttpErrorResponse) => {

@@ -149,10 +149,6 @@ export class AuthService {
       )
       .pipe(
         tap(res => {
-          // Guardar token en localStorage
-          if (res.access_token) {
-            localStorage.setItem('access_token', res.access_token);
-          }
           this.setUser(res.user);
         })
       );
@@ -167,8 +163,6 @@ export class AuthService {
   }
 
   logout(redirect = true): void {
-    // Limpiar localStorage
-    localStorage.removeItem('access_token');
     
     this.invalidateCache();
     
@@ -268,13 +262,5 @@ export class AuthService {
       this.setUser(user);
     }
   }
-
-  getToken(): string | null {
-    if (this.isBrowser()) {
-      return localStorage.getItem('access_token');
-    }
-    return null;
-  }
-
  
 }

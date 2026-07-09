@@ -9,6 +9,7 @@ backend/venv
 backend/env/
 backend/*.log
 backend/controllers/bots.go
+backend/**/_*.py
 backend-go
 
 # Python
