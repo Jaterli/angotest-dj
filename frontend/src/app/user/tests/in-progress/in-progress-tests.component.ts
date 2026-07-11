@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TestService } from '../../../shared/services/test.service';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -8,10 +8,10 @@ import { User } from '../../../shared/models/user.models';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
 import { 
   InProgressTestResponse, 
-  TestsStats,
-  InProgressTestsFilter 
+  InProgressTestsStats,
+  InProgressTestsFilter, 
+  InProgressTest
 } from '../../../shared/models/test.models';
-import { SystemConfigService } from '../../../admin/services/system-config.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SystemConfigServiceForUser } from '../../../shared/services/systemconfig.service';
 
@@ -26,8 +26,10 @@ export class InProgressTestsComponent implements OnInit {
   private authService = inject(AuthService);
   private sharedUtilsService = inject(SharedUtilsService);
   private systemConfigServiceForUser = inject(SystemConfigServiceForUser);
+  private router = inject(Router);
+
   // Tests y estado
-  inProgressTestsData = signal<InProgressTestResponse[]>([]);
+  inProgressTestsData = signal<InProgressTest[]>([]);
   expiredDays = toSignal(
     this.systemConfigServiceForUser.getSystemConfigByKey("MARK_IN_PROGRESS_AS_EXPIRED_AFTER_DAYS")
   );
@@ -36,7 +38,7 @@ export class InProgressTestsComponent implements OnInit {
   // Filtros
   selectedMainTopic = signal<string>('all');
   selectedLevel = signal<string>('all');
-  selectedSortBy = signal<InProgressTestsFilter["sort_by"]>('result_updated_at');
+  selectedSortBy = signal<InProgressTestsFilter["ordering"]>('result_updated_at');
   selectedSortOrder = signal<'asc' | 'desc'>('desc');
   selectedPageSize = signal<number>(10);
   levelOptions = this.sharedUtilsService.getSharedPredefinedLevels();
@@ -45,13 +47,13 @@ export class InProgressTestsComponent implements OnInit {
   
   // Paginación
   currentPage = signal(1);
-  totalTests = signal(0);
   totalPages = signal(0);  
   hasMore = signal(false);
-  
+
   // Estadísticas
-  stats = signal<TestsStats> ({
-    total_filtered_tests: 0,
+  stats = signal<InProgressTestsStats> ({
+    total_filtered: 0,
+    total_unfiltered:0,
     total_questions_answered: 0,
     total_time_spent: 0,
     total_by_level: {
@@ -141,12 +143,11 @@ export class InProgressTestsComponent implements OnInit {
 
     this.testService.getMyInProgressTests(filter).subscribe({
       next: (res) => {
-        this.inProgressTestsData.set(res.data.results);
-        this.totalTests.set(res.data.total_tests);
-        this.totalPages.set(res.data.total_pages);
-        this.currentPage.set(res.data.current_page);
-        this.hasMore.set(res.data.has_more);
+        this.inProgressTestsData.set(res.data.tests);
         this.mainTopics.set(res.data.main_topics);
+        this.totalPages.set(res.pagination.total_pages);
+        this.currentPage.set(res.pagination.current_page);
+        this.hasMore.set(res.pagination.has_more);
         this.stats.set(res.stats);
         this.loading.set(false);
         this.saveFilters();
@@ -293,11 +294,11 @@ export class InProgressTestsComponent implements OnInit {
     return this.sharedUtilsService.sharedCalculatePercentage(total_answered, total_questions);
   }
 
-  getRemainingQuestions(test: InProgressTestResponse): number {
+  getRemainingQuestions(test: InProgressTest): number {
     return test.total_questions - test.answered_count;
   }
 
-  getEstimatedTimeToComplete(test: InProgressTestResponse): string {
+  getEstimatedTimeToComplete(test: InProgressTest): string {
     if (!test.answered_count || test.answered_count === 0 || !test.time_taken) return 'N/A';
     
     // Calcular tiempo promedio por pregunta
@@ -334,7 +335,7 @@ export class InProgressTestsComponent implements OnInit {
   }
 
   showPagination(): boolean {
-    return this.totalTests() > 0 && this.totalPages() > 1;
+    return this.totalPages() > 1;
   }
 
   getStartIndex(): number {
@@ -352,8 +353,7 @@ export class InProgressTestsComponent implements OnInit {
         next: () => {
           // Remover el test de la lista
           this.inProgressTestsData.update(tests => tests.filter(t => t.test_id !== testId));
-          // Recargar para actualizar estadísticas
-          this.loadTests();
+          this.router.navigate(['/tests', testId, 'start-single']);
         },
         error: (err) => {
           console.error('Error al eliminar progreso:', err);

@@ -205,7 +205,7 @@
           </div>
           <div class="text-center sm:text-left">
             <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {{ stats()!.total_filtered_tests }}
+              {{ stats()!.total_unfiltered }}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400">Tests completados</div>
           </div>
@@ -271,7 +271,7 @@
   }
 
   <!-- Sin resultados -->
-  @if (!loading() && totalTests() === 0) {
+  @if (!loading() && stats()!.total_unfiltered === 0) {
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-8 text-center">
       <div class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4">
         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -280,13 +280,13 @@
       </div>
       <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No hay tests completados</h3>
       <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-        @if (totalTests() > 0 ) {
+        @if (stats()!.total_unfiltered > 0 ) {
           No se encontraron resultados con los filtros seleccionados.
         } @else {
           Aún no has completado ningún test. ¡Empieza a realizar tests para ver tus resultados aquí!
         }
       </p>
-      @if (totalTests() > 0) {
+      @if (stats()!.total_unfiltered > 0) {
         <button 
           (click)="resetFilters()"
           class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
@@ -308,10 +308,10 @@
   }
 
   <!-- Información de resultados -->
-  @if (!loading() && totalTests() > 0) {
+  @if (!loading() && stats()!.total_unfiltered > 0) {
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
         Mostrando 
-        {{ getStartIndex() }} a {{ getStartIndex()+getEndIndex()-1 }} de {{ stats().total_filtered_tests }} test(s) filtrados ({{ totalTests() }} totales)
+        {{ getStartIndex() }} a {{ getStartIndex()+getEndIndex()-1 }} de {{ stats().total_filtered }} test(s) filtrados ({{ stats()!.total_unfiltered }} totales)
       <div>
         Orden: 
         <span class="text-gray-800 dark:text-gray-200">
@@ -322,9 +322,9 @@
   }
 
   <!-- Lista de tests completados -->
-  @if (!loading() && totalTests() > 0) {
+  @if (!loading() && stats()!.total_unfiltered > 0) {
     <div class="space-y-4">
-      @for (data of completedTestsData(); track data.result_id) {
+      @for (data of completedTestsData(); track data.id) {
         <div class="px-3 py-6 xs:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md dark:hover:shadow-gray-900/30 transition-all">
           <!-- Header con información básica -->
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">

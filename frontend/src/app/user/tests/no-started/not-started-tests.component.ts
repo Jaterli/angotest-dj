@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TestService } from '../../../shared/services/test.service';
-import { NotStartedTestsFilter, Test, TestsStats, } from '../../../shared/models/test.models';
+import { NotStartedTestsFilter, Test, NotStartedTestsStats, } from '../../../shared/models/test.models';
 import { AuthService } from '../../../shared/services/auth.service';
 import { User } from '../../../shared/models/user.models';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
@@ -26,7 +26,7 @@ export class NotStartedTestsComponent implements OnInit {
   // Filtros - usando NotStartedTestsFilter
   selectedMainTopic = signal<string>('all');
   selectedLevel = signal<string>('all');
-  selectedSortBy = signal<NotStartedTestsFilter["sort_by"]>('test_created_at');
+  selectedSortBy = signal<NotStartedTestsFilter["ordering"]>('test_created_at');
   selectedSortOrder = signal<'asc' | 'desc'>('desc');
   selectedPageSize = signal<number>(10);
   
@@ -35,14 +35,13 @@ export class NotStartedTestsComponent implements OnInit {
   
   // Paginación
   currentPage = signal(1);
-  totalTests = signal(0);
-  totalFilteredTests = signal(0);
   totalPages = signal(0);
   hasMore = signal(false);
   
   // Estadísticas
-  stats = signal<TestsStats> ({
-    total_filtered_tests: 0,
+  stats = signal<NotStartedTestsStats> ({
+    total_filtered: 0,
+    total_unfiltered: 0,
     total_by_level: {
       Principiante: 0,
       Intermedio: 0,
@@ -126,11 +125,9 @@ export class NotStartedTestsComponent implements OnInit {
     this.testService.getNotStartedTests(filter).subscribe({
       next: (res) => {
         this.notStartedTestsData.set(res.data.tests);
-        this.totalTests.set(res.data.total_tests);
-        this.totalFilteredTests.set(res.stats.total_filtered_tests);
-        this.totalPages.set(res.data.total_pages);
-        this.currentPage.set(res.data.current_page);
-        this.hasMore.set(res.data.has_more);
+        this.totalPages.set(res.pagination.total_pages);
+        this.currentPage.set(res.pagination.current_page);
+        this.hasMore.set(res.pagination.has_more);
         this.mainTopics.set(res.data.main_topics);
         this.stats.set(res.stats);
         this.loading.set(false);
@@ -241,7 +238,7 @@ export class NotStartedTestsComponent implements OnInit {
   }
 
   showPagination(): boolean {
-    return this.totalTests() > 0 && this.totalPages() > 1;
+    return this.totalPages() > 1;
   }
 
   formatDate(dateString: string): string {

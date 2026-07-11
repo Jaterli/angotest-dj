@@ -6,7 +6,7 @@ import { TestService } from '../../../shared/services/test.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { User } from '../../../shared/models/user.models';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
-import { CompletedTestResponse, CompletedTestsStats, CompletedTestsFilter } from '../../../shared/models/test.models';
+import { CompletedTestsStats, CompletedTestsFilter, CompletedTest, CompletedTestsResponse } from '../../../shared/models/test.models';
 import { ModalComponent } from '../../../shared/components/modal.component';
 import { ResultService } from '../../../shared/services/result.service';
 import { InvitationCreateComponent } from '../../../shared/components/invitation/invitation-create.component';
@@ -25,13 +25,13 @@ export class CompletedTestsComponent implements OnInit {
   private sharedUtilsService = inject(SharedUtilsService);
 
   // Tests y estado
-  completedTestsData = signal<CompletedTestResponse[]>([]);
+  completedTestsData = signal<CompletedTest[]>([]);
   loading = signal(true);
   
   // Filtros
   selectedMainTopic = signal<string>('all');
-  selectedLevel = signal<string>('all');
-  selectedSortBy = signal<CompletedTestsFilter["sort_by"]>('result_updated_at');
+  selectedLevel = signal<string>('all'); 
+  selectedSortBy = signal<CompletedTestsFilter["ordering"]>('result_updated_at');
   selectedSortOrder = signal<'asc' | 'desc'>('desc');
   selectedPageSize = signal<number>(10);
   levelOptions = this.sharedUtilsService.getSharedPredefinedLevels();
@@ -40,13 +40,14 @@ export class CompletedTestsComponent implements OnInit {
 
   // Paginación
   currentPage = signal(1);
-  totalTests = signal(0);
   totalPages = signal(0);
   hasMore = signal(false);
   
   // Estadísticas
   stats = signal<CompletedTestsStats>({
-     average_score: 0,
+    total_filtered: 0,
+    total_unfiltered: 0,
+    average_score: 0,
     total_time_spent: 0,
     total_filtered_tests: 0,
     total_questions_answered: 0
@@ -142,11 +143,10 @@ export class CompletedTestsComponent implements OnInit {
 
     this.testService.getMyCompletedTests(filter).subscribe({
       next: (res) => {
-        this.completedTestsData.set(res.data.test_results);
-        this.totalTests.set(res.data.total_tests);
-        this.totalPages.set(res.data.total_pages);
-        this.currentPage.set(res.data.current_page);
-        this.hasMore.set(res.data.has_more);
+        this.completedTestsData.set(res.data.tests);
+        this.totalPages.set(res.pagination.total_pages);
+        this.currentPage.set(res.pagination.current_page);
+        this.hasMore.set(res.pagination.has_more);
         this.mainTopics.set(res.data.main_topics);
         this.stats.set(res.stats);
         this.loading.set(false);
@@ -160,14 +160,13 @@ export class CompletedTestsComponent implements OnInit {
   }
 
   // Método para abrir modal de revisión
-  openReviewModal(completedTestData: CompletedTestResponse): void {
+  openReviewModal(completedTestData: CompletedTest): void {
     this.selectedResult = completedTestData;
     this.reviewLoading.set(true);
     this.reviewError.set('');
     this.showReviewModal.set(true);
-    
     // Cargar respuestas incorrectas
-    this.resultService.getIncorrectAnswers(completedTestData.result_id).subscribe({
+    this.resultService.getIncorrectAnswers(this.selectedResult.id).subscribe({
       next: (response) => {
         this.incorrectQuestions.set(response.incorrect_questions || []);
         this.reviewSummary.set(response.summary || null);
@@ -322,7 +321,7 @@ export class CompletedTestsComponent implements OnInit {
   }
 
   showPagination(): boolean {
-    return this.totalTests() > 0 && this.totalPages() > 1;
+    return this.totalPages() > 1;
   }
   
   // Métodos para el modal

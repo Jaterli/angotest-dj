@@ -1,31 +1,3 @@
-export interface NotStartedTestsFilter {
-  page?: number;
-  page_size?: number;
-  main_topic?: string;
-  level?: string;
-  ordering?: string; // ej: 'title', '-created_at'
-}
-
-export interface InProgressTestsFilter {
-  page?: number;
-  page_size?: number;
-  main_topic?: string;
-  level?: string;
-  ordering?: string;
-}
-
-export interface CompletedTestsFilter {
-  page?: number;
-  page_size?: number;
-  main_topic?: string;
-  level?: string;
-  ordering?: string;
-  search?: string;
-  from_date?: string;
-  to_date?: string;
-}
-
-
 export interface Answer {
   id?: number;
   answer_text: string;
@@ -83,14 +55,23 @@ export interface TestAvailableFilters {
 }
 
 export interface TestsListResponse {
-  tests: TestWithCount[];
+  data: {
+    tests: TestWithCount[];
+  }
+  pagination: TestsPagination;
   available_filters: TestAvailableFilters;
-  filters_applied : TestFiltersApplied;
   stats: {
     total_filtered_tests: number;
     total_tests: number;
-    page_size: number;
   }
+}
+
+interface TestsPagination {
+  total_tests: number;
+  total_pages: number;
+  current_page: number;
+  page_size: number;
+  has_more: boolean;
 }
 
 export interface Result {
@@ -140,80 +121,61 @@ export interface ResumeTestResponse {
   result_id?: number;
 }
 
+
+// In Progress Tests
+export interface InProgressTestsFilter {
+  page?: number;
+  page_size?: number;
+  main_topic?: string;
+  level?: string;
+  ordering?: string;
+}
+
 export interface InProgressTestsResponse {
   in_progress_tests: any[];
   count: number;
 }
 
-export interface CompletedTestsResponse {
-  completed_tests: any[];
-  count: number;
-}
 
-export interface TestsWithStatusResponse {
-  tests: TestWithStatus[];
-  total_tests: number;
-  completed_count: number;
-  in_progress_count: number;
-  not_started_count: number;
-  message: string;
-}
-
-export interface TestWithStatus extends Test {
-  status: 'not_started' | 'in_progress' | 'completed';
-  completed_at?: string; 
-  last_score?: number;
-  correct_answers: number;
-  wrong_answers: number;
-  total_questions: number;
-  time_taken: number;
-  progress?: number;
-  question_count?: number; 
-}
-
-
-// Detalles de un test sin iniciar
+// Not Started Tests
 export interface NotStartedTestsFilter {
   page?: number;
   page_size?: number;
   main_topic?: string;
   level?: string;
-  sort_by?: 'test_title' | 'test_created_at' | 'test_level' | 'questions';
-  sort_order?: 'asc' | 'desc';
+  ordering?: string;
 }
 
 export interface NotStartedTestsResponse {
-  tests: Test[];
-  total_tests: number;
-  total_pages: number;
-  current_page: number;
-  page_size: number;
-  has_more: boolean;
-  main_topics: string[];
-  levels: string[];
+  data: {
+    tests: Test[];
+    main_topics: string[];
+  }
+  pagination: TestsPagination;
+  stats: NotStartedTestsStats;
 }
 
-export interface NotStartedTestsFullResponse {
-  data: NotStartedTestsResponse;
-  stats: TestsStats;
-}
+ export interface NotStartedTestsStats {
+    total_by_level: Record<string, number>;  
+    total_filtered: number;
+    total_unfiltered: number;
+ }
 
-// Detalles de un test completado
+
+// CompletedTests
 export interface CompletedTestsFilter {
   page?: number;
   page_size?: number;
   main_topic?: string;
   level?: string;
-  status?: 'completed' | 'in_progress';
-  sort_by?: 'test_title' | 'test_created_at' | 'test_level' | 'result_started_at' | 'result_updated_at' | 'result_time_taken' | 'score';
-  sort_order?: 'asc' | 'desc';
+  ordering?: string;
   search?: string;
   from_date?: string;
   to_date?: string;
 }
 
-export interface CompletedTestResponse {
-  result_id: number;
+export interface CompletedTest {
+  id: number;
   user_id: number;
   test_id: number;
   correct_answers: number;
@@ -245,26 +207,23 @@ export interface CompletedTestResponse {
 
 export interface CompletedTestsStats {
   average_score: number;
+  total_filtered: number;
+  total_unfiltered: number;
   total_time_spent: number;
   total_filtered_tests: number;
   total_questions_answered: number;
 }
 
 export interface CompletedTestsResponse {
-  test_results: CompletedTestResponse[];
-  total_tests: number;
-  total_pages: number;
-  current_page: number;
-  page_size: number;
-  has_more: boolean;
-  main_topics: string[];
-  levels: string[];  
+  data: {
+    tests: CompletedTest[];
+    main_topics: string[];
+  };
+  pagination: TestsPagination;
+  stats: CompletedTestsStats;
+  //levels: string[];  
 }
 
-export interface CompletedTestsFullResponse {
-  data: CompletedTestsResponse;
-  stats: CompletedTestsStats;
-}
 
 
 // Modelos para tests en progreso
@@ -277,8 +236,8 @@ export interface InProgressTestsFilter {
   sort_order?: 'asc' | 'desc';
 }
 
-export interface InProgressTestResponse {
-  result_id: number;
+export interface InProgressTest {
+  id: number; 
   user_id: number;
   test_id: number;
   time_taken: number;
@@ -301,37 +260,26 @@ export interface InProgressTestResponse {
   progress: number;
   answered_count: number;
   remaining_count: number;
-  accuracy: number;
   time_spent?: string;
   last_activity?: string;
 }
 
-export interface InProgressTestsResponse {
-  results: InProgressTestResponse[];
-  total_tests: number;
-  total_pages: number;
-  current_page: number;
-  page_size: number;
-  has_more: boolean;
-  main_topics: string[];
-  levels: string[];
+export interface InProgressTestResponse {
+  data: {
+    tests: InProgressTest[];
+    main_topics: string[];
+  };
+  pagination: TestsPagination;
+  stats: InProgressTestsStats;
 }
 
-export interface TestsStats {
-  total_filtered_tests: number;
+export interface InProgressTestsStats {
+  total_filtered: number;
+  total_unfiltered: number;
   average_progress?: number;
   total_questions_answered?: number;
   total_time_spent?: number;
-  total_by_level: {
-    Principiante: number;
-    Intermedio: number;
-    Avanzado: number;
-  };  
-}
-
-export interface InProgressTestsFullResponse {
-  data: InProgressTestsResponse;
-  stats: TestsStats;
+  total_by_level: Record<string, number>;  
 }
 
 
@@ -375,25 +323,6 @@ export interface AnswerEditFormData {
   is_correct: boolean;
 }
 
-
-export interface QuestionsResponse {
-  test_id: number;
-  total: number;
-  page: number;
-  page_size: number;
-  questions: QuestionWithAnswers[];
-  progress: number;
-}
-
-
-export interface SingleQuestionResponse {
-  question: QuestionWithAnswers;
-  question_number: number;
-  total_questions: number;
-  has_next: boolean;
-  has_previous: boolean;
-}
-
 export interface QuestionWithAnswers {
   id: number;
   question_text: string;
@@ -433,4 +362,27 @@ export interface QuestionWithAnswers {
 export interface AnswerResponse {
   id: number;
   answer_text: string;
+}
+
+
+// Otros
+export interface TestsWithStatusResponse {
+  tests: TestWithStatus[];
+  total_tests: number;
+  completed_count: number;
+  in_progress_count: number;
+  not_started_count: number;
+  message: string;
+}
+
+export interface TestWithStatus extends Test {
+  status: 'not_started' | 'in_progress' | 'completed';
+  completed_at?: string; 
+  last_score?: number;
+  correct_answers: number;
+  wrong_answers: number;
+  total_questions: number;
+  time_taken: number;
+  progress?: number;
+  question_count?: number; 
 }

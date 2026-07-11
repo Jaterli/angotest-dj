@@ -1,5 +1,5 @@
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination # type: ignore
+from rest_framework.response import Response # type: ignore
 
 class CustomPagination(PageNumberPagination):
     page_size = 10
@@ -9,16 +9,18 @@ class CustomPagination(PageNumberPagination):
     def get_paginated_response(self, data):
         return Response({
             'data': {
-                'tests': data,          # se renombrará en la vista según el tipo
-                'total_tests': self.page.paginator.count,
+                'tests': data,
+                'main_topics': [],
+            },
+            'pagination': {
+                'total_filtered': self.page.paginator.count,
                 'total_pages': self.page.paginator.num_pages,
                 'current_page': self.page.number,
                 'page_size': self.page.paginator.per_page,
                 'has_more': self.page.has_next(),
-                'main_topics': [],
             },
             'stats': {
-                'total_filtered_tests': self.page.paginator.count,
+                'total_filtered': self.page.paginator.count,
                 'total_by_level': {},
             }
         })

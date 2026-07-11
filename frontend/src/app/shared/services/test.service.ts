@@ -7,14 +7,12 @@ import {
   TestsWithStatusResponse,
   Test,
   CompletedTestsFilter,
-  InProgressTestsFullResponse,
   InProgressTestsFilter,
-  QuestionsResponse,
-  SingleQuestionResponse,
   NextQuestionResponse, 
   NotStartedTestsFilter,
-  NotStartedTestsFullResponse,
-  CompletedTestsFullResponse
+  InProgressTestResponse,
+  CompletedTestsResponse,
+  NotStartedTestsResponse
 } from '../models/test.models';
 import { environment } from '../../../environments/environment';
 
@@ -26,27 +24,10 @@ export class TestService {
 
   constructor(private http: HttpClient) {}
 
-
   // Obtener la siguiente pregunta sin responder
   getNextUnansweredQuestion(testId: number): Observable<NextQuestionResponse> {
     return this.http.get<NextQuestionResponse>(
-      `${this.apiUrl}/${testId}/next-question`
-    );
-  }
-
-  // Obtener todas las preguntas de un test (paginadas)
-  getTestQuestions(testId: number, page: number = 1, pageSize: number = 1): Observable<QuestionsResponse> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('page_size', pageSize.toString());
-    
-    return this.http.get<QuestionsResponse>(`${this.apiUrl}/${testId}/questions`, { params });
-  }
-
-  // Obtener una pregunta específica
-  getSingleQuestion(testId: number, questionNumber: number): Observable<SingleQuestionResponse> {
-    return this.http.get<SingleQuestionResponse>(
-      `${this.apiUrl}/${testId}/questions/${questionNumber}`
+      `${this.apiUrl}/${testId}/next-question/`
     );
   }
 
@@ -65,7 +46,7 @@ export class TestService {
   }
 
   // ====== Método para tests completados con filtros ======
-  getMyCompletedTests(filter: CompletedTestsFilter = {}): Observable<CompletedTestsFullResponse> {
+  getMyCompletedTests(filter: CompletedTestsFilter = {}): Observable<CompletedTestsResponse> {
     let params = new HttpParams()
       .set('page', (filter.page || 1).toString())
       .set('page_size', (filter.page_size || 10).toString());
@@ -89,11 +70,11 @@ export class TestService {
       params = params.set('to_date', filter.to_date);
     }
 
-    return this.http.get<CompletedTestsFullResponse>(`${this.apiUrl}/completed`, { params });
+    return this.http.get<CompletedTestsResponse>(`${this.apiUrl}/completed/`, { params });
   }
 
   // ====== Método para tests en progreso con filtros ======
-  getMyInProgressTests(filter: InProgressTestsFilter = {}): Observable<InProgressTestsFullResponse> {
+  getMyInProgressTests(filter: InProgressTestsFilter = {}): Observable<InProgressTestResponse> {
     let params = new HttpParams()
       .set('page', (filter.page || 1).toString())
       .set('page_size', (filter.page_size || 10).toString());
@@ -108,12 +89,12 @@ export class TestService {
       params = params.set('ordering', filter.ordering);
     }
 
-    return this.http.get<InProgressTestsFullResponse>(`${this.apiUrl}/in-progress`, { params });
+    return this.http.get<InProgressTestResponse>(`${this.apiUrl}/in-progress/`, { params });
   }
     
 
   // ======= Método para tests por hacer ======
-  getNotStartedTests(filter: NotStartedTestsFilter = {}): Observable<NotStartedTestsFullResponse> {
+  getNotStartedTests(filter: NotStartedTestsFilter = {}): Observable<NotStartedTestsResponse> {
     let params = new HttpParams()
       .set('page', (filter.page || 1).toString())
       .set('page_size', (filter.page_size || 10).toString());
@@ -128,20 +109,20 @@ export class TestService {
       params = params.set('ordering', filter.ordering);
     }
 
-    return this.http.get<NotStartedTestsFullResponse>(`${this.apiUrl}/not-started`, { params });
+    return this.http.get<NotStartedTestsResponse>(`${this.apiUrl}/not-started/`, { params });
   }
 
 
   // Eliminar progreso de un test
   deleteTestProgress(testId: number): Observable<any> {
     console.log(`TestService: eliminando progreso del test ${testId}...`);
-    return this.http.delete(`${this.apiUrl}/${testId}/progress`);
+    return this.http.delete(`${this.apiUrl}/${testId}/progress/delete/`);
   }
 
   // Obtener todos los tests con estado
   getAllTestsWithStatus(): Observable<TestsWithStatusResponse> {
     console.log('TestService: obteniendo todos los tests con estado...');
-    return this.http.get<TestsWithStatusResponse>(`${this.apiUrl}/with-status`);
+    return this.http.get<TestsWithStatusResponse>(`${this.apiUrl}/with-status/`);
   }
 
 }

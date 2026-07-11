@@ -125,14 +125,14 @@ export class AdminTestListComponent implements OnInit {
     this.loading.set(true);
     this.testsManagementService.getAllTests(this.selectedFilters()).subscribe({
       next: (res) => {
-        this.tests.set(res.tests);
+        this.tests.set(res.data.tests);
         this.totalFilteredTests.set(res.stats.total_filtered_tests);
         this.filterOptions.set(res.available_filters);
         this.totalTests.set(res.stats.total_tests);
-        this.totalPages.set(Math.ceil(res.stats.total_filtered_tests / (this.selectedFilters().page_size || 20)));
-        this.hasMore.set(this.currentPage() < this.totalPages());
+        this.totalPages.set(res.pagination.total_pages);
+        this.hasMore.set(res.pagination.has_more);
         this.loading.set(false);
-        this.saveFilters(); // Guardar filtros después de carga exitosa
+        this.saveFilters();
       },
       error: err => {
         console.error('Error al cargar tests:', err);
