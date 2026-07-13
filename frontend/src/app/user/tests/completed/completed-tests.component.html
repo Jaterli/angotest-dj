@@ -61,12 +61,12 @@
             Tema Principal
           </label>
           <select 
-            [(ngModel)]="selectedMainTopic"
+            [(ngModel)]="selectedFilters().main_topic"
             (ngModelChange)="onFilterChange()"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             <option value="all">Todos los temas</option>
-            @for (topic of mainTopics(); track topic) {
+            @for (topic of availableFilters().main_topics; track topic) {
               <option [value]="topic">{{ topic }}</option>
             }
           </select>
@@ -78,7 +78,7 @@
             Nivel
           </label>
           <select 
-            [(ngModel)]="selectedLevel"
+            [(ngModel)]="selectedFilters().level"
             (ngModelChange)="onFilterChange()"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
@@ -95,16 +95,16 @@
             Ordenar por
           </label>
           <select 
-            [(ngModel)]="selectedSortBy"
+            [(ngModel)]="selectedFilters().ordering"
             (ngModelChange)="onFilterChange()"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           > 
-            <option value="test_title">Título del test</option>  
-            <option value="test_created_at">Fecha del test</option>
-            <option value="test_level">Nivel</option>            
-            <option value="result_started_at">Fecha de inicio</option>            
-            <option value="result_updated_at">Fecha de finalización</option>
-            <option value="result_time_taken">Tiempo invertido</option>                        
+            <option value="test__title">Título del test</option>  
+            <option value="test__created_at">Fecha del test</option>
+            <option value="test__level">Nivel</option>            
+            <option value="started_at">Fecha de inicio</option>            
+            <option value="updated_at">Fecha de finalización</option>
+            <option value="time_taken">Tiempo invertido</option>                        
             <option value="score">Puntuación</option>
 
           </select>
@@ -120,7 +120,7 @@
                 (click)="toggleSortOrder()"
                 class="textsize-cnf w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
-                @if (selectedSortOrder() === 'desc') {
+                @if (selectedFilters().order_dir === 'desc') {
                   <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
@@ -145,7 +145,7 @@
           @for (size of [5, 10, 20, 50]; track size) {
             <button 
               (click)="setPageSize(size)"
-              [class]="selectedPageSize() === size 
+              [class]="selectedFilters().page_size === size 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
               class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/30"
@@ -161,9 +161,9 @@
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Filtros aplicados:</h4>
           <div class="flex flex-wrap gap-2">
-            @if (selectedMainTopic() !== 'all') {
+            @if (selectedFilters().main_topic !== 'all') {
               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300">
-                Tema: {{ selectedMainTopic() }}
+                Tema: {{ selectedFilters().main_topic }}
                 <button 
                   (click)="removeFilter('main_topic')"
                   class="ml-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
@@ -172,9 +172,9 @@
                 </button>
               </span>
             }
-            @if (selectedLevel() !== 'all') {
+            @if (selectedFilters().level !== 'all') {
               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                Nivel: {{ selectedLevel() }}
+                Nivel: {{ selectedFilters().level }}
                 <button 
                   (click)="removeFilter('level')"
                   class="ml-1.5 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200"
@@ -469,14 +469,14 @@
       <div class="mt-8">
         <nav class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="text-sm text-gray-600 dark:text-gray-400">
-            Página {{ currentPage() }} de {{ totalPages() }}
+            Página {{ selectedFilters().page }} de {{ totalPages() }}
           </div>
           
           <div class="flex items-center justify-center">
             <div class="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
               <!-- Botón Anterior -->
               <button (click)="previousPage()"
-                      [disabled]="currentPage() === 1"
+                      [disabled]="selectedFilters().page === 1"
                       class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                 <span class="sr-only">Anterior</span>
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -487,7 +487,7 @@
               <!-- Números de página -->
               @for (page of getPageNumbers(); track page) {
                 <button (click)="goToPage(page)"
-                        [class]="currentPage() === page 
+                        [class]="selectedFilters().page === page 
                           ? 'z-10 text-white bg-blue-600 dark:bg-blue-700 border border-blue-500 dark:border-blue-600 relative inline-flex items-center px-4 py-2 text-sm font-medium'
                           : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 text-sm font-medium transition-colors'">
                   {{ page }}
@@ -507,7 +507,7 @@
           </div>
           
           <div class="text-sm text-gray-600 dark:text-gray-400">
-            {{ selectedPageSize() }} resultados por página
+            {{ selectedFilters().page_size }} resultados por página
           </div>
         </nav>
       </div>

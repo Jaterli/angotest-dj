@@ -8,10 +8,7 @@ class CustomPagination(PageNumberPagination):
 
     def get_paginated_response(self, data):
         return Response({
-            'data': {
-                'tests': data,
-                'main_topics': [],
-            },
+            'data': data,
             'pagination': {
                 'total_filtered': self.page.paginator.count,
                 'total_pages': self.page.paginator.num_pages,
@@ -22,5 +19,8 @@ class CustomPagination(PageNumberPagination):
             'stats': {
                 'total_filtered': self.page.paginator.count,
                 'total_by_level': {},
+            },
+            'available_filters': {
+                'main_topics': [],
             }
         })

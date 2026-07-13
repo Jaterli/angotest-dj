@@ -46,68 +46,43 @@ export class TestService {
   }
 
   // ====== Método para tests completados con filtros ======
-  getMyCompletedTests(filter: CompletedTestsFilter = {}): Observable<CompletedTestsResponse> {
+  getMyCompletedTests(filter: CompletedTestsFilter): Observable<CompletedTestsResponse> {
+    
     let params = new HttpParams()
-      .set('page', (filter.page || 1).toString())
-      .set('page_size', (filter.page_size || 10).toString());
-
-    if (filter.main_topic && filter.main_topic !== 'all') {
-      params = params.set('main_topic', filter.main_topic);
-    }
-    if (filter.level && filter.level !== 'all') {
-      params = params.set('level', filter.level);
-    }
-    if (filter.ordering) {
-      params = params.set('ordering', filter.ordering);
-    }
-    if (filter.search) {
-      params = params.set('search', filter.search);
-    }
-    if (filter.from_date) {
-      params = params.set('from_date', filter.from_date);
-    }
-    if (filter.to_date) {
-      params = params.set('to_date', filter.to_date);
-    }
+    // Agregar todos los filtros a los parámetros
+    Object.keys(filter).forEach(key => {
+      const value = filter[key as keyof CompletedTestsFilter];
+      if (value !== undefined && value !== null && value != 'all' && value !== '') {
+        params = params.set(key, value.toString());
+      }
+    });
 
     return this.http.get<CompletedTestsResponse>(`${this.apiUrl}/completed/`, { params });
   }
 
   // ====== Método para tests en progreso con filtros ======
-  getMyInProgressTests(filter: InProgressTestsFilter = {}): Observable<InProgressTestResponse> {
+  getMyInProgressTests(filter: InProgressTestsFilter): Observable<InProgressTestResponse> {
     let params = new HttpParams()
-      .set('page', (filter.page || 1).toString())
-      .set('page_size', (filter.page_size || 10).toString());
-
-    if (filter.main_topic && filter.main_topic !== 'all') {
-      params = params.set('main_topic', filter.main_topic);
-    }
-    if (filter.level && filter.level !== 'all') {
-      params = params.set('level', filter.level);
-    }
-    if (filter.ordering) {
-      params = params.set('ordering', filter.ordering);
-    }
-
+    // Agregar todos los filtros a los parámetros
+    Object.keys(filter).forEach(key => {
+      const value = filter[key as keyof InProgressTestsFilter];
+      if (value !== undefined && value !== null && value != 'all' && value !== '') {
+        params = params.set(key, value.toString());
+      }
+    });
     return this.http.get<InProgressTestResponse>(`${this.apiUrl}/in-progress/`, { params });
   }
     
-
   // ======= Método para tests por hacer ======
-  getNotStartedTests(filter: NotStartedTestsFilter = {}): Observable<NotStartedTestsResponse> {
+  getNotStartedTests(filter: NotStartedTestsFilter): Observable<NotStartedTestsResponse> {
     let params = new HttpParams()
-      .set('page', (filter.page || 1).toString())
-      .set('page_size', (filter.page_size || 10).toString());
-
-    if (filter.main_topic && filter.main_topic !== 'all') {
-      params = params.set('main_topic', filter.main_topic);
-    }
-    if (filter.level && filter.level !== 'all') {
-      params = params.set('level', filter.level);
-    }
-    if (filter.ordering) {
-      params = params.set('ordering', filter.ordering);
-    }
+    // Agregar todos los filtros a los parámetros
+    Object.keys(filter).forEach(key => {
+      const value = filter[key as keyof InProgressTestsFilter];
+      if (value !== undefined && value !== null && value != 'all' && value !== '') {
+        params = params.set(key, value.toString());
+      }
+    });
 
     return this.http.get<NotStartedTestsResponse>(`${this.apiUrl}/not-started/`, { params });
   }

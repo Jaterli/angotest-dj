@@ -6,7 +6,7 @@ import { TestService } from '../../../shared/services/test.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { User } from '../../../shared/models/user.models';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
-import { CompletedTestsStats, CompletedTestsFilter, CompletedTest, CompletedTestsResponse } from '../../../shared/models/test.models';
+import { CompletedTestsStats, CompletedTestsFilter, CompletedTest, TestAvailableFilters } from '../../../shared/models/test.models';
 import { ModalComponent } from '../../../shared/components/modal.component';
 import { ResultService } from '../../../shared/services/result.service';
 import { InvitationCreateComponent } from '../../../shared/components/invitation/invitation-create.component';
@@ -15,7 +15,7 @@ import { CreateInvitationInput } from '../../../shared/models/invitation.models'
 @Component({
   selector: 'app-completed-tests',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ModalComponent, InvitationCreateComponent ],
+  imports: [CommonModule, RouterModule, FormsModule, ModalComponent, InvitationCreateComponent],
   templateUrl: './completed-tests.component.html',
 })
 export class CompletedTestsComponent implements OnInit {
@@ -27,56 +27,58 @@ export class CompletedTestsComponent implements OnInit {
   // Tests y estado
   completedTestsData = signal<CompletedTest[]>([]);
   loading = signal(true);
-  
-  // Filtros
-  selectedMainTopic = signal<string>('all');
-  selectedLevel = signal<string>('all'); 
-  selectedSortBy = signal<CompletedTestsFilter["ordering"]>('result_updated_at');
-  selectedSortOrder = signal<'asc' | 'desc'>('desc');
-  selectedPageSize = signal<number>(10);
+
+  // Filtros (objeto único con tipado fuerte)
+  selectedFilters = signal<CompletedTestsFilter>({
+    page: 1,
+    page_size: 10,
+    ordering: 'updated_at',
+    order_dir: 'desc',
+    main_topic: 'all',
+    level: 'all',
+    from_date: '',
+    to_date: '',
+  });
+
+  // Opciones para niveles (desde servicio compartido)
   levelOptions = this.sharedUtilsService.getSharedPredefinedLevels();
+  availableFilters = signal<TestAvailableFilters>({ main_topics: [] });
 
-  mainTopics = signal<string[]>([]);
-
-  // Paginación
-  currentPage = signal(1);
+  // Paginación (datos devueltos por el backend)
   totalPages = signal(0);
   hasMore = signal(false);
-  
+
   // Estadísticas
   stats = signal<CompletedTestsStats>({
     total_filtered: 0,
     total_unfiltered: 0,
     average_score: 0,
     total_time_spent: 0,
-    total_filtered_tests: 0,
-    total_questions_answered: 0
+    total_questions_answered: 0,
   });
-  
+
   // Usuario
   currentUser: User | null = null;
-  
+
   // Estado de la UI
   showFilters = signal(false);
-  
+
   // Modal para revisar respuestas
   showReviewModal = signal(false);
   reviewLoading = signal(false);
   reviewError = signal<string>('');
-    
-  // Datos para el modal
   selectedResult: any = null;
   incorrectQuestions = signal<any[]>([]);
-  showCorrectAnswer = true; // true para mostrar también las respuestas correctas en el modal
+  showCorrectAnswer = true;
   reviewSummary = signal<any>(null);
-  
+
   // Modal para la invitación
   showInviteModal = signal(false);
   selectedTestForInvitation: CreateInvitationInput | null = null;
 
-  // Memoria de filtros (localStorage)
+  // Clave para localStorage
   private readonly FILTER_STORAGE_KEY = 'completed_tests_filters';
-  
+
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadSavedFilters();
@@ -92,14 +94,17 @@ export class CompletedTestsComponent implements OnInit {
 
   loadSavedFilters(): void {
     try {
-      const savedFilters = localStorage.getItem(this.FILTER_STORAGE_KEY);
-      if (savedFilters) {
-        const filters = JSON.parse(savedFilters);
-        this.selectedMainTopic.set(filters.mainTopic || 'all');
-        this.selectedLevel.set(filters.level || 'all');
-        this.selectedSortBy.set(filters.sortBy || 'date');
-        this.selectedSortOrder.set(filters.sortOrder || 'desc');
-        this.selectedPageSize.set(filters.pageSize || 10);
+      const saved = localStorage.getItem(this.FILTER_STORAGE_KEY);
+      if (saved) {
+        const filters = JSON.parse(saved);
+        this.selectedFilters.update(f => ({
+          ...f,
+          main_topic: filters.mainTopic || 'all',
+          level: filters.level || 'all',
+          ordering: filters.sortBy || 'result_updated_at',
+          order_dir: filters.sortOrder || 'desc',
+          page_size: filters.pageSize || 10,
+        }));
       }
     } catch (error) {
       console.error('Error loading saved filters:', error);
@@ -107,13 +112,14 @@ export class CompletedTestsComponent implements OnInit {
   }
 
   saveFilters(): void {
+    const f = this.selectedFilters();
     const filters = {
-      mainTopic: this.selectedMainTopic(),
-      level: this.selectedLevel(),
-      sortBy: this.selectedSortBy(),
-      sortOrder: this.selectedSortOrder(),
-      pageSize: this.selectedPageSize(),
-      timestamp: new Date().getTime()
+      mainTopic: f.main_topic,
+      level: f.level,
+      sortBy: f.ordering,
+      sortOrder: f.order_dir,
+      pageSize: f.page_size,
+      timestamp: new Date().getTime(),
     };
     localStorage.setItem(this.FILTER_STORAGE_KEY, JSON.stringify(filters));
   }
@@ -121,33 +127,26 @@ export class CompletedTestsComponent implements OnInit {
   loadTests(): void {
     this.loading.set(true);
 
-    const fieldMap: Record<string, string> = {
-      'test_title': 'test__title',
-      'test_created_at': 'test__created_at',
-      'test_level': 'test__level',
-      'result_started_at': 'started_at',
-      'result_updated_at': 'updated_at',
-      'result_time_taken': 'time_taken',
-      'score': 'score',
-    };
-    const sortField = fieldMap[this.selectedSortBy() || 'result_updated_at'] || this.selectedSortBy();
-    const ordering = this.selectedSortOrder() === 'desc' ? `-${sortField}` : sortField;
-
+    // Construir el filtro a partir de selectedFilters, limpiando valores 'all' o vacíos
+    const raw = this.selectedFilters();
     const filter: CompletedTestsFilter = {
-      page: this.currentPage(),
-      page_size: this.selectedPageSize(),
-      main_topic: this.selectedMainTopic() !== 'all' ? this.selectedMainTopic() : undefined,
-      level: this.selectedLevel() !== 'all' ? this.selectedLevel() : undefined,
-      ordering: sortField ? ordering : undefined,
+      page: raw.page,
+      page_size: raw.page_size,
+      ordering: raw.ordering,
+      main_topic: raw.main_topic,
+      level: raw.level,
     };
+
+    filter.ordering = raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering;
 
     this.testService.getMyCompletedTests(filter).subscribe({
       next: (res) => {
-        this.completedTestsData.set(res.data.tests);
+        this.completedTestsData.set(res.data);
         this.totalPages.set(res.pagination.total_pages);
-        this.currentPage.set(res.pagination.current_page);
         this.hasMore.set(res.pagination.has_more);
-        this.mainTopics.set(res.data.main_topics);
+        // this.currentPage.set(res.pagination.current_page);
+        // this.pageSize.set(res.pagination.page_size);
+        this.availableFilters.set(res.available_filters);
         this.stats.set(res.stats);
         this.loading.set(false);
         this.saveFilters();
@@ -155,17 +154,135 @@ export class CompletedTestsComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar tests completados:', err);
         this.loading.set(false);
-      }
+      },
     });
   }
 
-  // Método para abrir modal de revisión
+  // --- Métodos de filtros ---
+
+  onFilterChange(): void {
+    this.selectedFilters.update(f => ({ ...f, page: 1 }));
+    this.loadTests();
+  }
+
+  resetFilters(): void {
+    this.selectedFilters.set({
+      page: 1,
+      page_size: 10,
+      ordering: 'updated_at',
+      order_dir: 'desc',
+      main_topic: 'all',
+      level: 'all',
+      from_date: '',
+      to_date: '',
+    });
+    this.loadTests();
+  }
+
+  toggleSortOrder(): void {
+    this.selectedFilters.update(f => ({
+      ...f,
+      order_dir: f.order_dir === 'asc' ? 'desc' : 'asc',
+      page: 1,
+    }));
+    this.loadTests();
+  }
+
+  removeFilter(filterType: 'main_topic' | 'level'): void {
+    this.selectedFilters.update(f => ({
+      ...f,
+      [filterType]: 'all',
+      page: 1,
+    }));
+    this.loadTests();
+  }
+
+  setPageSize(size: number): void {
+    this.selectedFilters.update(f => ({ ...f, page_size: size }));
+    this.selectedFilters.update(f => ({ ...f, current_page: 1 }));
+    this.loadTests();
+  }
+
+  // --- Paginación ---
+
+  goToPage(page: number): void {
+    const total = this.totalPages();
+    if (page < 1 || page > total) return;
+    this.selectedFilters.update(f => ({ ...f, page }));
+    this.loadTests();
+  }
+
+  previousPage(): void {
+    const current = this.selectedFilters().page;
+    if (current > 1) {
+      this.goToPage(current - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.hasMore()) {
+      this.goToPage(this.selectedFilters().page + 1);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    return this.sharedUtilsService.getSharedPageNumbers(
+      this.totalPages(),
+      this.selectedFilters().page
+    );
+  }
+
+  // --- Métodos de UI (getters) ---
+
+  getSortOrderIcon(): string {
+    return this.selectedFilters().order_dir === 'asc' ? '↑' : '↓';
+  }
+
+  getSortOrderLabel(): string {
+    return this.selectedFilters().order_dir === 'asc' ? 'Ascendente' : 'Descendente';
+  }
+
+  getCurrentSortLabel(): string {
+    const map: Record<string, string> = {
+      'test_title': 'Título del test',
+      'test_created_at': 'Fecha del test',
+      'result_started_at': 'Fecha de inicio',
+      'result_updated_at': 'Fecha de finalización',
+      'result_time_taken': 'Tiempo empleado',
+      'score': 'Puntuación',
+    };
+    return map[this.selectedFilters().ordering || 'result_updated_at'];
+  }
+
+  getStartIndex(): number {
+    const page = this.selectedFilters().page;
+    const size = this.selectedFilters().page_size;
+    return (page - 1) * size + 1;
+  }
+
+  getEndIndex(): number {
+    const page = this.selectedFilters().page;
+    const size = this.selectedFilters().page_size;
+    return Math.min(page * size, this.completedTestsData().length);
+  }
+
+  showFilterIndicators(): boolean {
+    const f = this.selectedFilters();
+    return f.main_topic !== 'all' || f.level !== 'all';
+  }
+
+  showPagination(): boolean {
+    return this.totalPages() > 1;
+  }
+
+  // --- Modal de revisión ---
+
   openReviewModal(completedTestData: CompletedTest): void {
     this.selectedResult = completedTestData;
     this.reviewLoading.set(true);
     this.reviewError.set('');
     this.showReviewModal.set(true);
-    // Cargar respuestas incorrectas
+
     this.resultService.getIncorrectAnswers(this.selectedResult.id).subscribe({
       next: (response) => {
         this.incorrectQuestions.set(response.incorrect_questions || []);
@@ -176,7 +293,7 @@ export class CompletedTestsComponent implements OnInit {
         console.error('Error al cargar respuestas incorrectas:', err);
         this.reviewError.set('No se pudieron cargar las respuestas incorrectas.');
         this.reviewLoading.set(false);
-      }
+      },
     });
   }
 
@@ -188,77 +305,23 @@ export class CompletedTestsComponent implements OnInit {
     this.reviewError.set('');
   }
 
-  // Método para abrir modal de invitación
+  hasIncorrectQuestions(): boolean {
+    return this.incorrectQuestions().length > 0;
+  }
+
+  // --- Modal de invitación ---
+
   openInviteModal(testData: any): void {
     this.selectedTestForInvitation = testData;
     this.showInviteModal.set(true);
   }
 
-  // Método para cerrar modal de invitación
   closeInviteModal(): void {
     this.showInviteModal.set(false);
     this.selectedTestForInvitation = null;
   }
 
-  // Resto de métodos permanecen igual...
-  onFilterChange(): void {
-    this.currentPage.set(1);
-    this.loadTests();
-  }
-
-  resetFilters(): void {
-    this.selectedMainTopic.set('all');
-    this.selectedLevel.set('all');
-    this.selectedSortBy.set('result_updated_at');
-    this.selectedSortOrder.set('desc');
-    this.selectedPageSize.set(10);
-    this.currentPage.set(1);
-    this.onFilterChange();
-  }
-
-  toggleSortOrder(): void {
-    this.selectedSortOrder.update(order => order === 'asc' ? 'desc' : 'asc');
-    this.currentPage.set(1);
-    this.loadTests();
-  }
-
-  removeFilter(filterType: 'main_topic' | 'level'): void {
-    if (filterType === 'main_topic') {
-      this.selectedMainTopic.set('all');
-    } else if (filterType === 'level') {
-      this.selectedLevel.set('all');
-    }
-    this.currentPage.set(1);
-    this.loadTests();
-  }
-
-  setPageSize(size: number): void {
-    this.selectedPageSize.set(size);
-    this.currentPage.set(1);
-    this.loadTests();
-  }
-
-  goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages()) return;
-    this.currentPage.set(page);
-    this.loadTests();
-  }
-
-  previousPage(): void {
-    if (this.currentPage() > 1) {
-      this.goToPage(this.currentPage() - 1);
-    }
-  }
-
-  nextPage(): void {
-    if (this.hasMore()) {
-      this.goToPage(this.currentPage() + 1);
-    }
-  }
-
-  getPageNumbers(): number[] {
-    return this.sharedUtilsService.getSharedPageNumbers(this.totalPages(), this.currentPage());
-  }
+  // --- Métodos auxiliares (delegados a SharedUtilsService) ---
 
   getLevelBadgeClass(level: string): string {
     return this.sharedUtilsService.getSharedLevelBadgeClass(level);
@@ -287,46 +350,4 @@ export class CompletedTestsComponent implements OnInit {
   formatTime(seconds: number): string {
     return this.sharedUtilsService.sharedFormatTime(seconds);
   }
-
-  getSortOrderIcon(): string {
-    return this.selectedSortOrder() === 'asc' ? '↑' : '↓';
-  }
-
-  getSortOrderLabel(): string {
-    return this.selectedSortOrder() === 'asc' ? 'Ascendente' : 'Descendente';
-  }
-
-  getStartIndex(): number {
-    return ((this.currentPage() - 1) * this.selectedPageSize()) + 1;
-  }
-
-  getEndIndex(): number {
-    return Math.min(this.currentPage() * this.selectedPageSize(), this.completedTestsData().length);
-  }
-
-  getCurrentSortLabel(): string {
-    switch (this.selectedSortBy()) {
-      case 'test_title': return 'Título del test';
-      case 'test_created_at': return 'Fecha del test';
-      case 'result_started_at': return 'Fecha de inicio';
-      case 'result_updated_at': return 'Fecha de finalización';      
-      case 'result_time_taken': return 'Tiempo empleado';
-      case 'score': return 'Puntuación';
-      default: return 'Fecha de finalización';
-    }
-  }
-
-  showFilterIndicators(): boolean {
-    return this.selectedMainTopic() !== 'all' || this.selectedLevel() !== 'all';
-  }
-
-  showPagination(): boolean {
-    return this.totalPages() > 1;
-  }
-  
-  // Métodos para el modal
-  hasIncorrectQuestions(): boolean {
-    return this.incorrectQuestions().length > 0;
-  }
-  
 }

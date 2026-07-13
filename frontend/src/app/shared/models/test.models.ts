@@ -37,7 +37,7 @@ export interface TestWithCount extends Test {
 
 export interface TestFiltersApplied {
     main_topic: string | null;
-    sub_topic: string | null;
+    sub_topic?: string | null;
     level?: string;
     is_active?: boolean;
     page: number;
@@ -49,30 +49,31 @@ export interface TestFiltersApplied {
 
 export interface TestAvailableFilters {
     main_topics: string[]; 
-    sub_topics: string[];
-    levels: string[];
+    sub_topics?: string[];
+    levels?: string[];
     is_active?: boolean;
 }
 
 export interface TestsListResponse {
-  data: {
-    tests: TestWithCount[];
-  }
-  pagination: TestsPagination;
+  data: TestWithCount[];
+  pagination: Pagination;
   available_filters: TestAvailableFilters;
-  stats: {
-    total_filtered_tests: number;
-    total_tests: number;
-  }
+  stats: TestsListStats
 }
 
-interface TestsPagination {
-  total_tests: number;
+export interface TestsListStats {
+    total_filtered: number;
+    total_unfiltered: number;    
+}
+
+export interface Pagination {
+  total_filtered: number;
   total_pages: number;
   current_page: number;
   page_size: number;
   has_more: boolean;
 }
+
 
 export interface Result {
   id: number;
@@ -121,38 +122,21 @@ export interface ResumeTestResponse {
   result_id?: number;
 }
 
-
-// In Progress Tests
-export interface InProgressTestsFilter {
-  page?: number;
-  page_size?: number;
-  main_topic?: string;
-  level?: string;
-  ordering?: string;
-}
-
-export interface InProgressTestsResponse {
-  in_progress_tests: any[];
-  count: number;
-}
-
-
 // Not Started Tests
 export interface NotStartedTestsFilter {
-  page?: number;
-  page_size?: number;
+  page: number;
+  page_size: number;
   main_topic?: string;
   level?: string;
-  ordering?: string;
+  ordering: string;
+  order_dir?: 'asc' | 'desc';
 }
 
 export interface NotStartedTestsResponse {
-  data: {
-    tests: Test[];
-    main_topics: string[];
-  }
-  pagination: TestsPagination;
+  data: Test[];  
+  pagination: Pagination;
   stats: NotStartedTestsStats;
+  available_filters: TestAvailableFilters
 }
 
  export interface NotStartedTestsStats {
@@ -164,12 +148,12 @@ export interface NotStartedTestsResponse {
 
 // CompletedTests
 export interface CompletedTestsFilter {
-  page?: number;
-  page_size?: number;
+  page: number;
+  page_size: number;
   main_topic?: string;
   level?: string;
-  ordering?: string;
-  search?: string;
+  ordering: string;
+  order_dir?: 'asc' | 'desc';
   from_date?: string;
   to_date?: string;
 }
@@ -210,30 +194,25 @@ export interface CompletedTestsStats {
   total_filtered: number;
   total_unfiltered: number;
   total_time_spent: number;
-  total_filtered_tests: number;
   total_questions_answered: number;
 }
 
 export interface CompletedTestsResponse {
-  data: {
-    tests: CompletedTest[];
-    main_topics: string[];
-  };
-  pagination: TestsPagination;
+  data: CompletedTest[];
+  pagination: Pagination;
   stats: CompletedTestsStats;
-  //levels: string[];  
+  available_filters: TestAvailableFilters;
 }
 
 
-
-// Modelos para tests en progreso
+// In Progress Tests
 export interface InProgressTestsFilter {
-  page?: number;
-  page_size?: number;
+  page: number;
+  page_size: number;
   main_topic?: string;
   level?: string;
-  sort_by?: 'test_title' | 'progress' | 'test_created_at' | 'result_updated_at' | 'result_started_at' | 'result_time_taken' | 'test_level' | 'remaining_time' | 'remaining_count';
-  sort_order?: 'asc' | 'desc';
+  ordering: string;
+  order_dir?: 'asc' | 'desc';
 }
 
 export interface InProgressTest {
@@ -265,12 +244,10 @@ export interface InProgressTest {
 }
 
 export interface InProgressTestResponse {
-  data: {
-    tests: InProgressTest[];
-    main_topics: string[];
-  };
-  pagination: TestsPagination;
+  data: InProgressTest[];
+  pagination: Pagination;
   stats: InProgressTestsStats;
+  available_filters: TestAvailableFilters;  
 }
 
 export interface InProgressTestsStats {

@@ -58,10 +58,17 @@ class NotStartedTestListView(ListAPIView):
 
         # 4. Estadísticas adicionales (usando filtered_qs)
         main_topics = get_main_topics()
-        level_counts = filtered_qs.values('level').annotate(count=Count('id'))
+       
+        stats_qs = Test.objects.filter(pk__in=filtered_qs.values('pk'))
+        level_counts = (
+            stats_qs
+            .values('level')
+            .annotate(count=Count('id'))
+            .order_by()  # por si acaso, anulamos cualquier ordering residual
+        )
         total_by_level = {item['level']: item['count'] for item in level_counts}
 
-        response.data['data']['main_topics'] = main_topics
+        response.data['available_filters']['main_topics'] = main_topics
         response.data['stats']['total_unfiltered'] = total_sin_filtrar
         response.data['stats']['total_by_level'] = total_by_level
 
@@ -82,12 +89,18 @@ class InProgressTestListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        main_topics = get_main_topics()
+        
+        # main_topics = get_main_topics() # Todos los temas
+        main_topics = Result.objects.filter(
+            user=request.user,
+            status='in_progress'
+        ).values_list('test__main_topic', flat=True).distinct()  
+
         filtered_qs = self.filter_queryset(self.get_queryset())
         level_counts = filtered_qs.values('test__level').annotate(count=Count('id'))
         total_by_level = {item['test__level']: item['count'] for item in level_counts}
         total_sin_filtrar = Result.objects.filter(user=request.user, status='in_progress').count()
-        response.data['data']['main_topics'] = main_topics
+        response.data['available_filters']['main_topics'] = main_topics
         response.data['stats']['total_unfiltered'] = total_sin_filtrar
         response.data['stats']['total_by_level'] = total_by_level
 
@@ -122,7 +135,7 @@ class CompletedTestListView(ListAPIView):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = CompletedTestsFilter
-    ordering_fields = ['test__title', 'test__created_at', 'started_at', 'updated_at', 'time_taken', 'score']
+    ordering_fields = ['test__title', 'test__created_at', 'test__level', 'started_at', 'updated_at', 'time_taken', 'score']
     ordering = ['-updated_at']
 
     def get_queryset(self):
@@ -150,17 +163,23 @@ class CompletedTestListView(ListAPIView):
                 output_field=FloatField()
             )
         )
+
         return queryset
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
 
-        main_topics = get_main_topics()
+        # main_topics = get_main_topics() # Todos los temas
+        main_topics = Result.objects.filter(
+            user=request.user,
+            status='completed'
+        ).values_list('test__main_topic', flat=True).distinct()        
+
         filtered_qs = self.filter_queryset(self.get_queryset())
         level_counts = filtered_qs.values('test__level').annotate(count=Count('id'))
         total_by_level = {item['test__level']: item['count'] for item in level_counts}
         total_sin_filtrar = Result.objects.filter(user=request.user, status='completed').count()
-        response.data['data']['main_topics'] = main_topics
+        response.data['available_filters']['main_topics'] = main_topics
         response.data['stats']['total_unfiltered'] = total_sin_filtrar
         response.data['stats']['total_by_level'] = total_by_level
 
@@ -461,8 +480,8 @@ class AdminTestListView(ListAPIView):
             'statuses': ['Activo', 'Inactivo'],
         }
         response.data['stats'] = {
-            'total_tests': Test.objects.count(),
-            'total_filtered_tests': self.paginator.page.paginator.count,
+            'total_unfiltered': Test.objects.count(),
+            'total_filtered': self.paginator.page.paginator.count,
         }
         return response
 
