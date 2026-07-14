@@ -1,18 +1,23 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ResultsManagementService } from '../../services/results-management.service';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
-import { AdminResultResponse, AdminResultsFilter } from '../../models/results-list.models';
+import { AdminResult, AdminResultsFilter, AdminResultsResponse, ResultsAvailableFilters, ResultsStats } from '../../models/results-list.models';
 import { ModalComponent } from '../../../shared/components/modal.component';
 import { UserResultDetailsModalComponent } from '../user-result-details-modal/user-result-details-modal.component';
 import { UserResultDetailsModalService } from '../../services/user-result-details-modal.service';
 
+type DeleteModalState = 
+  | { type: 'none' }
+  | { type: 'single'; result: AdminResult }
+  | { type: 'bulk'; count: number };
+
 @Component({
   selector: 'app-admin-results',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ModalComponent, UserResultDetailsModalComponent], 
+  imports: [CommonModule, RouterModule, FormsModule, ModalComponent, UserResultDetailsModalComponent],
   templateUrl: './results-list.component.html',
 })
 export class ResultsListComponent implements OnInit {
@@ -20,99 +25,112 @@ export class ResultsListComponent implements OnInit {
   private sharedUtilsService = inject(SharedUtilsService);
   private resultDetailsModalService = inject(UserResultDetailsModalService);
 
-  // Resultados y estado
-  adminResultsData = signal<AdminResultResponse[]>([]);
+  // --- Estado principal ---
+  adminResultsData = signal<AdminResult[]>([]);
   loading = signal(true);
-  
-  // Filtros
-  selectedFilters = signal<AdminResultsFilter>({
-    page: 1,
-    page_size: 20,
-
-    user_role: '',
-    test_main_topic: '',
-    test_level: '',
-
-    // Filtros por resultado
-    status: '',
-    min_score: 0,
-    max_score: 100,
-  });
-  
-  // Opciones de filtros
-  availableFilters = signal<{
-    main_topics: string[];
-    levels: string[];
-    statuses: string[];
-    roles: string[];
-  }>({
+  availableFilters = signal<ResultsAvailableFilters>({
     main_topics: [],
     levels: [],
     statuses: [],
-    roles: ['user', 'guest', 'admin', 'deleted']
+    roles: ['user', 'guest', 'admin', 'deleted'],
   });
-  
- 
-  // Paginación
-  currentPage = signal(1);
-  totalFilteredResults = signal(0);
-  totalResults = signal(0);
-  totalPages = signal(0);  
+
+  private readonly defaultFilters: AdminResultsFilter = {
+    page: 1,
+    page_size: 20,
+    status: 'all',
+    user_role: 'all',
+    test_main_topic: 'all',
+    test_level: 'all',
+    updated_at: '',
+    started_at: '',
+    min_score: undefined,
+    max_score: undefined,
+    ordering: 'updated_at',
+    order_dir: 'desc',
+    search: '',
+  };
+  selectedFilters = signal<AdminResultsFilter>(this.defaultFilters);
+
+  stats = signal<ResultsStats>({
+    total_filtered: 0,
+    total_unfiltered: 0,
+    average_score: 0,
+    total_time_spent: 0,
+  });
+  totalPages = signal(0);
   hasMore = signal(false);
-  
-  // Estado de la UI
+
+  // --- UI ---
   showFilters = signal(false);
   showAdvancedFilters = signal(false);
 
-  // Ordenamiento
+  // --- Ordenamiento ---
   sortOptions = [
     { value: 'updated_at', label: 'Última actualización' },
     { value: 'started_at', label: 'Fecha de inicio' },
     { value: 'score', label: 'Puntuación' },
     { value: 'time_taken', label: 'Tiempo empleado' },
-    { value: 'correct_answers', label: 'Respuestas correctas' },
+    { value: 'correct_answers', label: 'Correctas' },
     { value: 'user_username', label: 'Usuario' },
-    { value: 'test_title', label: 'Título del test' },
-    { value: 'test_main_topic', label: 'Tema principal' },
-    { value: 'test_level', label: 'Nivel del test' }
+    { value: 'test_title', label: 'Título' },
+    { value: 'test_main_topic', label: 'Tema' },
+    { value: 'test_level', label: 'Nivel' },
   ];
-  
 
-  // Memoria de filtros (localStorage)
-  private readonly FILTER_STORAGE_KEY = 'admin_results_filters';
-  
-  // --- SEÑALES PARA ELIMINACIÓN MASIVA ---
-  
-  // Resultados seleccionados
+  // --- Selección y eliminación (unificado) ---
   selectedResults = signal<Set<number>>(new Set());
-  
-  // Estado de selección
   isAllSelected = signal(false);
   isIndeterminate = signal(false);
-  
-  // Modales
-  showDeleteModal = signal(false);
-  showBulkDeleteModal = signal(false);
+  deleteModal = signal<DeleteModalState>({ type: 'none' });
   deleteInProgress = signal(false);
-  
-  // Resultado individual para eliminar
-  resultToDelete = signal<AdminResultResponse | null>(null);
-  
-  // Contador para resultados seleccionados
-  selectedCount = signal(0);
-  
-  // Mensajes del modal
-  modalTitle = signal('');
-  modalMessage = signal('');
-  
-  // Mensajes Toast
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+
+  // Computed: etiqueta del orden actual
+  currentSortLabel = computed(() => {
+    const ordering = this.selectedFilters().ordering || 'updated_at';
+    const option = this.sortOptions.find(o => o.value === ordering);
+    return option ? option.label : 'Última actualización';
+  });
+
+  // Computed: índices de paginación
+  startIndex = computed(() => (this.selectedFilters().page - 1) * this.selectedFilters().page_size + 1);
+  endIndex = computed(() => Math.min(this.selectedFilters().page * this.selectedFilters().page_size, this.stats().total_filtered));
+
+  // Computed: número de elementos seleccionados
+  selectedCount = computed(() => this.selectedResults().size);
 
   ngOnInit(): void {
     this.loadSavedFilters();
     this.loadResults();
   }
+
+  // --- Construcción de filtros ---
+  private buildFilter(): AdminResultsFilter {
+    const raw = this.selectedFilters();
+    const filter: AdminResultsFilter = {
+      page: raw.page,
+      page_size: raw.page_size,
+      ordering: raw.ordering,
+      status: raw.status,
+      updated_at: raw.updated_at,
+      started_at: raw.started_at,
+      user_role: raw.user_role,
+      test_main_topic: raw.test_main_topic,
+      test_level: raw.test_level,
+      min_score: raw.min_score,
+      max_score: raw.max_score,
+      search: raw.search,
+    };
+    if (raw.ordering) {
+      filter.ordering = raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering;
+    }
+    return filter;
+  }
+
+  // --- Almacenamiento de filtros ---
+  private readonly FILTER_STORAGE_KEY = 'admin_results_filters';
 
   loadSavedFilters(): void {
     try {
@@ -133,132 +151,222 @@ export class ResultsListComponent implements OnInit {
     };
     localStorage.setItem(this.FILTER_STORAGE_KEY, JSON.stringify(filters));
   }
-
+  
+  // --- Carga de resultados ---
   loadResults(): void {
     this.loading.set(true);
-    
-    this.resultsManagementService.getAdminResults(this.selectedFilters()).subscribe({
-      next: (res) => {
-        this.adminResultsData.set(res.results);
-        this.totalFilteredResults.set(res.stats.total_filtered_results);
-        this.totalResults.set(res.stats.total_results);
-        this.totalPages.set(Math.ceil(res.stats.total_filtered_results / (this.selectedFilters().page_size || 20)));
-        this.hasMore.set(this.currentPage() < this.totalPages());
-        
-        // Actualizar filtros disponibles
-        if (res.available_filters) {
-          this.availableFilters.set(res.available_filters);
-        }
-        
+    const filter = this.buildFilter();
+
+    this.resultsManagementService.getAdminResults(filter).subscribe({
+      next: (res: AdminResultsResponse) => {
+        this.adminResultsData.set(res.data);
+        this.totalPages.set(res.pagination.total_pages);
+        this.hasMore.set(res.pagination.has_more);
+        this.stats.set(res.stats);
+        this.availableFilters.set(res.available_filters);
         this.loading.set(false);
         this.saveFilters();
-        
-        // Resetear selección después de cargar nuevos resultados
         this.clearSelection();
-        
       },
       error: (err) => {
         console.error('Error al cargar resultados administrativos:', err);
         this.loading.set(false);
-      }
+      },
     });
   }
 
-  // Métodos para filtros
-  onFilterChange(): void {
-    // Resetear a página 1 cuando cambian los filtros
-    this.selectedFilters.update(filters => ({ ...filters, page: 1 }));
-    this.currentPage.set(1);
+  // --- Métodos de filtros ---
+  updateFilter<K extends keyof AdminResultsFilter>(key: K, value: AdminResultsFilter[K]): void {
+    this.selectedFilters.update(f => ({ ...f, [key]: value }));
+    if (key !== 'page') {
+      // Al cambiar cualquier filtro que no sea página, resetear a página 1
+      this.selectedFilters.update(f => ({ ...f, page: 1 }));
+    }
     this.loadResults();
   }
 
   resetFilters(): void {
-    this.selectedFilters.set({
-      page: 1,
-      page_size: 20,
-      sort_by: 'updated_at',
-      sort_order: 'desc',
-      status: '',
-      test_main_topic: '',
-      test_level: '',
-      user_role: ''
-    });
-    this.currentPage.set(1);
+    this.selectedFilters.set({ ...this.defaultFilters });
     this.loadResults();
   }
 
-  updateFilter<T extends keyof AdminResultsFilter>(key: T, value: AdminResultsFilter[T]): void {
-    this.selectedFilters.update(filters => ({ ...filters, [key]: value }));
-    if (key !== 'page') {
-      this.onFilterChange();
-    }
-  }
-
   removeFilter(key: keyof AdminResultsFilter): void {
-    this.updateFilter(key, undefined);
-    this.onFilterChange();
+    const defaultValue = this.defaultFilters[key] ?? '';
+    this.updateFilter(key, defaultValue);
   }
 
-  // Métodos para ordenamiento
-  toggleSortOrder(): void {
-    const currentOrder = this.selectedFilters().sort_order || 'desc';
-    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-    this.updateFilter('sort_order', newOrder);
-  }
-
+  // --- Ordenamiento ---
   setSortBy(sortBy: string): void {
-    this.updateFilter('sort_by', sortBy);
+    this.updateFilter('ordering', sortBy);
   }
 
-  // Métodos para paginación
+  toggleSortOrder(): void {
+    const currentDir = this.selectedFilters().order_dir || 'desc';
+    this.updateFilter('order_dir', currentDir === 'asc' ? 'desc' : 'asc');
+  }
+
+  getSortOrderIcon(): string {
+    return this.selectedFilters().order_dir === 'asc' ? '↑' : '↓';
+  }
+
+  getSortOrderLabel(): string {
+    return this.selectedFilters().order_dir === 'asc' ? 'Ascendente' : 'Descendente';
+  }
+
+  // --- Paginación ---
   setPageSize(size: number): void {
     this.updateFilter('page_size', size);
   }
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
-    this.currentPage.set(page);
-    this.selectedFilters.update(filters => ({ ...filters, page: page }));
-    this.loadResults();
+    this.updateFilter('page', page);
   }
 
   previousPage(): void {
-    if (this.currentPage() > 1) {
-      const newPage = this.currentPage() - 1;
-      this.goToPage(newPage);
+    if (this.selectedFilters().page > 1) {
+      this.goToPage(this.selectedFilters().page - 1);
     }
   }
 
   nextPage(): void {
     if (this.hasMore()) {
-      const newPage = this.currentPage() + 1;
-      this.goToPage(newPage);
+      this.goToPage(this.selectedFilters().page + 1);
     }
   }
 
   getPageNumbers(): number[] {
-    return this.sharedUtilsService.getSharedPageNumbers(this.totalPages(), this.currentPage());
+    return this.sharedUtilsService.getSharedPageNumbers(
+      this.totalPages(),
+      this.selectedFilters().page
+    );
   }
 
-  // Método para mostrar detalles usando el servicio
-  showResultDetails(result: AdminResultResponse): void {
+  // --- Utilidades UI ---
+  showFilterIndicators(): boolean {
+    const f = this.selectedFilters();
+    return !!(f.user_role !== 'all' || f.started_at !== '' || f.updated_at !== '' ||
+              f.test_main_topic !== 'all' || f.test_level !== 'all' || f.status !== 'all' || 
+              f.min_score || f.max_score || f.search);
+  }
+
+  showPagination(): boolean {
+    return this.stats().total_filtered > 0 && this.totalPages() > 1;
+  }
+
+  // --- Detalles de resultado ---
+  showResultDetails(result: AdminResult): void {
     if (!result.user_id) return;
-    
     this.resultDetailsModalService.open(result.user_id, result.id);
   }
 
+  // --- Exportar ---
+  exportResults(): void {
+    if (this.loading()) return;
+    this.loading.set(true);
+    const filter = this.buildFilter();
 
-  // --- MÉTODOS PARA ELIMINACIÓN MASIVA ---
+    this.resultsManagementService.exportResults(filter).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        a.download = `resultados_${dateStr}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.loading.set(false);
+        this.successMessage.set('Resultados exportados correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al exportar:', err);
+        this.loading.set(false);
+        this.errorMessage.set('Error al exportar los resultados.');
+      }
+    });
+  }
 
-  // Métodos de selección
-  toggleResultSelection(resultId: number): void {
-    const selected = this.selectedResults();
-    if (selected.has(resultId)) {
-      selected.delete(resultId);
-    } else {
-      selected.add(resultId);
+  // --- Eliminación (individual y masiva) ---
+  confirmDeleteResult(result: AdminResult): void {
+    this.deleteModal.set({ type: 'single', result });
+  }
+
+  confirmBulkDelete(): void {
+    const count = this.selectedResults().size;
+    if (count === 0) return;
+    this.deleteModal.set({ type: 'bulk', count });
+  }
+
+  deleteResult(): void {
+    const modal = this.deleteModal();
+    if (modal.type !== 'single') return;
+    const result = modal.result;
+    this.deleteInProgress.set(true);
+    this.resultsManagementService.deleteResult(result.id).subscribe({
+      next: () => {
+        this.adminResultsData.update(list => list.filter(r => r.id !== result.id));
+        this.loadResults();
+        this.deleteModal.set({ type: 'none' });
+        this.deleteInProgress.set(false);
+        this.successMessage.set('Resultado eliminado correctamente.');
+      },
+      error: (err) => {
+        console.error(err);
+        this.deleteInProgress.set(false);
+        this.errorMessage.set('Error al eliminar.');
+      }
+    });
+  }
+
+  deleteSelectedResults(): void {
+    const ids = Array.from(this.selectedResults());
+    if (ids.length === 0) return;
+    this.deleteInProgress.set(true);
+    this.resultsManagementService.deleteResultsBulk(ids).subscribe({
+      next: () => {
+        this.adminResultsData.update(list => list.filter(r => !ids.includes(r.id)));
+        this.loadResults();
+        this.clearSelection();
+        this.deleteModal.set({ type: 'none' });
+        this.deleteInProgress.set(false);
+        this.successMessage.set(`${ids.length} resultado(s) eliminado(s).`);
+        if (this.adminResultsData().length === 0 && this.selectedFilters().page > 1) {
+          this.goToPage(this.selectedFilters().page - 1);
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.deleteInProgress.set(false);
+        this.errorMessage.set('Error al eliminar los resultados.');
+      }
+    });
+  }
+
+  closeDeleteModal(): void {
+    this.deleteModal.set({ type: 'none' });
+  }
+
+  getDeleteMessage(): string {
+    const modal = this.deleteModal();
+    if (modal.type === 'single') {
+      const name = this.getUserFullName(modal.result);
+      return `¿Estás seguro de eliminar el resultado del usuario "${name}" en el test "${modal.result.test_title}"?`;
     }
-    this.selectedResults.set(new Set(selected));
+    return '';
+  }
+
+  // --- Selección ---
+  toggleResultSelection(resultId: number): void {
+    const set = this.selectedResults();
+    if (set.has(resultId)) {
+      set.delete(resultId);
+    } else {
+      set.add(resultId);
+    }
+    this.selectedResults.set(new Set(set));
     this.updateSelectionState();
   }
 
@@ -266,264 +374,75 @@ export class ResultsListComponent implements OnInit {
     if (this.isAllSelected()) {
       this.clearSelection();
     } else {
-      const allIds = this.adminResultsData().map(result => result.id);
+      const allIds = this.adminResultsData().map(r => r.id);
       this.selectedResults.set(new Set(allIds));
       this.isAllSelected.set(true);
       this.isIndeterminate.set(false);
     }
-    this.updateSelectedCount();
   }
 
   clearSelection(): void {
     this.selectedResults.set(new Set());
     this.isAllSelected.set(false);
     this.isIndeterminate.set(false);
-    this.updateSelectedCount();
   }
 
-  updateSelectionState(): void {
-    const totalItems = this.adminResultsData().length;
-    const selectedCount = this.selectedResults().size;
-    
-    if (selectedCount === 0) {
+  private updateSelectionState(): void {
+    const total = this.adminResultsData().length;
+    const selected = this.selectedResults().size;
+    if (selected === 0) {
       this.isAllSelected.set(false);
       this.isIndeterminate.set(false);
-    } else if (selectedCount === totalItems) {
+    } else if (selected === total) {
       this.isAllSelected.set(true);
       this.isIndeterminate.set(false);
     } else {
       this.isAllSelected.set(false);
       this.isIndeterminate.set(true);
     }
-    
-    this.updateSelectedCount();
   }
 
-  updateSelectedCount(): void {
-    this.selectedCount.set(this.selectedResults().size);
-  }
-
-  // Métodos para eliminar
-  confirmDeleteResult(result: AdminResultResponse): void {
-    this.resultToDelete.set(result);
-    this.modalTitle.set('Confirmar eliminación');
-    this.modalMessage.set(`¿Estás seguro de que deseas eliminar el resultado del usuario "${this.getUserFullName(result)}" en el test "${result.test_title}"? Esta acción no se puede deshacer.`);
-    this.showDeleteModal.set(true);
-  }
-
-  confirmBulkDelete(): void {
-    if (this.selectedCount() === 0) return;
-    
-    this.modalTitle.set('Confirmar eliminación masiva');
-    this.modalMessage.set(`¿Estás seguro de que deseas eliminar ${this.selectedCount()} resultado(s) seleccionado(s)? Esta acción no se puede deshacer.`);
-    this.showBulkDeleteModal.set(true);
-  }
-
-  deleteResult(): void {
-    const result = this.resultToDelete();
-    if (!result) return;
-    
-    this.deleteInProgress.set(true);
-    
-    this.resultsManagementService.deleteResult(result.id).subscribe({
-      next: () => {
-        // Eliminar de la lista local
-        this.adminResultsData.update(results => 
-          results.filter(r => r.id !== result.id)
-        );
-        
-        // Actualizar contadores
-        this.totalFilteredResults.update(count => count - 1);
-        
-        // Cerrar modal y resetear estado
-        this.showDeleteModal.set(false);
-        this.resultToDelete.set(null);
-        this.deleteInProgress.set(false);
-        
-        // Mostrar mensaje de éxito
-        this.successMessage.set(`Resultado eliminado correctamente.`);
-      },
-      error: (err) => {
-        console.error('Error al eliminar resultado:', err);
-        this.deleteInProgress.set(false);
-        this.errorMessage.set('Error al eliminar el resultado. Por favor, inténtalo de nuevo.');
-      }
-    });
-  }
-
-  deleteSelectedResults(): void {
-    const selectedIds = Array.from(this.selectedResults());
-    if (selectedIds.length === 0) return;
-    
-    this.deleteInProgress.set(true);
-    
-    this.resultsManagementService.deleteResultsBulk(selectedIds).subscribe({
-      next: (response) => {
-        // Eliminar de la lista local
-        this.adminResultsData.update(results => 
-          results.filter(r => !selectedIds.includes(r.id))
-        );
-        
-        // Actualizar contadores
-        this.totalFilteredResults.update(count => count - selectedIds.length);
-        
-        // Limpiar selección
-        this.clearSelection();
-        
-        // Cerrar modal
-        this.showBulkDeleteModal.set(false);
-        this.deleteInProgress.set(false);
-        
-        // Mostrar mensaje de éxito
-        this.successMessage.set(`${selectedIds.length} resultado(s) eliminado(s) correctamente.`);
-        
-        // Si la página queda vacía y hay páginas anteriores, volver a la anterior
-        if (this.adminResultsData().length === 0 && this.currentPage() > 1) {
-          this.goToPage(this.currentPage() - 1);
-        }
-      },
-      error: (err) => {
-        console.error('Error al eliminar resultados:', err);
-        this.deleteInProgress.set(false);
-        this.errorMessage.set('Error al eliminar los resultados. Por favor, inténtalo de nuevo.');
-      }
-    });
-  }
-
-
-  // Métodos de utilidad
-  getRoleBadgeClass(role: string): string {
-    return this.sharedUtilsService.getSharedRoleBadgeClass(role);
-  }
-
-  getLevelBadgeClass(level: string): string {
-    return this.sharedUtilsService.getSharedLevelBadgeClass(level);
-  }
-
-  getStatusBadgeClass(status: string): string {
-    return this.sharedUtilsService.getSharedStatusBadgeClass(status);
-  }
-
-  getStatusLabel(status: string): string {
-    return this.sharedUtilsService.getSharedStatusLabel(status);
-  }
-
-  getScoreBadgeClass(score: number): string {
-    return this.sharedUtilsService.getSharedScoreBadgeClass(score);
-  }
-
-  getScoreColor(score: number): string {
-    return this.sharedUtilsService.getSharedScoreColor(score);
-  }
-
-  formatDate(dateString: string): string {
-    return this.sharedUtilsService.sharedFormatDate(dateString);
-  }
-
-  formatDateTime(dateString: string): string {
-    return this.sharedUtilsService.sharedFormatDateTime(dateString);
-  }
-
-  formatTime(seconds: number): string {
-    return this.sharedUtilsService.sharedFormatTime(seconds);
-  }
-
-  formatTimeShort(dateString: string): string {
-    return this.sharedUtilsService.sharedFormatTimeShort(dateString);
-  }
-
-  // Métodos específicos para UI
-  getCurrentSortLabel(): string {
-    const sortBy = this.selectedFilters().sort_by || 'updated_at';
-    const option = this.sortOptions.find(opt => opt.value === sortBy);
-    return option ? option.label : 'Última actualización';
-  }
-
-  getSortOrderIcon(): string {
-    const order = this.selectedFilters().sort_order || 'desc';
-    return order === 'asc' ? '↑' : '↓';
-  }
-
-  showFilterIndicators(): boolean {
-    const filters = this.selectedFilters();
-    return !!(filters.user_role || 
-               filters.test_main_topic || 
-               filters.test_level || 
-               filters.status ||
-               filters.min_score !== undefined ||
-               filters.max_score !== undefined ||
-               filters.start_date ||
-               filters.end_date ||
-               filters.search);
-  }
-
-  showPagination(): boolean {
-    return this.totalFilteredResults() > 0 && this.totalPages() > 1;
-  }
-
-  getStartIndex(): number {
-    return ((this.currentPage() - 1) * (this.selectedFilters().page_size || 20)) + 1;
-  }
-
-  getEndIndex(): number {
-    return Math.min(this.currentPage() * (this.selectedFilters().page_size || 20), this.totalFilteredResults());
-  }
-
-  // Método para exportar resultados
-  exportResults(): void {
-    if (this.loading()) return;
-    
-    // Mostrar indicador de carga
-    this.loading.set(true);
-    
-    // Obtener filtros actuales
-    const filters = this.selectedFilters();
-    
-    // Llamar al servicio de exportación
-    this.resultsManagementService.exportResults(filters).subscribe({
-      next: (blob: Blob) => {
-        // Crear URL para descarga
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        
-        // Nombre del archivo con fecha
-        const now = new Date();
-        const dateStr = now.toISOString().slice(0, 10);
-        a.download = `resultados_${dateStr}.csv`;
-        
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        
-        this.loading.set(false);
-        this.successMessage.set('Resultados exportados correctamente.');
-      },
-      error: (err) => {
-        console.error('Error al exportar resultados:', err);
-        this.loading.set(false);
-        this.errorMessage.set('Error al exportar los resultados. Por favor, inténtalo de nuevo.');
-      }
-    });
-  }
-
-  // Método para ver detalles del resultado
-  viewResultDetails(resultId: number): void {
-    // Navegar a página de detalles del resultado
-  }
-
-  // Método para formatear nombre de usuario
-  getUserFullName(result: AdminResultResponse): string {
+  // --- Helpers de utilidad (delegados al servicio compartido) ---
+  getUserFullName(result: AdminResult): string {
     if (result.user_first_name && result.user_last_name) {
       return `${result.user_first_name} ${result.user_last_name}`;
     }
     return result.user_username;
   }
 
-  closeToast() {
-      this.errorMessage.set(null);
-      this.successMessage.set(null);
+  getRoleBadgeClass(role: string): string {
+    return this.sharedUtilsService.getSharedRoleBadgeClass(role);
+  }
+  getLevelBadgeClass(level: string): string {
+    return this.sharedUtilsService.getSharedLevelBadgeClass(level);
+  }
+  getStatusBadgeClass(status: string): string {
+    return this.sharedUtilsService.getSharedStatusBadgeClass(status);
+  }
+  getStatusLabel(status: string): string {
+    return this.sharedUtilsService.getSharedStatusLabel(status);
+  }
+  getScoreBadgeClass(score: number): string {
+    return this.sharedUtilsService.getSharedScoreBadgeClass(score);
+  }
+  getScoreColor(score: number): string {
+    return this.sharedUtilsService.getSharedScoreColor(score);
+  }
+  formatDate(date: string): string {
+    return this.sharedUtilsService.sharedFormatDate(date);
+  }
+  formatDateTime(date: string): string {
+    return this.sharedUtilsService.sharedFormatDateTime(date);
+  }
+  formatTime(seconds: number): string {
+    return this.sharedUtilsService.sharedFormatTime(seconds);
+  }
+  formatTimeShort(date: string): string {
+    return this.sharedUtilsService.sharedFormatTimeShort(date);
   }
 
+  closeToast(): void {
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+  }
 }

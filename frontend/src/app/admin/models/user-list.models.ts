@@ -1,4 +1,4 @@
-export interface UserStats {
+export interface UserList {
   id: number;
   username: string;
   email: string;
@@ -20,28 +20,31 @@ export interface UserStats {
 }
 
 // Interfaz para los filtros de usuarios
-export interface UsersStatsFilters {
-  page_size?: number;
-  page?: number;
-  sort_by?: string;
-  sort_order?: 'asc' | 'desc';
+export interface UsersListFilters {
+  page_size: number;
+  page: number;
+  ordering: string;
+  order_dir: 'asc' | 'desc';
   role?: string;
   search?: string;
 }
 
 export interface Pagination {
-  page: number;
   page_size: number;
+  current_page: number;
   total_filtered: number;
   total_pages: number;
+  has_more: boolean;
 }
 
-export interface UserStatsFullResponse {
-  data: UserStats[];
+export interface UserListStats {
+  total_unfiltered: number;
+  total_filtered: number;
+}
+
+export interface UserListResponse {
+  data: UserList[];
   sort_fields: string[];
   pagination: Pagination;
-  stats: {
-    total_users: number;
-    total_filtered_users: number;
-  };    
+  stats: UserListStats;
 }

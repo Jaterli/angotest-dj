@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../../shared/models/user.models';
-import { UsersStatsFilters, UserStatsFullResponse } from '../models/user-stats.models';
+import { UserListResponse, UsersListFilters } from '../models/user-list.models';
 import { environment } from '../../../environments/environment';
 
 
@@ -12,32 +12,19 @@ export class UsersManagementService {
   private apiUrl = `${environment.apiUrl}/user`;
 
   // Método para obtener usuarios con estadísticas, paginación, filtrado y ordenación
-  getUsersStats(filters: UsersStatsFilters = {}): Observable<UserStatsFullResponse> {
+  getUsersStats(filters: UsersListFilters): Observable<UserListResponse> {
     let params = new HttpParams();
     
     // Agregar todos los filtros a los parámetros
     Object.keys(filters).forEach(key => {
-      const value = filters[key as keyof UsersStatsFilters];
-      if (value !== undefined && value !== null && value !== '') {
+      const value = filters[key as keyof UsersListFilters];
+      if (value !== undefined && value !== null && value !== 'all' && value !== '') {
         params = params.set(key, value.toString());
       }
     });
 
-    // Si no se especificó página, usar valores por defecto
-    if (!filters.page) {
-      params = params.set('page', '1');
-    }
-    if (!filters.page_size) {
-      params = params.set('page_size', '10');
-    }
-    if (!filters.sort_by) {
-      params = params.set('sort_by', 'created_at');
-    }
-    if (!filters.sort_order) {
-      params = params.set('sort_order', 'desc');
-    }
 
-    return this.http.get<UserStatsFullResponse>(`${this.apiUrl}/stats/`, { params });
+    return this.http.get<UserListResponse>(`${this.apiUrl}/stats/`, { params });
   }
 
 

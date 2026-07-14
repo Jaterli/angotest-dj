@@ -92,7 +92,7 @@ export class UserResultsComponent implements OnInit {
 
   sortOptions = [
     { value: 'updated_at', label: 'Fecha de Actualización' },
-    { value: 't_created_at', label: 'Fecha de Creación' }, // Nota: cambiado de created_at a t_created_at
+    { value: 't_created_at', label: 'Fecha de Creación' },
     { value: 'title', label: 'Título' },
     { value: 'level', label: 'Nivel' },
     { value: 'average_score', label: 'Puntuación' },

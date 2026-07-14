@@ -35,15 +35,7 @@
           <p class="text-gray-600 dark:text-gray-400 text-sm">Personaliza la visualización de tus resultados</p>
         </div>
         
-        <div class="flex gap-2">
-          <button (click)="onFilterChange()"
-                  class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-            <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-            </svg>
-            Aplicar Filtros
-          </button>
-          
+        <div class="flex gap-2">         
           <button (click)="resetFilters()"
                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -62,7 +54,7 @@
           </label>
           <select 
             [(ngModel)]="selectedFilters().main_topic"
-            (ngModelChange)="onFilterChange()"
+            (ngModelChange)="updateFilter('main_topic', $event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             <option value="all">Todos los temas</option>
@@ -79,13 +71,13 @@
           </label>
           <select 
             [(ngModel)]="selectedFilters().level"
-            (ngModelChange)="onFilterChange()"
+            (ngModelChange)="updateFilter('level', $event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             <option value="all">Todos los niveles</option>
-            @for (level of levelOptions; track level) {
-              <option [value]="level">{{ level }}</option>
-            }
+              @for (item of availableFilters().levels; track item[0]) {
+                <option [value]="item[0]">{{ item[1] }}</option>
+              }
           </select>
         </div>
         
@@ -96,17 +88,12 @@
           </label>
           <select 
             [(ngModel)]="selectedFilters().ordering"
-            (ngModelChange)="onFilterChange()"
+            (ngModelChange)="setSortBy($event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-          > 
-            <option value="test__title">Título del test</option>  
-            <option value="test__created_at">Fecha del test</option>
-            <option value="test__level">Nivel</option>            
-            <option value="started_at">Fecha de inicio</option>            
-            <option value="updated_at">Fecha de finalización</option>
-            <option value="time_taken">Tiempo invertido</option>                        
-            <option value="score">Puntuación</option>
-
+          >
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
           </select>
         </div>
 
@@ -184,7 +171,7 @@
               </span>
             }
             <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300">
-              Orden: {{ getCurrentSortLabel() }} {{ getSortOrderIcon() }}
+              Orden: {{ currentSortLabel() }} {{ getSortOrderIcon() }}
             </span>
           </div>
         </div>
@@ -311,11 +298,11 @@
   @if (!loading() && stats()!.total_unfiltered > 0) {
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
         Mostrando 
-        {{ getStartIndex() }} a {{ getStartIndex()+getEndIndex()-1 }} de {{ stats().total_filtered }} test(s) filtrados ({{ stats()!.total_unfiltered }} totales)
+        {{ startIndex() }} a {{ startIndex()+endIndex()-1 }} de {{ stats().total_filtered }} test(s) filtrados ({{ stats()!.total_unfiltered }} totales)
       <div>
         Orden: 
         <span class="text-gray-800 dark:text-gray-200">
-          {{ getCurrentSortLabel() }} {{ getSortOrderIcon() }}
+          {{ currentSortLabel() }} {{ getSortOrderIcon() }}
         </span>
       </div>
     </div>

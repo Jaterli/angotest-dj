@@ -24,7 +24,7 @@ from django.db.models import Count, Avg, Q, F, FloatField, Case, When, Value
 from django.db.models.functions import Coalesce, Cast
 from .services import DataService
 from apps.admin_panel.utils import SystemConfigManager
-from apps.shared.models import get_level_choices
+from apps.test.models import Test
 
 
 logger = logging.getLogger(__name__)
@@ -781,7 +781,7 @@ def get_rankings(request):
     }
     
     # Rankings por nivel
-    for level in get_level_choices():
+    for level, value in Test.LEVEL_CHOICES:
         response['top_by_levels'][level] = data_service.get_top_by_metric('top_by_level', limit, level)
         response['top_by_levels_accuracy'][level] = data_service.get_top_by_metric('top_by_levels_accuracy', limit, level)
     
@@ -915,8 +915,8 @@ def get_users_with_stats(request):
             'total_pages': (total_filtered + page_size - 1) // page_size if page_size > 0 else 1,
         },
         'stats': {
-            'total_users': User.objects.count(),
-            'total_filtered_users': total_filtered,
+            'total_unfiltered': User.objects.count(),
+            'total_filtered': total_filtered,
         },
         'sort_fields': valid_sort_fields,
     })

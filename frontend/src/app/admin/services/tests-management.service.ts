@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Test, TestFiltersApplied, TestsListResponse } from '../../shared/models/test.models';
+import { Test, TestFilters, TestsListResponse } from '../../shared/models/test.models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -27,31 +27,18 @@ export class TestsManagementService {
   }
 
   // Método para obtener tests con paginación, filtrado y ordenación
-  getAllTests(filters: TestFiltersApplied): Observable<TestsListResponse> {
+  getAllTests(filter: TestFilters): Observable<TestsListResponse> {
     let params = new HttpParams();
     
     // Agregar todos los filtros a los parámetros
-    Object.keys(filters).forEach(key => {
-      const value = filters[key as keyof TestFiltersApplied];
-      if (value !== undefined && value !== null && value !== '') {
+    Object.keys(filter).forEach(key => {
+      const value = filter[key as keyof TestFilters];
+      if (value !== undefined && value !== null && value !== 'all' && value !== '') {
         params = params.set(key, value.toString());
       }
     });
 
-    // Si no se especificó página, usar valores por defecto
-    if (!filters.page) {
-      params = params.set('page', '1');
-    }
-    if (!filters.page_size) {
-      params = params.set('page_size', '10');
-    }
-    if (!filters.sort_by) {
-      params = params.set('sort_by', 'created_at');
-    }
-    if (!filters.sort_order) {
-      params = params.set('sort_order', 'desc');
-    }
-
+  
     return this.http.get<TestsListResponse>(`${this.apiUrl}/list/`, { params });
   }
 

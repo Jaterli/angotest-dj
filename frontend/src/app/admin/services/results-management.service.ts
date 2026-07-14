@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AdminResultsFilter, AdminResultsFullResponse } from '../models/results-list.models';
+import { AdminResultsFilter, AdminResultsResponse } from '../models/results-list.models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -13,22 +13,14 @@ export class ResultsManagementService {
   constructor(private http: HttpClient) { }
 
   // Obtener resultados con filtros para administración
-  getAdminResults(filter: AdminResultsFilter = {}): Observable<AdminResultsFullResponse> {
+  getAdminResults(filter: AdminResultsFilter): Observable<AdminResultsResponse> {
     let params = this.buildFilterParams(filter);
-    return this.http.get<AdminResultsFullResponse>(`${this.apiUrl}`, { params });
+    return this.http.get<AdminResultsResponse>(`${this.apiUrl}`, { params });
   }
 
   // Exportar resultados a CSV con filtros
-  exportResults(filter: AdminResultsFilter = {}): Observable<Blob> {
+  exportResults(filter: AdminResultsFilter): Observable<Blob> {
     let params = this.buildFilterParams(filter);
-    
-    // Añadir parámetros de ordenamiento si existen
-    if (filter.sort_by) {
-      params = params.set('sort_by', filter.sort_by);
-    }
-    if (filter.sort_order) {
-      params = params.set('sort_order', filter.sort_order);
-    }
     
     return this.http.get(`${this.apiUrl}/export-csv/`, {
       params: params,
@@ -45,87 +37,12 @@ export class ResultsManagementService {
     params = params.set('page_size', (filter.page_size || 20).toString());
     
     // Parámetros de usuario
-    if (filter.user_id) {
-      params = params.set('user_id', filter.user_id.toString());
-    }
-    
-    if (filter.user_role && filter.user_role !== 'all') {
-      params = params.set('user_role', filter.user_role);
-    }
-    
-    if (filter.user_email) {
-      params = params.set('user_email', filter.user_email);
-    }
-    
-    if (filter.user_username) {
-      params = params.set('user_username', filter.user_username);
-    }
-    
-    // Parámetros de test
-    if (filter.test_id) {
-      params = params.set('test_id', filter.test_id.toString());
-    }
-    
-    if (filter.test_title) {
-      params = params.set('test_title', filter.test_title);
-    }
-    
-    if (filter.test_main_topic && filter.test_main_topic !== 'all') {
-      params = params.set('test_main_topic', filter.test_main_topic);
-    }
-    
-    if (filter.test_sub_topic && filter.test_sub_topic !== 'all') {
-      params = params.set('test_sub_topic', filter.test_sub_topic);
-    }
-    
-    if (filter.test_level && filter.test_level !== 'all') {
-      params = params.set('test_level', filter.test_level);
-    }
-    
-    if (filter.test_created_by) {
-      params = params.set('test_created_by', filter.test_created_by.toString());
-    }
-    
-    if (filter.test_is_active !== undefined) {
-      params = params.set('test_is_active', filter.test_is_active.toString());
-    }
-    
-    // Parámetros de resultado
-    if (filter.status && filter.status !== 'all') {
-      params = params.set('status', filter.status);
-    }
-
-    if (filter.min_score !== undefined && filter.min_score !== null) {
-      params = params.set('min_score', filter.min_score.toString());
-    }
-
-    if (filter.max_score !== undefined && filter.max_score !== null) {
-      params = params.set('max_score', filter.max_score.toString());
-    }
-    
-    // Fechas
-    if (filter.start_date) {
-      params = params.set('start_date', filter.start_date);
-    }
-    
-    if (filter.end_date) {
-      params = params.set('end_date', filter.end_date);
-    }
-    
-    // Ordenamiento
-    if (filter.sort_by) {
-      params = params.set('sort_by', filter.sort_by);
-    }
-    
-    if (filter.sort_order) {
-      params = params.set('sort_order', filter.sort_order);
-    }
-    
-    // Búsqueda
-    if (filter.search) {
-      params = params.set('search', filter.search);
-    }
-
+    Object.keys(filter).forEach(key => {
+      const value = filter[key as keyof AdminResultsFilter];
+      if (value !== undefined && value !== null && value !== 'all' && value !== '') {
+        params = params.set(key, value.toString());
+      }
+    });
     return params;
   }
 

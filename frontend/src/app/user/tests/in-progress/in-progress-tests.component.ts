@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -37,23 +37,26 @@ export class InProgressTestsComponent implements OnInit {
     this.systemConfigServiceForUser.getSystemConfigByKey("MARK_IN_PROGRESS_AS_EXPIRED_AFTER_DAYS")
   );
 
+  // Paginación (datos devueltos por el backend)
+  totalPages = signal(0);
+  hasMore = signal(false);
+
   // Filtros (objeto único con tipado fuerte)
-  selectedFilters = signal<InProgressTestsFilter>({
+  availableFilters = signal<TestAvailableFilters>({ main_topics: [] });
+
+  private readonly defaultFilters: InProgressTestsFilter = {
     page: 1,
     page_size: 10,
     ordering: 'updated_at',
     order_dir: 'desc',
     main_topic: 'all',
+    sub_topic: 'all',
     level: 'all',
-  });
+  };
+  selectedFilters = signal<InProgressTestsFilter>(this.defaultFilters);
 
-  // Opciones para niveles (desde servicio compartido)
-  levelOptions = this.sharedUtilsService.getSharedPredefinedLevels();
-  availableFilters = signal<TestAvailableFilters>({ main_topics: [] });
-
-  // Paginación (datos devueltos por el backend)
-  totalPages = signal(0);
-  hasMore = signal(false);
+  // Estado de la UI
+  showFilters = signal(false);
 
   // Estadísticas
   stats = signal<InProgressTestsStats>({
@@ -68,20 +71,40 @@ export class InProgressTestsComponent implements OnInit {
     },
   });
 
+  // Opciones de ordenación (para la UI)
+  sortOptions = [
+    { value: 'title', label: 'Título' },
+    { value: 'main_topic', label: 'Tema principal' },
+    { value: 'level', label: 'Nivel' },    
+    { value: 'created_at', label: 'Fecha de creación' },
+    { value: 'updated_at', label: 'Fecha de actualización' },
+    { value: 'question_count', label: 'Número de preguntas' },
+  ];
+ 
+
+  // Opciones para niveles (desde servicio compartido)
+  levelOptions = this.sharedUtilsService.getSharedPredefinedLevels();
+
   // Usuario
   currentUser: User | null = null;
 
-  // Estado de la UI
-  showFilters = signal(false);
+  // Computed properties
+  currentSortLabel = computed(() => {
+    const ordering = this.selectedFilters().ordering || 'updated_at';
+    const option = this.sortOptions.find(o => o.value === ordering);
+    return option ? option.label : 'Fecha de actualización';
+  });
 
-  // Clave para localStorage
-  private readonly FILTER_STORAGE_KEY = 'in_progress_tests_filters';
+  // Computed: índices de paginación
+  startIndex = computed(() => (this.selectedFilters().page - 1) * this.selectedFilters().page_size + 1);
+  endIndex = computed(() => Math.min(this.selectedFilters().page * this.selectedFilters().page_size, this.stats().total_filtered));
 
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadSavedFilters();
     this.loadTests();
   }
+
 
   loadCurrentUser(): void {
     const currentUser = this.authService.currentUser();
@@ -90,19 +113,15 @@ export class InProgressTestsComponent implements OnInit {
     }
   }
 
+  // Clave para localStorage
+  private readonly FILTER_STORAGE_KEY = 'in_progress_tests_filters';
+
   loadSavedFilters(): void {
     try {
-      const saved = localStorage.getItem(this.FILTER_STORAGE_KEY);
-      if (saved) {
-        const filters = JSON.parse(saved);
-        this.selectedFilters.update(f => ({
-          ...f,
-          main_topic: filters.mainTopic || 'all',
-          level: filters.level || 'all',
-          ordering: filters.sortBy || 'result_updated_at',
-          order_dir: filters.sortOrder || 'desc',
-          page_size: filters.pageSize || 10,
-        }));
+      const savedFilters = localStorage.getItem(this.FILTER_STORAGE_KEY);
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        this.selectedFilters.set({ ...this.selectedFilters(), ...filters });
       }
     } catch (error) {
       console.error('Error loading saved filters:', error);
@@ -110,33 +129,23 @@ export class InProgressTestsComponent implements OnInit {
   }
 
   saveFilters(): void {
-    const f = this.selectedFilters();
     const filters = {
-      mainTopic: f.main_topic,
-      level: f.level,
-      sortBy: f.ordering,
-      sortOrder: f.order_dir,
-      pageSize: f.page_size,
-      timestamp: new Date().getTime(),
+      ...this.selectedFilters(),
+      timestamp: new Date().getTime()
     };
     localStorage.setItem(this.FILTER_STORAGE_KEY, JSON.stringify(filters));
   }
 
   loadTests(): void {
     this.loading.set(true);
-
-    // Construir el filtro a partir de selectedFilters
+    
+    // Construir el filtro para el servicio
     const raw = this.selectedFilters();
     const filter: InProgressTestsFilter = {
-      page: raw.page,
-      page_size: raw.page_size,
-      ordering: raw.ordering,
-      main_topic: raw.main_topic,
-      level: raw.level,
+      ...raw,                          // Copia todos los campos
+      ordering: raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering,
     };
-
-    filter.ordering = raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering;
-    
+   
     this.testService.getMyInProgressTests(filter).subscribe({
       next: (res) => {
         this.inProgressTestsData.set(res.data);
@@ -156,63 +165,48 @@ export class InProgressTestsComponent implements OnInit {
 
   // --- Métodos de filtros ---
 
-  onFilterChange(): void {
-    this.selectedFilters.update(f => ({ ...f, page: 1 }));
+  updateFilter<K extends keyof InProgressTestsFilter>(key: K, value: InProgressTestsFilter[K]): void {
+    this.selectedFilters.update(f => ({ ...f, [key]: value }));
+    if (key !== 'page') {
+      // Al cambiar cualquier filtro que no sea página, resetear a página 1
+      this.selectedFilters.update(f => ({ ...f, page: 1 }));
+    }
     this.loadTests();
   }
 
   resetFilters(): void {
-    this.selectedFilters.set({
-      page: 1,
-      page_size: 10,
-      ordering: 'updated_at',
-      order_dir: 'desc',
-      main_topic: 'all',
-      level: 'all',
-    });
+    this.selectedFilters.set({ ...this.defaultFilters });
     this.loadTests();
+  }
+
+  removeFilter(key: keyof InProgressTestsFilter): void {
+    const defaultValue = this.defaultFilters[key] ?? '';
+    this.updateFilter(key, defaultValue);
+  }
+
+  // --- Ordenamiento ---
+  setSortBy(sortBy: string): void {
+    this.updateFilter('ordering', sortBy);
   }
 
   toggleSortOrder(): void {
-    this.selectedFilters.update(f => ({
-      ...f,
-      order_dir: f.order_dir === 'asc' ? 'desc' : 'asc',
-      page: 1,
-    }));
-    this.loadTests();
-  }
-
-  removeFilter(filterType: 'main_topic' | 'level'): void {
-    this.selectedFilters.update(f => ({
-      ...f,
-      [filterType]: 'all',
-      page: 1,
-    }));
-    this.loadTests();
-  }
-
-  setPageSize(size: number): void {
-    this.selectedFilters.update(f => ({
-      ...f,
-      page_size: size,
-      page: 1,
-    }));
-    this.loadTests();
+    const currentDir = this.selectedFilters().order_dir || 'desc';
+    this.updateFilter('order_dir', currentDir === 'asc' ? 'desc' : 'asc');
   }
 
   // --- Paginación ---
+  setPageSize(size: number): void {
+    this.updateFilter('page_size', size);
+  }
 
   goToPage(page: number): void {
-    const total = this.totalPages();
-    if (page < 1 || page > total) return;
-    this.selectedFilters.update(f => ({ ...f, page }));
-    this.loadTests();
+    if (page < 1 || page > this.totalPages()) return;
+    this.updateFilter('page', page);
   }
 
   previousPage(): void {
-    const current = this.selectedFilters().page;
-    if (current > 1) {
-      this.goToPage(current - 1);
+    if (this.selectedFilters().page > 1) {
+      this.goToPage(this.selectedFilters().page - 1);
     }
   }
 
@@ -229,8 +223,18 @@ export class InProgressTestsComponent implements OnInit {
     );
   }
 
-  // --- Métodos de UI (getters) ---
 
+  // --- Utilidades UI --- 
+  showFilterIndicators(): boolean {
+    const f = this.selectedFilters();
+    return !!(f.ordering || f.order_dir ||f.main_topic || f.level);
+  }
+
+  showPagination(): boolean {
+    return this.stats().total_filtered > 0 && this.totalPages() > 1;
+  }
+
+  // --- Métodos para la UI ---
   getSortOrderIcon(): string {
     return this.selectedFilters().order_dir === 'asc' ? '↑' : '↓';
   }
@@ -239,40 +243,6 @@ export class InProgressTestsComponent implements OnInit {
     return this.selectedFilters().order_dir === 'asc' ? 'Ascendente' : 'Descendente';
   }
 
-  getCurrentSortLabel(): string {
-    const sortBy = this.selectedFilters().ordering || 'result_updated_at';
-    const map: Record<string, string> = {
-      'progress': 'Progreso',
-      'test_created_at': 'Fecha del test',
-      'test_level': 'Nivel',
-      'result_started_at': 'Fecha de inicio',
-      'result_updated_at': 'Última actualización',
-      'result_time_taken': 'Tiempo empleado',
-      'remaining_count': 'Preguntas restantes',
-    };
-    return map[sortBy] || 'Última actualización';
-  }
-
-  getStartIndex(): number {
-    const page = this.selectedFilters().page;
-    const size = this.selectedFilters().page_size;
-    return (page - 1) * size + 1;
-  }
-
-  getEndIndex(): number {
-    const page = this.selectedFilters().page;
-    const size = this.selectedFilters().page_size;
-    return Math.min(page * size, this.inProgressTestsData().length);
-  }
-
-  showFilterIndicators(): boolean {
-    const f = this.selectedFilters();
-    return f.main_topic !== 'all' || f.level !== 'all';
-  }
-
-  showPagination(): boolean {
-    return this.totalPages() > 1;
-  }
 
   // --- Métodos específicos de tests en progreso ---
 

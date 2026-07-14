@@ -35,16 +35,16 @@ export interface TestWithCount extends Test {
   question_count: number;
 }
 
-export interface TestFiltersApplied {
-    main_topic: string | null;
-    sub_topic?: string | null;
+export interface TestFilters {
+    main_topic?: string;
+    sub_topic?: string;
     level?: string;
     is_active?: boolean;
     page: number;
     page_size: number;
     search?: string;
-    sort_by?: string;
-    sort_order?: 'asc' | 'desc';
+    ordering: string;
+    order_dir?: 'asc' | 'desc';
 }
 
 export interface TestAvailableFilters {
@@ -154,8 +154,6 @@ export interface CompletedTestsFilter {
   level?: string;
   ordering: string;
   order_dir?: 'asc' | 'desc';
-  from_date?: string;
-  to_date?: string;
 }
 
 export interface CompletedTest {
@@ -210,6 +208,7 @@ export interface InProgressTestsFilter {
   page: number;
   page_size: number;
   main_topic?: string;
+  sub_topic?: string;
   level?: string;
   ordering: string;
   order_dir?: 'asc' | 'desc';

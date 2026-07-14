@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.utils import timezone
 from functools import wraps
 import json
 import time
@@ -15,8 +14,7 @@ from .services import (
     parse_ai_response, create_test_from_ai_response, get_or_create_user_quota, quota_to_dict
 )
 from .models import AIRequestLog
-from apps.admin_panel.models import SystemConfig, UserQuota
-from apps.shared.models import get_level_choices
+from apps.test.models import Test
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +56,7 @@ def generate_ai_test(request):
     
     # Validar nivel
     level = data.get('level')
-    valid_levels = get_level_choices()
+    valid_levels, values = Test.LEVEL_CHOICES
     if level not in valid_levels:
         return JsonResponse({
             'error': 'Nivel no válido',

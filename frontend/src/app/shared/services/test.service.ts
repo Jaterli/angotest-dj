@@ -78,7 +78,7 @@ export class TestService {
     let params = new HttpParams()
     // Agregar todos los filtros a los parámetros
     Object.keys(filter).forEach(key => {
-      const value = filter[key as keyof InProgressTestsFilter];
+      const value = filter[key as keyof NotStartedTestsFilter];
       if (value !== undefined && value !== null && value != 'all' && value !== '') {
         params = params.set(key, value.toString());
       }

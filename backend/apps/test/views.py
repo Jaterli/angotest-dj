@@ -15,7 +15,7 @@ from .pagination import CustomPagination
 from .models import Test, Question, Answer
 from apps.accounts.permissions import IsAdminUser
 from apps.shared.models import get_main_topics
-from apps.shared.models import insert_or_update_topic, invalidate_topics_cache, delete_orphaned_topics, get_sub_topics, get_level_choices
+from apps.shared.models import insert_or_update_topic, invalidate_topics_cache, delete_orphaned_topics, get_sub_topics
 from apps.results.models import Result
 import json
 import logging
@@ -28,7 +28,7 @@ class NotStartedTestListView(ListAPIView):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = TestFilter
-    ordering_fields = ['title', 'created_at', 'level', 'question_count']
+    ordering_fields = ['title', 'main_topic', 'level', 'created_at', 'question_count']
     ordering = ['-created_at']
 
     def get_queryset(self):
@@ -69,6 +69,7 @@ class NotStartedTestListView(ListAPIView):
         total_by_level = {item['level']: item['count'] for item in level_counts}
 
         response.data['available_filters']['main_topics'] = main_topics
+        response.data['available_filters']['levels'] = Test.LEVEL_CHOICES
         response.data['stats']['total_unfiltered'] = total_sin_filtrar
         response.data['stats']['total_by_level'] = total_by_level
 
@@ -80,7 +81,7 @@ class InProgressTestListView(ListAPIView):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = InProgressTestsFilter
-    ordering_fields = ['test__title', 'test__created_at', 'started_at', 'updated_at', 'time_taken']
+    ordering_fields = ['test__title', 'test__main_topic', 'test_level', 'started_at', 'updated_at']
     ordering = ['-updated_at']
 
     def get_queryset(self):
@@ -90,7 +91,7 @@ class InProgressTestListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         
-        # main_topics = get_main_topics() # Todos los temas
+        # main_topics = get_main_topics() # Todos los temas (Considerar esta opción por eficiencia)
         main_topics = Result.objects.filter(
             user=request.user,
             status='in_progress'
@@ -180,6 +181,7 @@ class CompletedTestListView(ListAPIView):
         total_by_level = {item['test__level']: item['count'] for item in level_counts}
         total_sin_filtrar = Result.objects.filter(user=request.user, status='completed').count()
         response.data['available_filters']['main_topics'] = main_topics
+        response.data['available_filters']['levels'] = Test.LEVEL_CHOICES
         response.data['stats']['total_unfiltered'] = total_sin_filtrar
         response.data['stats']['total_by_level'] = total_by_level
 
@@ -466,7 +468,7 @@ class AdminTestListView(ListAPIView):
         response = super().list(request, *args, **kwargs)
         # Añadir filtros disponibles
         main_topics = get_main_topics()
-        levels = get_level_choices()
+        levels = Test.LEVEL_CHOICES
         # Obtener subtemas si se filtra por main_topic
         sub_topics = []
         main_topic = request.GET.get('main_topic')

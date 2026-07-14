@@ -59,15 +59,7 @@
           <p class="text-gray-600 dark:text-gray-400 text-sm">Personaliza la visualización de tests</p>
         </div>
         
-        <div class="flex gap-2 textsize-cnf font-medium">
-          <button (click)="onFilterChange()"
-                  class="inline-flex items-center px-4 py-2 rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-            </svg>
-            Aplicar Filtros
-          </button>
-          
+        <div class="flex gap-2 textsize-cnf font-medium">         
           <button (click)="resetFilters()"
                   class="inline-flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -88,7 +80,7 @@
           <input 
             type="text"
             [(ngModel)]="selectedFilters().search"
-            (ngModelChange)="onFilterChange()"
+            (ngModelChange)="updateFilter('search', $event)"
             placeholder="Buscar por título, descripción..."
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
@@ -105,7 +97,7 @@
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             <option value="">Todos los temas</option>
-            @for (topic of filterOptions().main_topics; track topic) {
+            @for (topic of availableFilters().main_topics; track topic) {
               <option [value]="topic">{{ topic }}</option>
             }
           </select>
@@ -122,7 +114,7 @@
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             <option value="">Todos los subtemas</option>
-            @for (subTopic of filterOptions().sub_topics; track subTopic) {
+            @for (subTopic of availableFilters().sub_topics; track subTopic) {
               <option [value]="subTopic">{{ subTopic }}</option>
             }
           </select>
@@ -142,9 +134,9 @@
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             <option value="">Todos los niveles</option>
-            @for (level of filterOptions().levels; track level) {
-              <option [value]="level">{{ level }}</option>
-            }
+              @for (item of availableFilters().levels; track item[0]) {
+                <option [value]="item[0]">{{ item[1] }}</option>
+              }
           </select>
         </div>
 
@@ -154,7 +146,7 @@
             Ordenar por
           </label>
           <select 
-            [(ngModel)]="selectedFilters().sort_by"
+            [(ngModel)]="selectedFilters().ordering"
             (ngModelChange)="setSortBy($event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
@@ -174,7 +166,7 @@
               (click)="toggleSortOrder()"
               class="textsize-cnf w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              @if ((selectedFilters().sort_order || 'desc') === 'desc') {
+              @if ((selectedFilters().order_dir || 'desc') === 'desc') {
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
@@ -278,7 +270,7 @@
   }
 
   <!-- Sin resultados -->
-  @if (!loading() && totalFilteredTests() === 0) {
+  @if (!loading() && stats().total_filtered === 0) {
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-8 text-center">
       <div class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4">
         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -306,10 +298,10 @@
   }
 
   <!-- Información de resultados -->
-  @if (!loading() && totalFilteredTests() > 0) {
+  @if (!loading() && stats().total_filtered > 0) {
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
         Mostrando 
-        {{ getStartIndex() }} a {{ getEndIndex() }} de {{ totalFilteredTests()}} test(s) filtrados ({{ totalTests() }} totales)
+        {{ startIndex() }} a {{ endIndex() }} de {{ stats().total_filtered }} test(s) filtrados ({{ stats().total_unfiltered }} totales)
       <div>
         Orden: 
         <span class="text-gray-800 dark:text-gray-200">
@@ -320,7 +312,7 @@
   }
 
   <!-- Tabla de tests -->
-  @if (!loading() && totalFilteredTests() > 0) {
+  @if (!loading() && stats().total_filtered > 0) {
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
       <!-- Vista móvil: tarjetas -->
       <div class="block md:hidden divide-y divide-gray-200 dark:divide-gray-700">

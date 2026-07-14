@@ -30,15 +30,7 @@
           <p class="text-gray-600 dark:text-gray-400 text-sm">Personaliza la visualización de usuarios</p>
         </div>
         
-        <div class="flex gap-2 textsize-cnf font-medium">
-          <button (click)="onFilterChange()"
-                  class="inline-flex items-center px-4 py-2 rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-            <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-            </svg>
-            Aplicar Filtros
-          </button>
-          
+        <div class="flex gap-2 textsize-cnf font-medium">          
           <button (click)="resetFilters()"
                   class="inline-flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -51,7 +43,7 @@
       
       <!-- Filtros básicos -->
 
-      <!-- Búsqueda -->
+      <!-- Búsqueda general -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Búsqueda General
@@ -59,24 +51,42 @@
         <input 
           type="text"
           [(ngModel)]="selectedFilters().search"
-          (ngModelChange)="onFilterChange()"
+          (ngModelChange)="updateFilter('search', $event)"
           placeholder="Buscar por nombre de usuario, email..."
           class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
         >
       </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <!-- Rol -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Rol
+          </label>
+          <select 
+            [(ngModel)]="selectedFilters().role"
+            (ngModelChange)="updateFilter('role', $event)"
+            class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
+          >
+            <option value="all">Todos los roles</option>
+            @for (item of availableFilters().roles; track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+        </div>
+
         <!-- Ordenar por -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Ordenar por
           </label>
           <select 
-            [(ngModel)]="selectedFilters().sort_by"
+            [(ngModel)]="selectedFilters().ordering"
             (ngModelChange)="setSortBy($event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
-            @for (option of sortOptions(); track option.value) {
+            @for (option of sortOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
             }
           </select>
@@ -92,7 +102,7 @@
               (click)="toggleSortOrder()"
               class="textsize-cnf w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              @if ((selectedFilters().sort_order || 'desc') === 'desc') {
+              @if ((selectedFilters().order_dir || 'desc') === 'desc') {
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
@@ -127,7 +137,6 @@
           </div>
         </div>
       </div>
-
       <!-- Filtros activos -->
       @if (showFilterIndicators()) {
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -162,7 +171,7 @@
   }
 
   <!-- Sin resultados -->
-  @if (!loading() && totalFilteredUsers() === 0) {
+  @if (!loading() && stats().total_filtered === 0) {
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-8 text-center">
       <div class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4">
         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -190,13 +199,13 @@
   }
 
   <!-- Información de resultados -->
-  @if (!loading() && totalFilteredUsers() > 0) {
+  @if (!loading() && stats().total_filtered > 0) {
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
       <div>
         Mostrando 
-        <span class="font-medium">{{ getStartIndex() }}</span> a 
-        <span class="font-medium">{{ getEndIndex() }}</span> de 
-        <span class="font-medium">{{ totalFilteredUsers() }}</span> resultado(s) filtrados ({{ totalUsers() }} totales)
+        <span class="font-medium">{{ startIndex() }}</span> a 
+        <span class="font-medium">{{ endIndex() }}</span> de 
+        <span class="font-medium">{{ stats().total_filtered }}</span> resultado(s) filtrados ({{ stats().total_unfiltered }} totales)
       </div>
       <div>
         Orden: 
@@ -208,7 +217,7 @@
   }
 
   <!-- Lista/Tabla de usuarios -->
-  @if (!loading() && totalFilteredUsers() > 0) {
+  @if (!loading() && stats().total_filtered > 0) {
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
       
       <!-- Vista móvil: tarjetas -->
@@ -447,14 +456,14 @@
       <div class="mt-8">
         <nav class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="text-sm text-gray-600 dark:text-gray-400 order-2 sm:order-1 text-center sm:text-left">
-            Página {{ currentPage() }} de {{ totalPages() }}
+            Página {{ selectedFilters().page }} de {{ totalPages() }}
           </div>
           
           <div class="flex items-center justify-center order-1 sm:order-2">
             <div class="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
               <!-- Botón Anterior -->
               <button (click)="previousPage()"
-                      [disabled]="currentPage() === 1"
+                      [disabled]="selectedFilters().page === 1"
                       class="relative inline-flex items-center px-3 py-2 sm:px-2 sm:py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                 <span class="sr-only">Anterior</span>
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -465,7 +474,7 @@
               <!-- Números de página -->
               @for (page of getPageNumbers(); track page) {
                 <button (click)="goToPage(page)"
-                        [class]="currentPage() === page 
+                        [class]="selectedFilters().page === page 
                           ? 'z-10 text-white bg-blue-600 dark:bg-blue-700 border border-blue-500 dark:border-blue-600 relative inline-flex items-center px-4 py-2 sm:px-4 sm:py-2 text-sm font-medium'
                           : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 sm:px-4 sm:py-2 text-sm font-medium transition-colors'">
                   {{ page }}

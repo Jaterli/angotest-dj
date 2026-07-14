@@ -300,11 +300,3 @@ def get_topic_statistics():
     cache.set(cache_key, stats, 3600)
     return stats
 
-
-def get_level_choices():
-    """Obtiene los niveles desde el modelo Test"""
-    return [choice[0] for choice in Test.LEVEL_CHOICES]
-
-def get_status_choices():
-    """Obtiene los estados desde el modelo Result"""
-    return [choice[0] for choice in Result.STATUS_CHOICES]

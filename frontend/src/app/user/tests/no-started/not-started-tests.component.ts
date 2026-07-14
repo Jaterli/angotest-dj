@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -24,14 +24,18 @@ export class NotStartedTestsComponent implements OnInit {
   loading = signal(true);
 
   // Filtros (objeto único con tipado fuerte)
-  selectedFilters = signal<NotStartedTestsFilter & { order_dir?: 'asc' | 'desc' }>({
+  private readonly defaultFilters: NotStartedTestsFilter = {
     page: 1,
     page_size: 10,
-    ordering: 'test_created_at',
+    ordering: 'created_at',
     order_dir: 'desc',
     main_topic: 'all',
     level: 'all',
-  });
+  };
+  selectedFilters = signal<NotStartedTestsFilter>(this.defaultFilters);
+
+  // Estado de la UI
+  showFilters = signal(false);
 
   // Opciones para niveles (desde servicio compartido)
   levelOptions = this.sharedUtilsService.getSharedPredefinedLevels();
@@ -52,14 +56,29 @@ export class NotStartedTestsComponent implements OnInit {
     },
   });
 
+  // Opciones de ordenación (para la UI)
+  sortOptions = [
+    { value: 'title', label: 'Título' },
+    { value: 'main_topic', label: 'Tema principal' },
+    { value: 'level', label: 'Nivel' },    
+    { value: 'created_at', label: 'Fecha de creación' },
+    { value: 'question_count', label: 'Nº de preguntas' },
+
+  ];
+ 
   // Usuario
   currentUser: User | null = null;
 
-  // Estado de la UI
-  showFilters = signal(false);
+  // Computed properties
+  currentSortLabel = computed(() => {
+    const ordering = this.selectedFilters().ordering || 'updated_at';
+    const option = this.sortOptions.find(o => o.value === ordering);
+    return option ? option.label : 'Fecha de actualización';
+  });
 
-  // Clave para localStorage
-  private readonly FILTER_STORAGE_KEY = 'not_started_tests_filters';
+  // Computed: índices de paginación
+  startIndex = computed(() => (this.selectedFilters().page - 1) * this.selectedFilters().page_size + 1);
+  endIndex = computed(() => Math.min(this.selectedFilters().page * this.selectedFilters().page_size, this.stats().total_filtered));
 
   ngOnInit(): void {
     this.loadCurrentUser();
@@ -74,19 +93,15 @@ export class NotStartedTestsComponent implements OnInit {
     }
   }
 
+  // Clave para localStorage
+  private readonly FILTER_STORAGE_KEY = 'not_started_tests_filters';
+
   loadSavedFilters(): void {
     try {
-      const saved = localStorage.getItem(this.FILTER_STORAGE_KEY);
-      if (saved) {
-        const filters = JSON.parse(saved);
-        this.selectedFilters.update(f => ({
-          ...f,
-          main_topic: filters.mainTopic || 'all',
-          level: filters.level || 'all',
-          ordering: filters.sortBy || 'created_at',
-          page_size: filters.pageSize || 10,
-          order_dir: filters.sortOrder || 'desc',
-        }));
+      const savedFilters = localStorage.getItem(this.FILTER_STORAGE_KEY);
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        this.selectedFilters.set({ ...this.selectedFilters(), ...filters });
       }
     } catch (error) {
       console.error('Error loading saved filters:', error);
@@ -94,14 +109,9 @@ export class NotStartedTestsComponent implements OnInit {
   }
 
   saveFilters(): void {
-    const f = this.selectedFilters();
     const filters = {
-      mainTopic: f.main_topic,
-      level: f.level,
-      sortBy: f.ordering,
-      sortOrder: f.order_dir || 'desc',
-      pageSize: f.page_size,
-      timestamp: new Date().getTime(),
+      ...this.selectedFilters(),
+      timestamp: new Date().getTime()
     };
     localStorage.setItem(this.FILTER_STORAGE_KEY, JSON.stringify(filters));
   }
@@ -109,17 +119,12 @@ export class NotStartedTestsComponent implements OnInit {
   loadTests(): void {
     this.loading.set(true);
 
+    // Construir el filtro para el servicio
     const raw = this.selectedFilters();
-    // Construir el filtro a partir de selectedFilters
     const filter: NotStartedTestsFilter = {
-      page: raw.page,
-      page_size: raw.page_size,
-      main_topic: raw.main_topic,
-      ordering: raw.ordering,
-      level: raw.level,
+      ...raw,                          // Copia todos los campos
+      ordering: raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering,
     };
-
-    filter.ordering = raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering;
 
     this.testService.getNotStartedTests(filter).subscribe({
       next: (res) => {
@@ -140,63 +145,48 @@ export class NotStartedTestsComponent implements OnInit {
 
   // --- Métodos de filtros ---
 
-  onFilterChange(): void {
-    this.selectedFilters.update(f => ({ ...f, page: 1 }));
+  updateFilter<K extends keyof NotStartedTestsFilter>(key: K, value: NotStartedTestsFilter[K]): void {
+    this.selectedFilters.update(f => ({ ...f, [key]: value }));
+    if (key !== 'page') {
+      // Al cambiar cualquier filtro que no sea página, resetear a página 1
+      this.selectedFilters.update(f => ({ ...f, page: 1 }));
+    }
     this.loadTests();
   }
 
   resetFilters(): void {
-    this.selectedFilters.set({
-      page: 1,
-      page_size: 10,
-      ordering: 'created_at',
-      order_dir: 'desc',
-      main_topic: 'all',
-      level: 'all',
-    });
+    this.selectedFilters.set({ ...this.defaultFilters });
     this.loadTests();
+  }
+
+  removeFilter(key: keyof NotStartedTestsFilter): void {
+    const defaultValue = this.defaultFilters[key] ?? '';
+    this.updateFilter(key, defaultValue);
+  }
+
+  // --- Ordenamiento ---
+  setSortBy(sortBy: string): void {
+    this.updateFilter('ordering', sortBy);
   }
 
   toggleSortOrder(): void {
-    this.selectedFilters.update(f => ({
-      ...f,
-      order_dir: f.order_dir === 'asc' ? 'desc' : 'asc',
-      page: 1,
-    }));
-    this.loadTests();
-  }
-
-  removeFilter(filterType: 'main_topic' | 'level'): void {
-    this.selectedFilters.update(f => ({
-      ...f,
-      [filterType]: 'all',
-      page: 1,
-    }));
-    this.loadTests();
-  }
-
-  setPageSize(size: number): void {
-    this.selectedFilters.update(f => ({
-      ...f,
-      page_size: size,
-      page: 1,
-    }));
-    this.loadTests();
+    const currentDir = this.selectedFilters().order_dir || 'desc';
+    this.updateFilter('order_dir', currentDir === 'asc' ? 'desc' : 'asc');
   }
 
   // --- Paginación ---
+  setPageSize(size: number): void {
+    this.updateFilter('page_size', size);
+  }
 
   goToPage(page: number): void {
-    const total = this.totalPages();
-    if (page < 1 || page > total) return;
-    this.selectedFilters.update(f => ({ ...f, page }));
-    this.loadTests();
+    if (page < 1 || page > this.totalPages()) return;
+    this.updateFilter('page', page);
   }
 
   previousPage(): void {
-    const current = this.selectedFilters().page;
-    if (current > 1) {
-      this.goToPage(current - 1);
+    if (this.selectedFilters().page > 1) {
+      this.goToPage(this.selectedFilters().page - 1);
     }
   }
 
@@ -212,6 +202,16 @@ export class NotStartedTestsComponent implements OnInit {
       this.selectedFilters().page
     );
   }
+  
+  // --- Utilidades UI --- 
+  showFilterIndicators(): boolean {
+    const f = this.selectedFilters();
+    return !!(f.ordering || f.order_dir ||f.main_topic || f.level);
+  }
+
+  showPagination(): boolean {
+    return this.stats().total_filtered > 0 && this.totalPages() > 1;
+  }
 
   // --- Métodos de UI (getters) ---
 
@@ -221,38 +221,6 @@ export class NotStartedTestsComponent implements OnInit {
 
   getSortOrderLabel(): string {
     return this.selectedFilters().order_dir === 'asc' ? 'Ascendente' : 'Descendente';
-  }
-
-  getCurrentSortLabel(): string {
-    const sortBy = this.selectedFilters().ordering || 'created_at';
-    const map: Record<string, string> = {
-      'title': 'Título',
-      'created_at': 'Fecha de creación',
-      'level': 'Nivel de dificultad',
-      'total_questions': 'Número de preguntas',
-    };
-    return map[sortBy] || 'Fecha de creación';
-  }
-
-  getStartIndex(): number {
-    const page = this.selectedFilters().page;
-    const size = this.selectedFilters().page_size;
-    return (page - 1) * size + 1;
-  }
-
-  getEndIndex(): number {
-    const page = this.selectedFilters().page;
-    const size = this.selectedFilters().page_size;
-    return Math.min(page * size, this.notStartedTestsData().length);
-  }
-
-  showFilterIndicators(): boolean {
-    const f = this.selectedFilters();
-    return f.main_topic !== 'all' || f.level !== 'all';
-  }
-
-  showPagination(): boolean {
-    return this.totalPages() > 1;
   }
 
   // --- Métodos auxiliares (delegados a SharedUtilsService) ---

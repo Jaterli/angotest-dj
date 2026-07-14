@@ -6,7 +6,7 @@ import { User } from '../../../shared/models/user.models';
 import { ModalComponent } from '../../../shared/components/modal.component';
 import { UsersManagementService } from '../../services/users-management.service';
 import { SharedUtilsService } from '../../../shared/services/shared-utils.service';
-import { UsersStatsFilters, UserStats } from '../../models/user-stats.models';
+import { UsersListFilters, UserListStats, UserList } from '../../models/user-list.models';
 import { UserModalService } from '../../services/user-modal.service';
 import { UserProfileModalComponent } from '../user-profile-modal.component/user-profile-modal.component';
 
@@ -14,57 +14,56 @@ import { UserProfileModalComponent } from '../user-profile-modal.component/user-
   selector: 'app-users-stats',
   standalone: true,
   imports: [ CommonModule, FormsModule, RouterModule, ModalComponent, UserProfileModalComponent ],
-  templateUrl: './users-stats.component.html'
+  templateUrl: './users-list.component.html'
 })
-export class UsersStatsComponent implements OnInit {
+export class UsersListComponent implements OnInit {
   private usersManagementService = inject(UsersManagementService);
   private sharedUtilsService = inject(SharedUtilsService);
   private userModalService = inject(UserModalService);
 
   // Datos
-  currentPage = signal(1);
-  totalFilteredUsers = signal(0);
-  totalUsers = signal(0);
-  usersData = signal<UserStats[]>([]);
+  usersData = signal<UserList[]>([]);
+
+  // Paginación
   totalPages = signal(0);
   hasMore = signal(false);
 
   // Estados
   loading = signal(true);
-  deleting = signal(false);
   loadingProfile = signal(false);  
+  deleting = signal(false);
    
   // Filtros y ordenación
-  selectedFilters = signal<UsersStatsFilters>({
+  availableFilters = signal<{roles: string[]}>({
+    roles: ['admin','user','guest', 'deleted'],
+  });
+
+  private readonly defaultFilters: UsersListFilters = {
     page_size: 10,
     page: 1,
-    sort_by: 'registered_at',
-    sort_order: 'desc',
+    ordering: 'registered_at',
+    order_dir: 'desc',
+    role: 'all',
     search: '',
+  };
+  selectedFilters = signal<UsersListFilters>(this.defaultFilters);
+
+  // Estadísticas
+  stats = signal<UserListStats>({
+    total_filtered: 0,
+    total_unfiltered: 0,
   });
 
-  // Opciones disponibles (se cargan desde el backend)
-  // sortFields es un array de strings con los campos de ordenación disponibles
-  sortFields = signal<string[]>([]);
-
-  // Opciones de ordenación generadas desde sortFields
-  sortOptions = computed(() => {
-    const sortFieldLabels: Record<string, string> = {
-      'id': 'ID',
-      'username': 'Nombre de usuario',
-      'email': 'Email',
-      'role': 'Rol',
-      'registered_at': 'Fecha de registro',
-      'login_at': 'Último inicio de sesión',
-      'tests_completed': 'Tests completados',
-      'average_score': 'Puntuación media'
-    };
-    
-    return this.sortFields().map(field => ({
-      value: field,
-      label: sortFieldLabels[field] || field.replace('_', ' ').toUpperCase()
-    }));
-  });
+  // Opciones de ordenación (para la UI)
+  sortOptions = [
+    { value: 'username', label: 'Nombre de usuario' },
+    { value: 'email', label: 'Email' },
+    { value: 'role', label: 'Rol' },
+    { value: 'registered_at', label: 'Fecha de registro' },
+    { value: 'login_at', label: 'Fecha login' },
+    { value: 'tests_completed', label: 'Nº tests completados' },
+    { value: 'average_score', label: 'Puntuación media' },
+  ];
 
   // Estado de la UI
   showFilters = signal(false);
@@ -72,22 +71,23 @@ export class UsersStatsComponent implements OnInit {
   // Memoria de filtros (localStorage)
   private readonly FILTER_STORAGE_KEY = 'admin_users_filters';
 
-  // Computed properties para el template
+  // Computed properties
   currentSortLabel = computed(() => {
-    const sortBy = this.selectedFilters().sort_by;
-    const option = this.sortOptions().find(o => o.value === sortBy);
+    const ordering = this.selectedFilters().ordering || 'registered_at';
+    const option = this.sortOptions.find(o => o.value === ordering);
     return option ? option.label : 'Fecha de registro';
   });
 
-  getSortOrderIcon(): string {
-    const order = this.selectedFilters().sort_order || 'desc';
-    return order === 'asc' ? '↑' : '↓';
-  }
+  // Computed: índices de paginación
+  startIndex = computed(() => (this.selectedFilters().page - 1) * this.selectedFilters().page_size + 1);
+  endIndex = computed(() => Math.min(this.selectedFilters().page * this.selectedFilters().page_size, this.stats().total_filtered));
 
   // Modal de confirmación
   showDeleteModal = signal(false);
   showSuccessModal = signal(false);
   showErrorModal = signal(false);
+
+  // Modal de perfil
   showProfileModal = signal(false);
   errorTitle = signal('');
   errorMessage = signal('');
@@ -107,9 +107,6 @@ export class UsersStatsComponent implements OnInit {
       const savedFilters = localStorage.getItem(this.FILTER_STORAGE_KEY);
       if (savedFilters) {
         const filters = JSON.parse(savedFilters);
-        if (filters.page) {
-          this.currentPage.set(filters.page);
-        }
         this.selectedFilters.set({ ...this.selectedFilters(), ...filters });
       }
     } catch (error) {
@@ -128,21 +125,19 @@ export class UsersStatsComponent implements OnInit {
   loadUsers(): void {
     this.loading.set(true);
     
-    this.usersManagementService.getUsersStats(this.selectedFilters()).subscribe({
-      next: (res) => {
-        
+    // Construir el filtro para el servicio
+    const raw = this.selectedFilters();
+    const filter: UsersListFilters = {
+      ...raw,                          // Copia todos los campos
+      ordering: raw.order_dir === 'desc' ? `-${raw.ordering}` : raw.ordering,
+    };
+
+    this.usersManagementService.getUsersStats(filter).subscribe({
+      next: (res) => { 
         this.usersData.set(res.data);
-        this.totalFilteredUsers.set(res.stats.total_filtered_users || 0);
-        this.totalUsers.set(res.stats.total_users || 0);
-        this.currentPage.set(res.pagination.page || 1);
-        this.totalPages.set(res.pagination.total_pages || 0);
-        this.hasMore.set(this.currentPage() < this.totalPages());
-
-        // Cargar campos de ordenación disponibles
-        if (res.sort_fields && Array.isArray(res.sort_fields)) {
-          this.sortFields.set(res.sort_fields);
-        }
-
+        this.hasMore.set(res.pagination.has_more);
+        this.totalPages.set(res.pagination.total_pages);
+        this.stats.set(res.stats);
         this.loading.set(false);
         this.saveFilters();
       },
@@ -156,96 +151,86 @@ export class UsersStatsComponent implements OnInit {
     });
   }
 
-  // Métodos para filtros y ordenación
-  onFilterChange(): void {
-    this.selectedFilters.update(filters => ({ ...filters, page: 1 }));
-    this.currentPage.set(1);
+
+  // --- Métodos de filtros ---
+  updateFilter<K extends keyof UsersListFilters>(key: K, value: UsersListFilters[K]): void {
+    this.selectedFilters.update(f => ({ ...f, [key]: value }));
+    if (key !== 'page') {
+      // Al cambiar cualquier filtro que no sea página, resetear a página 1
+      this.selectedFilters.update(f => ({ ...f, page: 1 }));
+    }
     this.loadUsers();
   }
 
   resetFilters(): void {
-    this.selectedFilters.set({
-      page: 1,
-      page_size: 10,
-      sort_by: 'registered_at',
-      sort_order: 'desc',
-      search: '',
-      role: ''
-    });
-    this.currentPage.set(1);
+    this.selectedFilters.set({ ...this.defaultFilters });
     this.loadUsers();
   }
 
-  updateFilter<T extends keyof UsersStatsFilters>(key: T, value: UsersStatsFilters[T]): void {
-    this.selectedFilters.update(filters => ({ ...filters, [key]: value }));
-    if (key !== 'page') {
-      this.onFilterChange();
-    }
+  removeFilter(key: keyof UsersListFilters): void {
+    const defaultValue = this.defaultFilters[key] ?? '';
+    this.updateFilter(key, defaultValue);
   }
 
-  removeFilter(key: keyof UsersStatsFilters): void {
-    this.updateFilter(key, '' as any);
-  }
-
-  // Métodos para ordenamiento
-  toggleSortOrder(): void {
-    const currentOrder = this.selectedFilters().sort_order || 'desc';
-    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-    this.updateFilter('sort_order', newOrder);
-  }
-
+  // --- Ordenamiento ---
   setSortBy(sortBy: string): void {
-    this.updateFilter('sort_by', sortBy);
+    this.updateFilter('ordering', sortBy);
   }
 
-  // Métodos para paginación
+  toggleSortOrder(): void {
+    const currentDir = this.selectedFilters().order_dir || 'desc';
+    this.updateFilter('order_dir', currentDir === 'asc' ? 'desc' : 'asc');
+  }
+
+  // --- Paginación ---
   setPageSize(size: number): void {
     this.updateFilter('page_size', size);
   }
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
-    
-    this.currentPage.set(page);
-    this.selectedFilters.update(filters => ({ ...filters, page: page }));
-    this.loadUsers();
+    this.updateFilter('page', page);
   }
 
   previousPage(): void {
-    if (this.currentPage() > 1) {
-      const newPage = this.currentPage() - 1;
-      this.goToPage(newPage);
+    if (this.selectedFilters().page > 1) {
+      this.goToPage(this.selectedFilters().page - 1);
     }
   }
 
   nextPage(): void {
     if (this.hasMore()) {
-      const newPage = this.currentPage() + 1;
-      this.goToPage(newPage);
+      this.goToPage(this.selectedFilters().page + 1);
     }
   }
 
   getPageNumbers(): number[] {
-    return this.sharedUtilsService.getSharedPageNumbers(this.totalPages(), this.currentPage());
+    return this.sharedUtilsService.getSharedPageNumbers(
+      this.totalPages(),
+      this.selectedFilters().page
+    );
   }
 
-  getStartIndex(): number {
-    return ((this.currentPage() - 1) * (this.selectedFilters().page_size || 10)) + 1;
-  }
 
-  getEndIndex(): number {
-    return Math.min(this.currentPage() * (this.selectedFilters().page_size || 10), this.totalFilteredUsers());
-  }
-
-  // Métodos para mostrar filtros activos
+  // --- Utilidades UI --- 
   showFilterIndicators(): boolean {
-    const filters = this.selectedFilters();
-    return !!(filters.search || filters.role);
+    const f = this.selectedFilters();
+    return !!(f.search || f.role);
   }
 
   showPagination(): boolean {
-    return this.totalFilteredUsers() > 0 && this.totalPages() > 1;
+    return this.stats().total_filtered > 0 && this.totalPages() > 1;
   }
+
+  // --- Métodos para la UI ---
+  getSortOrderIcon(): string {
+    return this.selectedFilters().order_dir === 'asc' ? '↑' : '↓';
+  }
+
+  getSortOrderLabel(): string {
+    return this.selectedFilters().order_dir === 'asc' ? 'Ascendente' : 'Descendente';
+  }
+
 
   // Método para cargar perfil de usuario
   loadUserProfile(userId: number): void {
@@ -289,7 +274,7 @@ export class UsersStatsComponent implements OnInit {
   }
 
   // Métodos para eliminar usuario
-  prepareDeleteUser(user: UserStats): void {
+  prepareDeleteUser(user: UserList): void {
     this.userToDelete = { id: user.id, username: user.username };
     this.showDeleteModal.set(true);
   }

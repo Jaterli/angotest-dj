@@ -5,7 +5,7 @@ from django.db.models import Count, Sum, Min, Avg, Q, F, Value, OuterRef, Subque
 from django.db.models.functions import Coalesce, Round
 from django.contrib.auth import get_user_model
 from apps.results.models import Result
-from apps.shared.models import get_level_choices
+from apps.test.models import Test
 from apps.admin_panel.utils import SystemConfigManager
 
 User = get_user_model()
@@ -183,8 +183,9 @@ class DataService:
             'total_correct': 0, 'total_wrong': 0, 'total_time_taken': 0
         }
 
+        from apps.test.models import Test
         level_data = {}
-        for level in get_level_choices():
+        for level, value in Test.LEVEL_CHOICES:
             all_stats = all_map.get(level, empty_row)
             first_stats = first_map.get(level, empty_row)
 
@@ -553,7 +554,7 @@ class DataService:
         positions['first_attempt']['accuracy'] = self._get_position_accuracy_optimized(user_id, 'first')
         positions['first_attempt']['questions_answered'] = self._get_position_questions_answered_optimized(user_id, 'first')
 
-        for level in get_level_choices():
+        for level, value in Test.LEVEL_CHOICES:
             positions['levels'][level] = {
                 'accuracy': self._get_position_level_accuracy_optimized(user_id, level)
             }

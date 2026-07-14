@@ -9,7 +9,7 @@ import logging
 from .models import (
     get_topics, get_main_topics, get_sub_topics, get_specific_topics,
     validate_and_suggest_topics, invalidate_topics_cache, get_topic_hierarchy,
-    get_topic_statistics, insert_or_update_topic, get_level_choices
+    get_topic_statistics, insert_or_update_topic
 )
 
 logger = logging.getLogger(__name__)
