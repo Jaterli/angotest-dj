@@ -202,10 +202,7 @@
   @if (!loading() && stats().total_filtered > 0) {
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
       <div>
-        Mostrando 
-        <span class="font-medium">{{ startIndex() }}</span> a 
-        <span class="font-medium">{{ endIndex() }}</span> de 
-        <span class="font-medium">{{ stats().total_filtered }}</span> resultado(s) filtrados ({{ stats().total_unfiltered }} totales)
+        Mostrando {{ startIndex() }} a {{ endIndex() }} de {{ stats().total_filtered}} resultado(s) filtrados <span class="text-nowrap">({{ stats().total_unfiltered }} totales)</span>
       </div>
       <div>
         Orden: 

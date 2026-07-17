@@ -37,7 +37,6 @@ export class TestsManagementService {
         params = params.set(key, value.toString());
       }
     });
-
   
     return this.http.get<TestsListResponse>(`${this.apiUrl}/list/`, { params });
   }

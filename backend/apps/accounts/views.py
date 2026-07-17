@@ -92,6 +92,7 @@ def get_token_from_request(request):
     auth_header = request.headers.get('Authorization', '')
     if auth_header.startswith('Bearer '):
         return auth_header[7:]
+
     return request.COOKIES.get('auth_token')
 
 
@@ -277,12 +278,12 @@ def check_auth(request):
     token = get_token_from_request(request)
     
     if not token:
-        return JsonResponse({'authenticated': False})
+        return JsonResponse({'authenticated': False, 'message':'Token not received'})
     
     user = get_user_from_token(token)
     
     if not user or not user.is_active:
-        return JsonResponse({'authenticated': False})
+        return JsonResponse({'authenticated': False, 'message':'User not found or not active'})
     
     return JsonResponse({
         'authenticated': True,

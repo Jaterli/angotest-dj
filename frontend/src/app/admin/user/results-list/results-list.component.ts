@@ -151,7 +151,7 @@ export class ResultsListComponent implements OnInit {
     };
     localStorage.setItem(this.FILTER_STORAGE_KEY, JSON.stringify(filters));
   }
-  
+
   // --- Carga de resultados ---
   loadResults(): void {
     this.loading.set(true);
@@ -427,9 +427,6 @@ export class ResultsListComponent implements OnInit {
   }
   getScoreColor(score: number): string {
     return this.sharedUtilsService.getSharedScoreColor(score);
-  }
-  formatDate(date: string): string {
-    return this.sharedUtilsService.sharedFormatDate(date);
   }
   formatDateTime(date: string): string {
     return this.sharedUtilsService.sharedFormatDateTime(date);

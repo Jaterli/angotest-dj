@@ -505,12 +505,8 @@
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
       <div class="flex items-center gap-4">
         <div>
-          Mostrando 
-          <span class="font-medium">{{ startIndex() }}</span> a 
-          <span class="font-medium">{{ endIndex() }}</span> de 
-          <span class="font-medium">{{ stats().total_filtered}}</span> resultado(s) filtrados ({{ stats().total_unfiltered }} totales)
+          Mostrando {{ startIndex() }} a {{ endIndex() }} de {{ stats().total_filtered}} resultado(s) filtrados <span class="text-nowrap">({{ stats().total_unfiltered }} totales)</span>
         </div>
-        
         <!-- Checkbox para seleccionar todos -->
         <div class="flex items-center">
           <input type="checkbox"
@@ -748,15 +744,17 @@
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
                     @if (result.status === 'completed') {
-                      <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 inline text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>                      
-                    }@else{
+                      </svg>     
+                      {{ formatDateTime(result.updated_at) }}                    
+                 
+                    }@else if (formatDateTime(result.started_at) < formatDateTime(result.updated_at)){
                       <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                       </svg>
+                      {{ formatDateTime(result.updated_at) }}                    
                     }
-                    {{ formatDateTime(result.updated_at) }}                    
                   </div>
                 </td>
                 

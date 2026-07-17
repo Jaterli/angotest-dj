@@ -27,7 +27,7 @@ from .serializers import (
     UserResultListSerializer,
 )
 from .filters import ResultsListFilter, UserResultsFilter
-from apps.test.pagination import CustomPagination  # reutilizar paginador personalizado
+from apps.test.pagination import TestPagination  # reutilizar paginador personalizado
 from apps.shared.views import admin_required
 from django.core.paginator import Paginator
 import logging
@@ -166,7 +166,7 @@ class ResultDetailView(RetrieveAPIView):
 class ResultsListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ResultListSerializer
-    pagination_class = CustomPagination
+    pagination_class = TestPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = ResultsListFilter
     ordering_fields = ['id', 'started_at', 'updated_at', 'time_taken', 'correct_answers', 'score', 'test_main_topic', 'test_level']
@@ -212,7 +212,7 @@ class ResultsListView(ListAPIView):
 class UserResultsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserResultListSerializer
-    pagination_class = CustomPagination
+    pagination_class = TestPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = UserResultsFilter
     ordering_fields = ['test__title', 'test__level', 'test__created_at', 'started_at', 'updated_at', 'time_taken']

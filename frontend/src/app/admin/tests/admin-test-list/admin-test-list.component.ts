@@ -240,8 +240,8 @@ export class AdminTestListComponent implements OnInit {
     return this.sharedUtilsService.getSharedLevelBadgeClass(level);
   }
 
-  formatDate(dateString: string): string {
-    return this.sharedUtilsService.sharedFormatDate(dateString);
+  formatDateTime(dateString: string): string {
+    return this.sharedUtilsService.sharedFormatDateTime(dateString);
   }
 
   // --- Modal de invitación ---

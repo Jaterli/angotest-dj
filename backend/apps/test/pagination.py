@@ -1,7 +1,7 @@
 from rest_framework.pagination import PageNumberPagination # type: ignore
 from rest_framework.response import Response # type: ignore
 
-class CustomPagination(PageNumberPagination):
+class TestPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
@@ -18,6 +18,7 @@ class CustomPagination(PageNumberPagination):
             },
             'stats': {
                 'total_filtered': self.page.paginator.count,
+                'total_unfiltered': {},
                 'total_by_level': {},
             },
             'available_filters': {
