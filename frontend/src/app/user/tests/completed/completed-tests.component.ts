@@ -74,9 +74,6 @@ export class CompletedTestsComponent implements OnInit {
   showInviteModal = signal(false);
   selectedTestForInvitation: CreateInvitationInput | null = null;
 
-  // Clave para localStorage
-  private readonly FILTER_STORAGE_KEY = 'completed_tests_filters';
-
   // Opciones de ordenación (para la UI)
   sortOptions = [
     { value: 'test__title', label: 'Título del test' },
@@ -109,6 +106,9 @@ export class CompletedTestsComponent implements OnInit {
       this.currentUser = currentUser;
     }
   }
+
+  // Clave para localStorage
+  private readonly FILTER_STORAGE_KEY = 'completed_tests_filters';
 
   loadSavedFilters(): void {
     try {

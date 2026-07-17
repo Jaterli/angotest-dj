@@ -166,7 +166,7 @@ export class SharedUtilsService {
       case 'expired':
           return commonClasses + 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       default:
-        return commonClasses + 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+        return commonClasses + 'bg-gray-200 text-gray-800 dark:bg-gray-600/30 dark:text-gray-300';
     }
   }
 

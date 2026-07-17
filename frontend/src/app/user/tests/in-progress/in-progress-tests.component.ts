@@ -105,7 +105,6 @@ export class InProgressTestsComponent implements OnInit {
     this.loadTests();
   }
 
-
   loadCurrentUser(): void {
     const currentUser = this.authService.currentUser();
     if (currentUser) {

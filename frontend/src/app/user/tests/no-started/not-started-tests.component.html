@@ -307,8 +307,7 @@
   <!-- Información de resultados -->
   @if (!loading() && notStartedTestsData().length > 0) {
     <div class="mb-4 sm:flex sm:items-center sm:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
-        Mostrando 
-        {{ startIndex() }} a {{ startIndex()+endIndex()-1 }} de {{ stats().total_filtered }} test(s) filtrados ({{ stats().total_unfiltered }} totales)        
+      <div class="text-balance">Mostrando {{ startIndex() }} a {{ endIndex() }} de {{ stats().total_filtered}} resultado(s) filtrados ({{ stats().total_unfiltered }} totales)</div>
       <div>
         Orden: 
         <span class="text-gray-800 dark:text-gray-200">
@@ -367,14 +366,14 @@
             </div>
 
             <!-- Estadísticas -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="grid grid-cols-3 gap-3 mb-4">
               <div class="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                 <div class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {{ test.total_questions || 0 }}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Preguntas</div>
               </div>
-              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div class="col-span-2 text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                 <div class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
                   {{ test.created_at | date:'dd/MM/yyyy' }}
                 </div>
