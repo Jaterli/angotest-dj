@@ -19,8 +19,8 @@ export interface InvitationResponse {
 export interface InvitationsFilter {
   page: number;
   page_size: number;
-  sort_by: string;
-  sort_order: 'asc' | 'desc';
+  ordering: string;
+  order_dir?: 'asc' | 'desc';
   
   // Filtros
   search?: string;
@@ -36,13 +36,17 @@ export interface InvitationsFilter {
 }
 
 export interface InvitationsResponse {
-  invitations: InvitationResponse[];
+  data: InvitationResponse[];
   pagination: {
     page: number;
     page_size: number;
     total_items: number;
     total_pages: number;
   };
-  filters_applied: InvitationsFilter;
-  available_filters: any;
+  stats: InvitationsStats;
+}
+
+export interface InvitationsStats {
+  total_filtered: number;
+  total_unfiltered: number;
 }

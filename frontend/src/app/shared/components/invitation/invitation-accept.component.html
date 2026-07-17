@@ -86,7 +86,7 @@
                     text-white font-semibold rounded-lg
                     transition-all shadow-md hover:shadow-lg"
           >
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between whitespace-normal">
             <div>
             
             @if (isAuthenticated()){
@@ -143,7 +143,7 @@
                         <p class="text-sm text-white/90">Click aquí para iniciar el test como invitado</p>
                     }
                 }
-
+            <!-- !isAuthenticated -->
             } @else {            
                 @if (r.result?.status == 'in_progress') {
                     @if (r.invitation.guest_user_id && !r.invitation.is_guest) {
@@ -152,7 +152,10 @@
                     } @else if (r.invitation.guest_user_id && r.invitation.is_guest) {
                         <h3 class="font-bold mb-1">Retomar test</h3> 
                         <p class="text-sm text-white/90">Retomar como Invitado</p>
-                    } 
+                    } @else {
+                        <h3 class="font-bold mb-1">Faltan datos</h3> 
+                        <p class="text-sm text-white/90">No se ha obtendido la información necesaria para el test.</p>                      
+                    }
                 } @else if (r.result?.status == 'completed') {                            
                     @if (r.invitation.guest_user_id && !r.invitation.is_guest) {
                         <h3 class="font-bold mb-1">Completaste el test</h3>                                

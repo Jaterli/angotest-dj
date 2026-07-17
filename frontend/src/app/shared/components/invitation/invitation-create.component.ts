@@ -13,7 +13,7 @@ import { CreateInvitationInput } from '../../models/invitation.models';
   imports: [CommonModule, ReactiveFormsModule, ModalComponent],
   template: `
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-      <div class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Invitar a completar el test</div>
+      <div class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Invitar a completar el test #{{ testId || '0' }}</div>
       <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
         '{{ testTitle || '' }}'
       </h2>

@@ -9,10 +9,10 @@ import { CommonModule } from '@angular/common';
     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
       <!-- Título y nivel -->
       <div class="mb-3">
-        <h2 class="font-semibold inline text-gray-900 dark:text-gray-100 text-lg mb-1">
+        <h2 class="font-semibold inline text-gray-900 dark:text-gray-100 text-lg mb-1 mr-2">
             {{ response?.test?.title }}
         </h2>
-        <span class="ml-2 px-3 py-1 rounded text-xs font-medium flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+        <span class="inline-block px-3 py-1 rounded text-xs font-medium flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
           {{ response?.test?.level }}
         </span>
       </div>       

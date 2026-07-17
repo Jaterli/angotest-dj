@@ -74,36 +74,3 @@ class TestInvitation(models.Model):
         base_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
         return f"{base_url}/invitation/accept?token={self.token}"
 
-
-class InvitationEvent(models.Model):
-    """Modelo para registrar eventos de invitaciones (auditoría)"""
-    EVENT_TYPES = [
-        ('created', 'Created'),
-        ('viewed', 'Viewed'),
-        ('accepted', 'Accepted'),
-        ('expired', 'Expired'),
-        ('deleted', 'Deleted'),
-        ('transferred', 'Transferred'),
-    ]
-
-    invitation = models.ForeignKey(
-        TestInvitation,
-        on_delete=models.CASCADE,
-        related_name='events'
-    )
-    event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='invitation_events'
-    )
-    metadata = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'invitation_events'
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.event_type} - {self.invitation.token} at {self.created_at}"

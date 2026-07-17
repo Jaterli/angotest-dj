@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap, of } from 'rxjs';
+import { Observable, tap, switchMap, of, map, catchError, throwError } from 'rxjs';
 import { 
   TestInvitation, 
   CreateInvitationInput, 
@@ -23,44 +23,31 @@ export class InvitationService {
     return this.http.post(`${this.apiUrl}/create/`, data);
   }
 
-  // Obtener invitaciones del usuario
-  getMyInvitations(): Observable<{invitations: TestInvitation[]}> {
-    return this.http.get<{invitations: TestInvitation[]}>(`${this.apiUrl}/my-invitations/`);
-  }
-
   // Verificar invitación
   checkInvitation(token: string): Observable<CheckInvitationResponse> {
     return this.http.get<CheckInvitationResponse>(`${this.apiUrl}/check-invitation/?token=${token}`);
   }
 
-  // Aceptar invitación
   acceptInvitation(token: string, asGuest?: boolean): Observable<AcceptInvitationResponse> {
     return this.http.post<AcceptInvitationResponse>(
       `${this.apiUrl}/accept-invitation/?token=${token}`,
-      { as_guest: asGuest || false }
+      { as_guest: asGuest || false },
+      { withCredentials: true } // Asegurar que la cookie se envía y recibe
     ).pipe(
       tap(response => {
-        // Si la respuesta incluye un token, guardarlo y actualizar estado
-        if (response.access_token) {
-          console.log('Token recibido, guardando en localStorage');
-          localStorage.setItem('access_token', response.access_token);
-          
-          // Forzar la actualización del estado de autenticación
-          if (response.user) {
-            // Actualizar directamente el estado del usuario
-            this.authService['setUser'](response.user); // Usamos setUser internamente
-          }
+        
+        // El backend ya estableció la cookie auth_token
+        // Actualizar el estado del usuario si viene en la respuesta
+        if (response.user) {
+          this.authService.setCurrentUser(response.user);
+        } else {
+          console.warn('⚠️ No se recibió usuario en la respuesta');
         }
       }),
-      // Opcional: refrescar el estado de autenticación después de guardar el token
-      switchMap(response => {
-        if (response.access_token) {
-          return this.authService.refreshAuth().pipe(
-            tap(() => {}),
-            switchMap(() => of(response))
-          );
-        }
-        return of(response);
+
+      catchError(error => {
+        console.error('❌ Error en acceptInvitation:', error);
+        return throwError(() => error);
       })
     );
   }

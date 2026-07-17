@@ -180,14 +180,10 @@ export class InvitationAcceptComponent implements OnInit {
     try {
       this.showLoadingModal.set(true);
       
-      console.log('Aceptando invitación como guest:', asGuest);
-      
       const acceptResponse = await firstValueFrom(
         this.invitationService.acceptInvitation(this.token, asGuest)
       );
-
-      console.log('Respuesta de aceptación:', acceptResponse);
-      
+     
       // IMPORTANTE: Después de aceptar, el token ya debería estar guardado
       // por el interceptor. Verificar si el usuario está autenticado
       
@@ -195,7 +191,7 @@ export class InvitationAcceptComponent implements OnInit {
       const authCheck = await firstValueFrom(this.authService.refreshAuth());
       
       if (authCheck.authenticated && authCheck.user) {
-        console.log('Usuario autenticado exitosamente:', authCheck.user);
+        console.log('Usuario autenticado exitosamente.');
         
         // Redirigir según el estado del resultado
         if (this.response()?.result?.status === 'completed') {
@@ -204,7 +200,7 @@ export class InvitationAcceptComponent implements OnInit {
           this.navigateToTest(acceptResponse.test_id);
         }
       } else {
-        console.error('No se pudo autenticar al usuario después de aceptar');
+        console.error('No se pudo autenticar al usuario después de aceptar la invitación.');
         this.error.set('Error de autenticación. Por favor, intenta de nuevo.');
       }
 

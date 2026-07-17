@@ -20,52 +20,6 @@
     </div>
   </div>
 
-  <!-- Mensajes Toast de éxito/error general -->
-  @if (successMessage()) {
-      <div id="toast-success" class="fixed bottom-4 right-4 flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-lg dark:text-gray-400 dark:bg-gray-800 z-50" role="alert">
-          <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
-              <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-              </svg>
-              <span class="sr-only">Check icon</span>
-          </div>
-          <div class="ms-3 text-sm font-normal">{{ successMessage() }}</div>
-          <button 
-              type="button" 
-              (click)="closeToast()"
-              class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" 
-              aria-label="Close"
-          >
-              <span class="sr-only">Close</span>
-              <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-              </svg>
-          </button>
-      </div>
-  }
-  @if (errorMessage()) {
-  <div id="toast-danger" class="fixed bottom-4 right-4 flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-lg dark:text-gray-400 dark:bg-gray-800 z-50" role="alert">
-      <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
-          </svg>
-          <span class="sr-only">Error icon</span>
-      </div>
-      <div class="ms-3 text-sm font-normal">{{ errorMessage() }}</div>
-      <button 
-          type="button" 
-          (click)="closeToast()"
-          class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" 
-          aria-label="Close"
-      >
-          <span class="sr-only">Close</span>
-          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-          </svg>
-      </button>
-  </div>
-  }
-
   <!-- Barra de acciones masivas -->
   @if (selectedCount() > 0) {
     <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-4 mb-6">
@@ -114,13 +68,6 @@
           <p class="text-gray-600 dark:text-gray-400 text-sm">Personaliza la visualización de invitaciones</p>
         </div>   
         <div class="flex items-center gap-2 textsize-cnf font-medium">
-          <button (click)="onFilterChange()"
-                  class="inline-flex items-center px-4 py-2 rounded-lg text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-            <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-            </svg>
-            Aplicar Filtros
-          </button>        
           <button (click)="resetFilters()"
                   class="inline-flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             <svg class="hidden sm:block w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -128,113 +75,54 @@
             </svg>
             Limpiar Todo
           </button>
-          <button (click)="showAdvancedFilters.set(!showAdvancedFilters())"
-                  class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            {{ showAdvancedFilters() ? 'Filtros Básicos' : 'Filtros Avanzados' }}
-          </button>
         </div>
       </div>
       
       <!-- Filtros básicos -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        
-        <!-- Búsqueda -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Búsqueda
-          </label>
-          <input 
-            type="text"
-            [(ngModel)]="selectedFilters().search"
-            (ngModelChange)="onFilterChange()"
-            placeholder="Buscar en test, mensaje, token..."
-            class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-          >
-        </div>     
-        
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  
         <!-- Estado -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Estado
           </label>
           <select 
-            [(ngModel)]="selectedFilters().status"
-            (ngModelChange)="onFilterChange()"
+            [ngModel]="selectedFilters().status"
+            (ngModelChange)="updateFilter('status', $event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
             @for (status of statusOptions; track status.value) {
-              <option [value]="status.value">{{ status.label }}</option>
+              <option [ngValue]="status.value">{{ status.label }}</option>
             }
           </select>
         </div>
-        
-        <!-- Tipo de invitación -->
+                        
+        <!-- Rango de fechas -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Tipo
+            Fecha de creación desde
           </label>
-          <select 
-            [(ngModel)]="selectedFilters().is_guest"
-            (ngModelChange)="onFilterChange()"
+          <input 
+            type="date"
+            [ngModel]="selectedFilters().start_date"
+            (ngModelChange)="updateFilter('start_date', $event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
-            <option [value]="undefined">Todos los tipos</option>
-            <option [value]="true">Solo invitaciones para invitados</option>
-            <option [value]="false">Solo invitaciones para usuarios</option>
-          </select>
         </div>
-        
-        <!-- Usada -->
+
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Estado de uso
+            Hasta
           </label>
-          <select 
-            [(ngModel)]="selectedFilters().is_used"
-            (ngModelChange)="onFilterChange()"
+          <input 
+            type="date"
+            [ngModel]="selectedFilters().end_date"
+            (ngModelChange)="updateFilter('end_date', $event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
-            <option [value]="undefined">Todas</option>
-            <option [value]="true">Solo usadas</option>
-            <option [value]="false">Solo no usadas</option>
-          </select>
         </div>
-        
       </div>
 
-      <!-- Filtros avanzados -->
-      @if (showAdvancedFilters()) {
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
-          <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">Filtros Avanzados</h4>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Rango de fechas -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Fecha de creación desde
-              </label>
-              <input 
-                type="date"
-                [(ngModel)]="selectedFilters().start_date"
-                (ngModelChange)="onFilterChange()"
-                class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-              >
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Hasta
-              </label>
-              <input 
-                type="date"
-                [(ngModel)]="selectedFilters().end_date"
-                (ngModelChange)="onFilterChange()"
-                class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
-              >
-            </div>
-          </div>
-        </div>
-      }
 
       <!-- Ordenación -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -244,7 +132,7 @@
             Ordenar por
           </label>
           <select 
-            [(ngModel)]="selectedFilters().sort_by"
+            [ngModel]="selectedFilters().ordering"
             (ngModelChange)="setSortBy($event)"
             class="textsize-cnf w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 transition-all"
           >
@@ -264,7 +152,7 @@
               (click)="toggleSortOrder()"
               class="textsize-cnf w-full flex items-center justify-center px-4 py-[6px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              @if (selectedFilters().sort_order === 'desc') {
+              @if (selectedFilters().ordering === 'desc') {
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
@@ -314,39 +202,6 @@
                 </button>
               </span>
             }
-            @if (selectedFilters().is_guest !== undefined) {
-              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                Tipo: {{ selectedFilters().is_guest ? 'Invitado' : 'Usuario' }}
-                <button 
-                  (click)="removeFilter('is_guest')"
-                  class="ml-1.5 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200"
-                >
-                  ×
-                </button>
-              </span>
-            }
-            @if (selectedFilters().is_used !== undefined) {
-              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300">
-                Usada: {{ selectedFilters().is_used ? 'Sí' : 'No' }}
-                <button 
-                  (click)="removeFilter('is_used')"
-                  class="ml-1.5 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200"
-                >
-                  ×
-                </button>
-              </span>
-            }
-            @if (selectedFilters().search) {
-              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300">
-                Búsqueda: {{ selectedFilters().search }}
-                <button 
-                  (click)="removeFilter('search')"
-                  class="ml-1.5 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200"
-                >
-                  ×
-                </button>
-              </span>
-            }
             @if (selectedFilters().start_date) {
               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300">
                 Desde: {{ selectedFilters().start_date }}
@@ -370,7 +225,7 @@
               </span>
             }
             <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-300">
-              Orden: {{ getCurrentSortLabel() }} {{ getSortOrderIcon() }}
+              Orden: {{ currentSortLabel() }} {{ getSortOrderIcon() }}
             </span>
           </div>
         </div>
@@ -414,13 +269,7 @@
   @if (!loading() && totalItems() > 0) {
     <div class="mb-4 md:flex md:items-center md:justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
       <div class="flex items-center gap-4">
-        <div>
-          Mostrando 
-          <span class="font-medium">{{ getStartIndex() }}</span> a 
-          <span class="font-medium">{{ getEndIndex() }}</span> de 
-          <span class="font-medium">{{ totalItems() }}</span> invitación(es)
-        </div>
-        
+        <div class="text-balance">Mostrando {{ startIndex() }} a {{ endIndex() }} de {{ totalItems() }} resultado(s) filtrados </div>
         <!-- Checkbox para seleccionar todos -->
         <div class="flex items-center">
           <input type="checkbox"
@@ -437,7 +286,7 @@
       <div>
         Orden: 
         <span class="text-gray-800 dark:text-gray-200">
-          {{ getCurrentSortLabel() }} {{ getSortOrderIcon() }}
+          {{ currentSortLabel() }} {{ getSortOrderIcon() }}
         </span>
       </div>
     </div>
@@ -449,7 +298,7 @@
       
       <!-- Vista móvil: tarjetas -->
       <div class="block md:hidden divide-y divide-gray-200 dark:divide-gray-700">
-        @for (invitation of invitationsData(); track invitation.id) {
+        @for (invitation of invitations(); track invitation.id) {
           <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
             <!-- Checkbox y cabecera -->
             <div class="flex items-center">
@@ -546,10 +395,10 @@
                 Test
               </th>
               <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Información
+                Creador
               </th>
               <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Estado
+                Estado/Receptor
               </th>
               <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Fechas
@@ -561,7 +410,7 @@
           </thead>
 
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            @for (invitation of invitationsData(); track invitation.id) {
+            @for (invitation of invitations(); track invitation.id) {
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                 <!-- Columna de selección -->
                 <td class="px-4 py-4 whitespace-nowrap">
@@ -584,41 +433,60 @@
                 
                 <!-- Columna Información -->
                 <td class="px-4 py-4">
-                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    Creada por: 
+                  <div>
                     <button (click)="openUserProfile(invitation.invited_by)"
-                            class="text-xs px-2 py-0.5 rounded text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        class="{{ getStatusBadgeClass('default') }}">
                         @{{ invitation.inviter_name }}
                     </button>
-
                   </div>
+                  <!-- Mensaje con tooltip -->
                   @if (invitation.message) {
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate max-w-xs">
-                      {{ invitation.message }}
+                    <div class="relative inline-block group mt-1">
+                      <span class="inline-flex items-center text-xs text-gray-500 dark:text-gray-400 cursor-help border-b border-dashed border-gray-300 dark:border-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                        </svg>
+                        <span class="truncate max-w-[120px]">{{ invitation.message }}</span>
+                      </span>
+                      
+                      <!-- Tooltip -->
+                      <div class="absolute bottom-full mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                        <div class="bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg px-3 py-2 max-w-xs shadow-lg whitespace-pre-wrap break-words">{{ invitation.message }}
+                          <div class="absolute top-full border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                        </div>
+                      </div>
                     </div>
                   }
-                  @if (invitation.guest_name && invitation.guest_user_id) {
+                </td>
+
+                <!-- Columna Estado -->
+                <td class="px-4 py-4">
+                  @if (invitation.guest_user_id) {
                     <button (click)="openUserProfile(invitation.guest_user_id)"
                             class="{{ getStatusBadgeClass(invitation.status) }}">
                         @{{ invitation.guest_name }}
                     </button>
+                  } @else {
+
+                      <div class="{{ getStatusBadgeClass(invitation.status) }}">
+                        {{ getStatusLabel(invitation.status) }}
+                      </div>
+                  
                   }
-                </td>
-                
-                <!-- Columna Estado -->
-                <td class="px-4 py-4">
-                  <div class="{{ getStatusBadgeClass(invitation.status) }}">
-                    {{ getStatusLabel(invitation.status) }}
-                  </div>
-                </td>
-                
+                 </td>
                 <!-- Columna Fechas -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Creada: {{ formatDateTime(invitation.created_at) }}
+                    <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                    </svg>                     
+                    {{ formatDateTime(invitation.created_at) }}
                   </div>
                   <div [class]="isInvitationExpired(invitation.expires_at) ? 'text-xs text-red-500 dark:text-red-400' : 'text-xs text-gray-500 dark:text-gray-400'">
-                    Expira: {{ formatDateTime(invitation.expires_at) }}
+                    <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z M8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>                    
+                    {{ formatDateTime(invitation.expires_at) }}
                   </div>
                 </td>
                 
@@ -659,14 +527,14 @@
       <div class="mt-8">
         <nav class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="text-sm text-gray-600 dark:text-gray-400 order-2 sm:order-1 text-center sm:text-left">
-            Página {{ currentPage() }} de {{ totalPages() }}
+            Página {{ selectedFilters().page }} de {{ totalPages() }}
           </div>
           
           <div class="flex items-center justify-center order-1 sm:order-2">
             <div class="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
               <!-- Botón Anterior -->
               <button (click)="previousPage()"
-                      [disabled]="currentPage() === 1"
+                      [disabled]="selectedFilters().page === 1"
                       class="relative inline-flex items-center px-3 py-2 sm:px-2 sm:py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                 <span class="sr-only">Anterior</span>
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -677,7 +545,7 @@
               <!-- Números de página -->
               @for (page of getPageNumbers(); track page) {
                 <button (click)="goToPage(page)"
-                        [class]="currentPage() === page 
+                        [class]="selectedFilters().page === page 
                           ? 'z-10 text-white bg-blue-600 dark:bg-blue-700 border border-blue-500 dark:border-blue-600 relative inline-flex items-center px-4 py-2 sm:px-4 sm:py-2 text-sm font-medium'
                           : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 sm:px-4 sm:py-2 text-sm font-medium transition-colors'">
                   {{ page }}
@@ -711,8 +579,8 @@
   [title]="modalTitle()"
   [message]="modalMessage()"
   icon="warning"
-  [confirmText]="deleteInProgress() ? 'Eliminando...' : 'Eliminar'"
-  [showCancelButton]="!deleteInProgress()"
+  [confirmText]="deleting() ? 'Eliminando...' : 'Eliminar'"
+  [showCancelButton]="!deleting()"
   (confirm)="deleteInvitation()"
   (cancel)="showDeleteModal.set(false)"
   (closed)="showDeleteModal.set(false)">
@@ -737,8 +605,8 @@
   [title]="modalTitle()"
   [message]="modalMessage()"
   icon="warning"
-  [confirmText]="deleteInProgress() ? 'Eliminando...' : 'Eliminar seleccionadas'"
-  [showCancelButton]="!deleteInProgress()"
+  [confirmText]="deleting() ? 'Eliminando...' : 'Eliminar seleccionadas'"
+  [showCancelButton]="!deleting()"
   (confirm)="deleteSelectedInvitations()"
   (cancel)="showBulkDeleteModal.set(false)"
   (closed)="showBulkDeleteModal.set(false)">
@@ -755,6 +623,30 @@
       </div>
     </div>
   </div>
+</app-modal>
+
+<!-- Modal de éxito -->
+<app-modal 
+  [isOpen]="showSuccessModal()"
+  title="Operación exitosa"
+  [message]="successMessage()"
+  icon="success"
+  [showCancelButton]="false"
+  [confirmText]="'Aceptar'"
+  (confirm)="closeSuccessModal()"
+  (closed)="closeSuccessModal()">
+</app-modal>
+
+<!-- Modal de error -->
+<app-modal 
+  [isOpen]="showErrorModal()"
+  title="Error"
+  [message]="errorMessage()"
+  icon="error"
+  [showCancelButton]="false"
+  [confirmText]="'Aceptar'"
+  (confirm)="closeErrorModal()"
+  (closed)="closeErrorModal()">
 </app-modal>
 
 <!-- Modal para perfil de usuario -->
